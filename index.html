@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneCheck RP — Verificador de Regras One State RP com IA</title>
+    <meta name="description" content="Verificador de Infrações de Roleplay do One State RP com Inteligência Artificial Gemini. Descreva o acontecido e a IA identifica as regras aplicáveis.">
+    <meta name="author" content="Godoy Solutions in TECH — Caíque Eduardo">
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  LOGIN VIEW                                               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="loginView">
+    <div class="login-card">
+        <span class="login-shield" aria-hidden="true">🛡️</span>
+        <div class="login-logo">OneCheck RP</div>
+        <div class="login-sub">One State RP · Sistema de Verificação</div>
+
+        <label class="login-label" for="passwordInput">Senha de Acesso</label>
+        <input
+            type="password"
+            id="passwordInput"
+            class="login-input"
+            placeholder="••••••••••••"
+            autocomplete="current-password"
+            aria-label="Senha de acesso ao sistema"
+        >
+
+        <button id="loginBtn" class="login-btn" type="button">
+            <i class="ri-lock-unlock-line"></i> ACESSAR SISTEMA
+        </button>
+
+        <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
+
+        <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.5;">
+            🔒 Acesso restrito. Sistema desenvolvido por<br>
+            <strong style="color: var(--text-secondary);">Godoy Solutions in TECH</strong>
+        </p>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  APP VIEW                                                 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="appView" class="app-hidden">
+
+    <!-- Header -->
+    <header class="app-header" role="banner">
+        <div class="header-brand">
+            <span aria-hidden="true">🛡️</span>
+            <span class="header-logo">OneCheck RP</span>
+            <span class="header-badge">One State RP</span>
+        </div>
+
+        <div class="header-actions">
+            <div class="header-server-badge" aria-label="Status do sistema: Online">
+                <div class="server-dot" aria-hidden="true"></div>
+                Sistema Online
+            </div>
+            <button id="logoutBtn" class="btn-logout" type="button" aria-label="Sair do sistema">
+                <i class="ri-logout-box-line" aria-hidden="true"></i> Sair
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="app-hero" aria-label="Banner do OneCheck RP">
+        <img src="hero.jpg" alt="OneCheck RP — Verificador de Regras do One State RP" loading="eager">
+        <div class="app-hero-overlay">
+            <div class="hero-text">
+                <h1>Verificador de Regras RP</h1>
+                <p>Powered by Gemini AI · One State RP · Godoy Solutions in TECH</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="app-main" id="main-content">
+
+        <!-- ─── VERIFICADOR (coluna principal) ─── -->
+        <section class="verificador-panel" aria-label="Painel de verificação de infrações">
+
+            <!-- Input de relato -->
+            <div class="panel-card">
+                <h2 class="panel-title" id="entrada-title">
+                    <i class="ri-file-text-line" aria-hidden="true"></i>
+                    Descreva o Acontecido
+                </h2>
+
+                <div class="entrada-wrapper">
+                    <textarea
+                        id="entradaTexto"
+                        class="entrada-textarea"
+                        placeholder="Descreva detalhadamente o que aconteceu no servidor. Ex: O jogador Fulano de Tal atirou em mim sem qualquer motivo ou interação prévia. Estávamos no estacionamento do hospital quando ele simplesmente sacou a arma e começou a atirar sem qualquer contexto de RP..."
+                        aria-label="Campo para descrever o acontecido no servidor"
+                        aria-describedby="entrada-title"
+                        maxlength="2000"
+                    ></textarea>
+                    <span class="entrada-meta" aria-live="polite">
+                        <span id="charCount">0</span>/2000
+                    </span>
+                </div>
+
+                <div class="btn-row">
+                    <button id="btnVerificar" class="btn-verificar" type="button" aria-label="Verificar infrações com Inteligência Artificial">
+                        <i class="ri-search-eye-line" aria-hidden="true"></i> Verificar com IA
+                    </button>
+                    <button id="btnVoz" class="btn-voz" type="button" aria-label="Usar entrada por voz" title="Entrada por voz">
+                        <i class="ri-mic-line" aria-hidden="true"></i>
+                    </button>
+                    <button id="btnLimpar" class="btn-limpar" type="button" aria-label="Limpar campo e resultados" title="Limpar">
+                        <i class="ri-delete-bin-line" aria-hidden="true"></i>
+                    </button>
+                </div>
+
+                <p class="shortcut-hint" aria-label="Atalho de teclado: Ctrl Enter para verificar">
+                    <kbd>Ctrl</kbd> + <kbd>Enter</kbd> para verificar rapidamente
+                </p>
+            </div>
+
+            <!-- Resultado da verificação -->
+            <div class="panel-card">
+                <h2 class="panel-title">
+                    <i class="ri-shield-check-line" aria-hidden="true"></i>
+                    Resultado da Análise
+                </h2>
+
+                <div id="resultadoArea" role="region" aria-live="polite" aria-label="Resultado da análise de infrações">
+                    <div class="result-placeholder">
+                        <div class="placeholder-icon" aria-hidden="true">🛡️</div>
+                        <p>Descreva o acontecido acima e clique em <strong>Verificar com IA</strong> para identificar as regras aplicáveis.</p>
+                        <span class="placeholder-hint">
+                            Dica: Seja detalhado — mencione o contexto, o que aconteceu e quem estava envolvido.<br>
+                            Você também pode clicar em uma regra ao lado para testar um exemplo.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ─── REGRAS LATERAL ─── -->
+        <aside class="regras-panel" aria-label="Referência rápida das regras de RP">
+            <div class="regras-panel-title">
+                <i class="ri-book-2-line" aria-hidden="true"></i> Regras do Servidor
+            </div>
+            <p class="regras-panel-hint">
+                Clique em uma regra para carregar um exemplo de teste
+            </p>
+            <div id="regrasGrid" role="list" aria-label="Lista de regras de RP"></div>
+        </aside>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer" role="contentinfo">
+        <span>OneCheck RP &copy; 2025 · One State RP</span>
+        <span class="footer-brand">
+            Godoy Solutions in TECH · Caíque Eduardo
+        </span>
+        <span style="font-size:0.75rem;">
+            Powered by <strong style="color: var(--blue-bright);">Gemini AI</strong>
+        </span>
+    </footer>
+
+</div><!-- /appView -->
+
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" role="status" aria-label="Analisando com IA..." aria-live="polite">
+    <div class="loading-orb" aria-hidden="true"></div>
+    <div class="loading-text">Analisando com Gemini IA...</div>
+</div>
+
+
+<!-- Scripts -->
+<script src="js/regras-rp.js"></script>
+<script src="js/ia-engine.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
