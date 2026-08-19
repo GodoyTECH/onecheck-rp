@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -194,5 +194,43 @@
 <script src="js/ia-engine.js"></script>
 <script src="js/app.js"></script>
 
+
+<!-- BOTÃO FLUTUANTE FACÇÕES -->
+<a href="faccoes/index.html" class="fac-float-btn" aria-label="Chat das Facções" title="Chat das Facções">
+    <span class="fac-float-icon">🏴</span>
+    <span class="fac-float-label">Facções</span>
+</a>
+
+<style>
+.fac-float-btn {
+    position: fixed;
+    bottom: 1.5rem; right: 1.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(135deg, #1e2128 0%, #252830 100%);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--text-primary, #e8eaf0);
+    text-decoration: none;
+    padding: 0.65rem 1.1rem;
+    border-radius: 50px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem; font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.1);
+    transition: all 0.25s ease;
+    z-index: 500;
+    backdrop-filter: blur(8px);
+}
+.fac-float-btn:hover {
+    border-color: rgba(59,130,246,0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 15px rgba(59,130,246,0.15);
+}
+.fac-float-icon { font-size: 1.1rem; }
+.fac-float-label { white-space: nowrap; }
+@media (max-width: 480px) {
+    .fac-float-btn { bottom: 1rem; right: 1rem; padding: 0.6rem; border-radius: 50%; }
+    .fac-float-label { display: none; }
+}
+</style>
 </body>
 </html>
+

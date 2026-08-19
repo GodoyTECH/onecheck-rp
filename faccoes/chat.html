@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat — Facção | OneCheck RP</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Supabase + PeerJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+    <link rel="stylesheet" href="css/faccoes.css">
+</head>
+<body class="chat-page">
+
+<!-- LAYOUT DISCORD -->
+<div class="discord-layout">
+
+    <!-- SIDEBAR ESQUERDA -->
+    <aside class="discord-sidebar" id="sidebar" aria-label="Canal de voz e membros">
+
+        <!-- Cabeçalho da Facção -->
+        <div class="sidebar-header" id="sidebarHeader">
+            <span class="sidebar-fac-icon" id="sidebarIcon">🏴</span>
+            <div>
+                <div class="sidebar-fac-nome" id="sidebarNome">Carregando...</div>
+                <div class="sidebar-fac-tag" id="sidebarTag"></div>
+            </div>
+        </div>
+
+        <!-- Canal de Voz -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">
+                <i class="ri-volume-up-line"></i> CANAL DE VOZ
+            </div>
+
+            <button id="btnEntrarVoz" class="btn-voz-canal">
+                <i class="ri-phone-line"></i> Entrar no Canal
+            </button>
+
+            <div id="vozControles" class="voz-controles" style="display:none">
+                <div class="voz-status">
+                    <span class="voz-dot"></span> Conectado
+                </div>
+                <div class="voz-btns">
+                    <button id="btnMute" class="voz-btn" title="Mute/Unmute">
+                        <i class="ri-mic-line"></i>
+                    </button>
+                    <button id="btnSairVoz" class="voz-btn voz-btn-red" title="Sair do canal de voz">
+                        <i class="ri-phone-off-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="vozMembros" class="voz-membros">
+                <!-- preenchido dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Membros Online -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">
+                <i class="ri-circle-fill" style="color:#22c55e;font-size:0.5rem"></i> ONLINE
+            </div>
+            <div id="membrosOnline" class="membros-lista">
+                <div class="membro-item">
+                    <span class="membro-avatar">👤</span>
+                    <span class="membro-nome" id="meNome">Você</span>
+                    <span class="membro-cargo" id="meCargo">Membro</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info do usuário atual -->
+        <div class="sidebar-me">
+            <div class="sidebar-me-info">
+                <span class="sidebar-me-avatar">👤</span>
+                <div>
+                    <div class="sidebar-me-nome" id="meApelido">...</div>
+                    <div class="sidebar-me-cargo" id="meCargo2">...</div>
+                </div>
+            </div>
+            <a href="index.html" class="btn-sair-faccao" id="btnSairFaccao" title="Sair da facção">
+                <i class="ri-logout-box-line"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL DE CHAT -->
+    <main class="discord-main">
+
+        <!-- Header do Chat -->
+        <header class="chat-header">
+            <button class="chat-menu-btn" id="btnToggleSidebar" aria-label="Menu" aria-expanded="false">
+                <i class="ri-menu-line"></i>
+            </button>
+            <div class="chat-header-info">
+                <i class="ri-message-3-line"></i>
+                <span id="chatHeaderNome">geral</span>
+            </div>
+            <div class="chat-header-actions">
+                <button class="chat-action-btn" id="btnToggleMembers" title="Membros" aria-label="Ver membros">
+                    <i class="ri-group-line"></i>
+                </button>
+                <a href="../index.html" class="chat-action-btn" title="Verificador de Regras" aria-label="Ir para o verificador">
+                    <i class="ri-shield-check-line"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Mensagens -->
+        <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Mensagens do chat">
+            <div class="chat-welcome">
+                <div class="chat-welcome-icon">🏴</div>
+                <h2>Bem-vindo ao chat da facção!</h2>
+                <p>Esta é a área de comunicação da sua facção no One State RP.</p>
+            </div>
+        </div>
+
+        <!-- Indicador "digitando" -->
+        <div class="chat-typing" id="chatTyping" aria-live="polite"></div>
+
+        <!-- Input de mensagem -->
+        <div class="chat-input-area">
+            <!-- Gravação de áudio -->
+            <button id="btnGravar" class="chat-input-btn" title="Gravar áudio" aria-label="Gravar mensagem de voz">
+                <i class="ri-mic-line"></i>
+            </button>
+
+            <!-- Campo de texto -->
+            <div class="chat-input-wrap">
+                <textarea
+                    id="msgInput"
+                    class="chat-input"
+                    placeholder="Escreva uma mensagem..."
+                    maxlength="500"
+                    rows="1"
+                    aria-label="Campo de mensagem"
+                ></textarea>
+            </div>
+
+            <!-- Contador -->
+            <span class="msg-count" id="msgCount" aria-live="polite">0/500</span>
+
+            <!-- Enviar -->
+            <button id="btnEnviar" class="chat-send-btn" aria-label="Enviar mensagem">
+                <i class="ri-send-plane-fill"></i>
+            </button>
+        </div>
+
+        <!-- Status de gravação -->
+        <div id="gravacaoStatus" class="gravacao-status" style="display:none" aria-live="assertive">
+            <div class="gravacao-pulso"></div>
+            <span>Gravando áudio... <strong id="gravacaoTimer">0s</strong></span>
+            <button id="btnPararGravacao" class="btn-parar-grav">
+                <i class="ri-stop-circle-line"></i> Enviar
+            </button>
+            <button id="btnCancelarGravacao" class="btn-cancelar-grav">
+                <i class="ri-close-circle-line"></i> Cancelar
+            </button>
+        </div>
+    </main>
+
+    <!-- SIDEBAR DIREITA: Membros -->
+    <aside class="discord-members" id="membersPanel" aria-label="Lista de membros">
+        <div class="members-header">
+            <i class="ri-group-line"></i> Membros
+        </div>
+        <div id="membersList" class="members-list">
+            <!-- preenchido dinamicamente -->
+        </div>
+    </aside>
+
+</div>
+
+<!-- Overlay mobile para sidebar -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<script src="js/config.js"></script>
+<script src="js/faccoes.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/voice.js"></script>
+<script>
+// ─── Estado ──────────────────────────────────────────────────
+const params   = new URLSearchParams(location.search);
+const faccaoId = params.get('fac');
+let sessao     = null;
+let mediaRec   = null;
+let gravTimer  = null;
+let gravSeg    = 0;
+let msgUltimaId = null;
+
+// ─── Inicialização ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    window.getSupabase();
+
+    sessao = window.FaccaoStore.getSessao();
+    if (!sessao || !faccaoId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    preencherUI();
+    await carregarEExibirMensagens();
+    assinarRealtime(faccaoId, receberMsg);
+    await atualizarMembros();
+
+    bindEvents();
+
+    // Atualizar membros a cada 30s
+    setInterval(atualizarMembros, 30000);
+
+    // Auto-resize textarea
+    const inp = document.getElementById('msgInput');
+    inp.addEventListener('input', () => {
+        inp.style.height = 'auto';
+        inp.style.height = Math.min(inp.scrollHeight, 120) + 'px';
+    });
+});
+
+// ─── Preencher UI com dados da sessão ────────────────────────
+function preencherUI() {
+    document.getElementById('sidebarNome').textContent  = sessao.faccaoNome || 'Facção';
+    document.getElementById('sidebarTag').textContent   = sessao.faccaoCor ? '' : '';
+    document.getElementById('sidebarIcon').textContent  = sessao.faccaoIcone || '🏴';
+    document.getElementById('chatHeaderNome').textContent = sessao.faccaoNome || 'chat';
+    document.getElementById('meApelido').textContent    = sessao.apelido;
+    document.getElementById('meCargo2').textContent     = sessao.cargo;
+    document.getElementById('meNome').textContent       = sessao.apelido;
+
+    if (sessao.faccaoCor) {
+        document.getElementById('sidebarHeader').style.borderBottomColor = sessao.faccaoCor + '40';
+        document.getElementById('sidebarIcon').style.filter = `drop-shadow(0 0 6px ${sessao.faccaoCor})`;
+    }
+
+    document.title = `${sessao.faccaoNome} — OneCheck RP`;
+}
+
+// ─── Carregar histórico ────────────────────────────────────────
+async function carregarEExibirMensagens() {
+    try {
+        const msgs = await carregarMensagens(faccaoId);
+        const container = document.getElementById('chatMessages');
+        // Limpar welcome se tiver mensagens
+        if (msgs.length > 0) {
+            container.querySelector('.chat-welcome')?.remove();
+        }
+        msgs.forEach(m => appendMsg(m, false));
+        scrollBottom();
+    } catch (e) {
+        console.error('Erro ao carregar mensagens:', e);
+    }
+}
+
+// ─── Receber nova mensagem (realtime) ─────────────────────────
+function receberMsg(msg) {
+    if (msg.id === msgUltimaId) return;
+    msgUltimaId = msg.id;
+    document.querySelector('.chat-welcome')?.remove();
+    appendMsg(msg, true);
+    scrollBottom();
+
+    // Notificação se página não está em foco
+    if (document.hidden && msg.apelido !== sessao.apelido) {
+        notificar(msg);
+    }
+}
+
+// ─── Renderizar mensagem ──────────────────────────────────────
+function appendMsg(msg, animate) {
+    const container = document.getElementById('chatMessages');
+    const isMeu     = msg.apelido === sessao.apelido;
+    const isSistema = msg.tipo === 'sistema';
+
+    const el = document.createElement('div');
+    el.className = `chat-msg ${isMeu ? 'chat-msg-meu' : ''} ${isSistema ? 'chat-msg-sistema' : ''} ${animate ? 'chat-msg-new' : ''}`;
+    el.dataset.id = msg.id;
+
+    const hora = new Date(msg.criado_em).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+    if (isSistema) {
+        el.innerHTML = `<span class="sistema-msg">${escapeHtml(msg.conteudo)}</span>`;
+    } else if (msg.tipo === 'audio') {
+        el.innerHTML = `
+            <div class="msg-avatar">${isMeu ? '👤' : '👥'}</div>
+            <div class="msg-body">
+                <div class="msg-meta">
+                    <span class="msg-autor ${isMeu ? 'msg-eu' : ''}" style="color:${sessao.faccaoCor || '#3b82f6'}">${escapeHtml(msg.apelido)}</span>
+                    <span class="msg-cargo">${escapeHtml(msg.cargo)}</span>
+                    <span class="msg-hora">${hora}</span>
+                </div>
+                <div class="msg-audio">
+                    <i class="ri-mic-fill"></i>
+                    <audio controls src="${msg.audio_url}" class="audio-player" preload="none"></audio>
+                </div>
+            </div>`;
+    } else {
+        el.innerHTML = `
+            <div class="msg-avatar">${isMeu ? '👤' : '👥'}</div>
+            <div class="msg-body">
+                <div class="msg-meta">
+                    <span class="msg-autor ${isMeu ? 'msg-eu' : ''}" style="color:${sessao.faccaoCor || '#3b82f6'}">${escapeHtml(msg.apelido)}</span>
+                    <span class="msg-cargo">${escapeHtml(msg.cargo)}</span>
+                    <span class="msg-hora">${hora}</span>
+                </div>
+                <div class="msg-conteudo">${escapeHtml(msg.conteudo)}</div>
+            </div>`;
+    }
+
+    container.appendChild(el);
+}
+
+function scrollBottom() {
+    const container = document.getElementById('chatMessages');
+    container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function notificar(msg) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+        new Notification(`${msg.apelido} [${sessao.faccaoNome}]`, {
+            body: msg.tipo === 'audio' ? '🎤 Mensagem de voz' : msg.conteudo,
+            icon: '../hero.jpg'
+        });
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
+}
+
+// ─── Atualizar membros ────────────────────────────────────────
+async function atualizarMembros() {
+    try {
+        const membros = await buscarMembrosOnline(faccaoId);
+        const lista   = document.getElementById('membersList');
+        lista.innerHTML = membros.map(m => `
+            <div class="member-item">
+                <span class="member-dot ${m.online ? 'online' : 'offline'}"></span>
+                <span class="member-avatar">👤</span>
+                <div class="member-info">
+                    <div class="member-nome">${escapeHtml(m.apelido)}</div>
+                    <div class="member-cargo">${escapeHtml(m.cargo)}</div>
+                </div>
+            </div>`).join('') || '<div class="member-empty">Nenhum membro</div>';
+    } catch(e) {}
+}
+
+// ─── Enviar mensagem ──────────────────────────────────────────
+async function enviar() {
+    const inp    = document.getElementById('msgInput');
+    const texto  = inp.value.trim();
+    if (!texto) return;
+
+    try {
+        inp.value = '';
+        inp.style.height = 'auto';
+        document.getElementById('msgCount').textContent = '0/500';
+        await enviarMensagem(faccaoId, texto);
+    } catch (e) {
+        mostrarToast('Erro ao enviar: ' + e.message, 'error');
+    }
+}
+
+// ─── Gravação de áudio ────────────────────────────────────────
+async function iniciarGravacao() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRec = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        const chunks = [];
+        mediaRec.ondataavailable = e => chunks.push(e.data);
+        mediaRec.onstop = async () => {
+            stream.getTracks().forEach(t => t.stop());
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            try {
+                await enviarAudio(faccaoId, blob);
+            } catch(e) {
+                mostrarToast('Erro ao enviar áudio: ' + e.message, 'error');
+            }
+        };
+        mediaRec.start();
+        gravSeg = 0;
+        document.getElementById('gravacaoStatus').style.display = 'flex';
+        document.getElementById('btnGravar').style.display = 'none';
+        gravTimer = setInterval(() => {
+            gravSeg++;
+            document.getElementById('gravacaoTimer').textContent = gravSeg + 's';
+            if (gravSeg >= window.FACCAO_CONFIG.MAX_AUDIO_SEC) pararGravacao(true);
+        }, 1000);
+    } catch (e) {
+        mostrarToast('Microfone não disponível: ' + e.message, 'error');
+    }
+}
+
+function pararGravacao(enviar = true) {
+    clearInterval(gravTimer);
+    document.getElementById('gravacaoStatus').style.display = 'none';
+    document.getElementById('btnGravar').style.display = 'flex';
+    if (mediaRec && mediaRec.state !== 'inactive') {
+        if (!enviar) {
+            mediaRec.ondataavailable = () => {};
+            mediaRec.onstop = () => {};
+        }
+        mediaRec.stop();
+    }
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function mostrarToast(msg, tipo = 'info') {
+    const t = document.createElement('div');
+    t.className = `chat-toast chat-toast-${tipo}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.classList.add('visible'), 10);
+    setTimeout(() => { t.classList.remove('visible'); setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ─── Eventos ──────────────────────────────────────────────────
+function bindEvents() {
+    const inp = document.getElementById('msgInput');
+
+    document.getElementById('btnEnviar').addEventListener('click', enviar);
+
+    inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
+    });
+
+    inp.addEventListener('input', () => {
+        document.getElementById('msgCount').textContent = inp.value.length + '/500';
+    });
+
+    // Gravação
+    document.getElementById('btnGravar').addEventListener('click', iniciarGravacao);
+    document.getElementById('btnPararGravacao').addEventListener('click', () => pararGravacao(true));
+    document.getElementById('btnCancelarGravacao').addEventListener('click', () => pararGravacao(false));
+
+    // Voz
+    document.getElementById('btnEntrarVoz').addEventListener('click', async () => {
+        try {
+            await entrarCanalVoz(faccaoId, sessao.apelido, atualizarVozUI);
+            document.getElementById('btnEntrarVoz').style.display = 'none';
+            document.getElementById('vozControles').style.display = 'flex';
+        } catch (e) {
+            mostrarToast(e.message, 'error');
+        }
+    });
+
+    document.getElementById('btnMute').addEventListener('click', () => {
+        const mutado = toggleMute();
+        const btn = document.getElementById('btnMute');
+        btn.innerHTML = mutado ? '<i class="ri-mic-off-line"></i>' : '<i class="ri-mic-line"></i>';
+        btn.classList.toggle('mutado', mutado);
+    });
+
+    document.getElementById('btnSairVoz').addEventListener('click', async () => {
+        await sairCanalVoz(faccaoId);
+        document.getElementById('btnEntrarVoz').style.display = 'flex';
+        document.getElementById('vozControles').style.display = 'none';
+        document.getElementById('vozMembros').innerHTML = '';
+    });
+
+    // Sair da facção
+    document.getElementById('btnSairFaccao').addEventListener('click', async (e) => {
+        e.preventDefault();
+        cancelarRealtime();
+        if (window.vozNoCanal) await sairCanalVoz(faccaoId);
+        await sairFaccao();
+        window.location.href = 'index.html';
+    });
+
+    // Sidebar mobile
+    document.getElementById('btnToggleSidebar').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('visible');
+        document.getElementById('sidebarOverlay').classList.toggle('visible');
+    });
+    document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('visible');
+        document.getElementById('sidebarOverlay').classList.remove('visible');
+    });
+
+    // Painel de membros
+    document.getElementById('btnToggleMembers').addEventListener('click', () => {
+        document.getElementById('membersPanel').classList.toggle('visible');
+    });
+
+    // Notificações
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
+function atualizarVozUI(peers) {
+    const el = document.getElementById('vozMembros');
+    el.innerHTML = peers.map(p => `
+        <div class="voz-membro">
+            <span class="voz-membro-icon">${p.mutado ? '🔇' : '🎤'}</span>
+            <span>${escapeHtml(p.apelido)}</span>
+        </div>`).join('') || '';
+}
+</script>
+</body>
+</html>

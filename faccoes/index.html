@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facções — OneCheck RP</title>
+    <meta name="description" content="Sistema de Chat por Facção do One State RP — Godoy Solutions in TECH">
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Supabase (carregado condicionalmente) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/faccoes.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="fac-header">
+    <a href="../index.html" class="fac-back-btn" aria-label="Voltar ao verificador">
+        <i class="ri-arrow-left-line"></i>
+    </a>
+    <div class="fac-header-brand">
+        <span class="fac-header-icon">🏴</span>
+        <span class="fac-header-title">Facções</span>
+        <span class="fac-header-sub">One State RP</span>
+    </div>
+    <div class="fac-header-actions">
+        <div id="modoDemo" class="demo-badge" style="display:none">
+            <i class="ri-database-2-line"></i> Modo Demo
+        </div>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main class="fac-main">
+
+    <!-- HERO -->
+    <section class="fac-hero">
+        <div class="fac-hero-content">
+            <h1>🏴 Sistema de Facções</h1>
+            <p>Entre em uma facção e comece a conversar em tempo real com seus parceiros de jogo</p>
+        </div>
+    </section>
+
+    <!-- AÇÕES RÁPIDAS -->
+    <div class="fac-actions-bar">
+        <button id="btnCriarFaccao" class="btn-criar-faccao">
+            <i class="ri-add-circle-line"></i> Criar Facção
+        </button>
+        <div class="fac-search-wrap">
+            <i class="ri-search-line"></i>
+            <input type="search" id="buscaFaccao" placeholder="Buscar facção..." class="fac-search" autocomplete="off">
+        </div>
+    </div>
+
+    <!-- GRID DE FACÇÕES -->
+    <section class="fac-grid-section">
+        <div id="faccoesGrid" class="fac-grid" role="list" aria-label="Lista de facções">
+            <div class="fac-loading">
+                <div class="fac-spinner"></div>
+                <span>Carregando facções...</span>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- MODAL: CRIAR FACÇÃO -->
+<div id="modalCriar" class="fac-modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modalCriarTitle">
+    <div class="fac-modal">
+        <div class="fac-modal-header">
+            <h2 id="modalCriarTitle"><i class="ri-flag-line"></i> Nova Facção</h2>
+            <button class="fac-modal-close" id="btnFecharCriar" aria-label="Fechar">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <div class="fac-modal-body">
+            <!-- Nome -->
+            <div class="fac-form-group">
+                <label for="inpNome">Nome da Facção *</label>
+                <input type="text" id="inpNome" placeholder="Ex: Los Santos Bloods" maxlength="60" autocomplete="off">
+            </div>
+
+            <!-- TAG -->
+            <div class="fac-form-group">
+                <label for="inpTag">TAG (sigla) *</label>
+                <input type="text" id="inpTag" placeholder="Ex: LSB" maxlength="10" autocomplete="off" style="text-transform:uppercase">
+                <span class="fac-form-hint">Será exibida ao lado do nome no chat</span>
+            </div>
+
+            <!-- Descrição -->
+            <div class="fac-form-group">
+                <label for="inpDescricao">Descrição</label>
+                <textarea id="inpDescricao" placeholder="Descreva sua facção..." maxlength="200" rows="2"></textarea>
+            </div>
+
+            <!-- Ícone -->
+            <div class="fac-form-group">
+                <label>Ícone</label>
+                <div class="fac-icones-grid" id="iconesGrid"></div>
+            </div>
+
+            <!-- Cor -->
+            <div class="fac-form-group">
+                <label>Cor da Facção</label>
+                <div class="fac-cores-grid" id="coresGrid"></div>
+            </div>
+
+            <!-- Senha -->
+            <div class="fac-form-group">
+                <label for="inpSenha">Senha (opcional)</label>
+                <input type="password" id="inpSenha" placeholder="Deixe vazio para facção aberta" maxlength="30" autocomplete="new-password">
+                <span class="fac-form-hint">Com senha, apenas quem souber a senha pode entrar</span>
+            </div>
+
+            <!-- Erro -->
+            <div id="erroCriar" class="fac-form-error" style="display:none"></div>
+        </div>
+
+        <div class="fac-modal-footer">
+            <button id="btnConfirmarCriar" class="btn-confirmar">
+                <i class="ri-flag-fill"></i> Criar Facção
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ENTRAR NA FACÇÃO -->
+<div id="modalEntrar" class="fac-modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modalEntrarTitle">
+    <div class="fac-modal">
+        <div class="fac-modal-header">
+            <h2 id="modalEntrarTitle"><i class="ri-login-circle-line"></i> Entrar na Facção</h2>
+            <button class="fac-modal-close" id="btnFecharEntrar" aria-label="Fechar">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <div class="fac-modal-body">
+            <div class="fac-entrar-info" id="entrarFaccaoInfo">
+                <!-- preenchido dinamicamente -->
+            </div>
+
+            <!-- Apelido -->
+            <div class="fac-form-group">
+                <label for="inpApelido">Seu apelido no RP *</label>
+                <input type="text" id="inpApelido" placeholder="Ex: João Silva" maxlength="60" autocomplete="nickname">
+            </div>
+
+            <!-- Senha (se protegida) -->
+            <div class="fac-form-group" id="grupoSenhaEntrar" style="display:none">
+                <label for="inpSenhaEntrar">Senha da Facção *</label>
+                <input type="password" id="inpSenhaEntrar" placeholder="Digite a senha" maxlength="30">
+            </div>
+
+            <!-- Erro -->
+            <div id="erroEntrar" class="fac-form-error" style="display:none"></div>
+        </div>
+
+        <div class="fac-modal-footer">
+            <button id="btnConfirmarEntrar" class="btn-confirmar">
+                <i class="ri-login-circle-line"></i> Entrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/faccoes.js"></script>
+<script>
+// ─── Estado da UI ───────────────────────────────────────────
+let faccoesList    = [];
+let iconeSelecionado = '🏴';
+let corSelecionada   = '#3b82f6';
+let faccaoAlvo     = null;
+
+// ─── Inicialização ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    window.getSupabase(); // inicializa supabase/demo
+
+    const demo = document.getElementById('modoDemo');
+    if (window.FACCAO_DEMO && demo) demo.style.display = 'flex';
+
+    renderIcones();
+    renderCores();
+    await carregarEExibirFaccoes();
+    bindEvents();
+});
+
+// ─── Carregar e exibir facções ───────────────────────────────
+async function carregarEExibirFaccoes(filtro = '') {
+    const grid = document.getElementById('faccoesGrid');
+    try {
+        faccoesList = await buscarFaccoes();
+        const lista = filtro
+            ? faccoesList.filter(f => f.nome.toLowerCase().includes(filtro.toLowerCase()))
+            : faccoesList;
+        renderFaccoes(lista);
+    } catch (e) {
+        grid.innerHTML = `<div class="fac-error"><i class="ri-error-warning-line"></i> ${e.message}</div>`;
+    }
+}
+
+function renderFaccoes(lista) {
+    const grid = document.getElementById('faccoesGrid');
+    if (!lista.length) {
+        grid.innerHTML = `
+            <div class="fac-empty">
+                <span>🏴</span>
+                <p>Nenhuma facção encontrada.<br>Crie a primeira!</p>
+            </div>`;
+        return;
+    }
+
+    grid.innerHTML = lista.map(f => `
+        <div class="fac-card" role="listitem" style="--fac-cor: ${f.cor}">
+            <div class="fac-card-top">
+                <div class="fac-card-icone">${f.icone}</div>
+                <div class="fac-card-info">
+                    <div class="fac-card-nome">${f.nome}</div>
+                    <div class="fac-card-tag" style="color:${f.cor}">[${f.tag}]</div>
+                </div>
+                ${f.senha_hash ? '<span class="fac-lock-badge"><i class="ri-lock-line"></i></span>' : '<span class="fac-open-badge"><i class="ri-lock-unlock-line"></i> Aberta</span>'}
+            </div>
+            ${f.descricao ? `<p class="fac-card-desc">${f.descricao}</p>` : ''}
+            <div class="fac-card-footer">
+                <span class="fac-card-membros"><i class="ri-group-line"></i> ${f.membros_count || 0} membros</span>
+                <button class="btn-entrar-fac" onclick="abrirModalEntrar('${f.id}')">
+                    <i class="ri-login-circle-line"></i> Entrar
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ─── Modal Criar ─────────────────────────────────────────────
+function renderIcones() {
+    const grid = document.getElementById('iconesGrid');
+    grid.innerHTML = window.FACCAO_CONFIG.ICONES_DISPONIVEIS.map(ic => `
+        <button class="fac-icone-btn ${ic === iconeSelecionado ? 'selected' : ''}"
+                onclick="selecionarIcone('${ic}')" title="${ic}" type="button">${ic}</button>
+    `).join('');
+}
+
+function renderCores() {
+    const grid = document.getElementById('coresGrid');
+    grid.innerHTML = window.FACCAO_CONFIG.CORES_DISPONIVEIS.map(cor => `
+        <button class="fac-cor-btn ${cor === corSelecionada ? 'selected' : ''}"
+                style="background:${cor}"
+                onclick="selecionarCor('${cor}')" title="${cor}" type="button">
+            ${cor === corSelecionada ? '<i class="ri-check-line"></i>' : ''}
+        </button>
+    `).join('');
+}
+
+window.selecionarIcone = (ic) => { iconeSelecionado = ic; renderIcones(); };
+window.selecionarCor   = (cor) => { corSelecionada  = cor; renderCores();  };
+
+function abrirModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('visible'); el.setAttribute('aria-hidden', 'false'); }
+}
+function fecharModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('visible'); el.setAttribute('aria-hidden', 'true'); }
+}
+
+window.abrirModalEntrar = (faccaoId) => {
+    faccaoAlvo = faccoesList.find(f => f.id === faccaoId);
+    if (!faccaoAlvo) return;
+
+    const info = document.getElementById('entrarFaccaoInfo');
+    const grupoSenha = document.getElementById('grupoSenhaEntrar');
+    const erroEl = document.getElementById('erroEntrar');
+    const apelidoEl = document.getElementById('inpApelido');
+
+    info.innerHTML = `
+        <div class="fac-entrar-badge" style="--fac-cor:${faccaoAlvo.cor}">
+            <span>${faccaoAlvo.icone}</span>
+            <div>
+                <strong>${faccaoAlvo.nome}</strong>
+                <span style="color:${faccaoAlvo.cor}">[${faccaoAlvo.tag}]</span>
+            </div>
+        </div>`;
+
+    grupoSenha.style.display = faccaoAlvo.senha_hash ? 'flex' : 'none';
+    if (erroEl) erroEl.style.display = 'none';
+    if (apelidoEl) apelidoEl.value = '';
+    document.getElementById('inpSenhaEntrar').value = '';
+
+    abrirModal('modalEntrar');
+    setTimeout(() => apelidoEl && apelidoEl.focus(), 100);
+};
+
+// ─── Eventos ─────────────────────────────────────────────────
+function bindEvents() {
+    document.getElementById('btnCriarFaccao').addEventListener('click', () => {
+        document.getElementById('inpNome').value = '';
+        document.getElementById('inpTag').value  = '';
+        document.getElementById('inpDescricao').value = '';
+        document.getElementById('inpSenha').value = '';
+        document.getElementById('erroCriar').style.display = 'none';
+        iconeSelecionado = '🏴'; corSelecionada = '#3b82f6';
+        renderIcones(); renderCores();
+        abrirModal('modalCriar');
+        setTimeout(() => document.getElementById('inpNome').focus(), 100);
+    });
+
+    document.getElementById('btnFecharCriar').addEventListener('click', () => fecharModal('modalCriar'));
+    document.getElementById('btnFecharEntrar').addEventListener('click', () => fecharModal('modalEntrar'));
+
+    // Fechar ao clicar fora
+    document.querySelectorAll('.fac-modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) fecharModal(overlay.id);
+        });
+    });
+
+    // Confirmar criação
+    document.getElementById('btnConfirmarCriar').addEventListener('click', async () => {
+        const btn    = document.getElementById('btnConfirmarCriar');
+        const erroEl = document.getElementById('erroCriar');
+        erroEl.style.display = 'none';
+        btn.disabled = true;
+        btn.innerHTML = '<span class="fac-spinner-sm"></span> Criando...';
+
+        try {
+            await criarFaccao({
+                nome:      document.getElementById('inpNome').value,
+                tag:       document.getElementById('inpTag').value,
+                descricao: document.getElementById('inpDescricao').value,
+                cor:       corSelecionada,
+                icone:     iconeSelecionado,
+                senha:     document.getElementById('inpSenha').value
+            });
+            fecharModal('modalCriar');
+            await carregarEExibirFaccoes();
+        } catch (e) {
+            erroEl.textContent = e.message;
+            erroEl.style.display = 'flex';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-flag-fill"></i> Criar Facção';
+        }
+    });
+
+    // Confirmar entrada
+    document.getElementById('btnConfirmarEntrar').addEventListener('click', async () => {
+        const btn    = document.getElementById('btnConfirmarEntrar');
+        const erroEl = document.getElementById('erroEntrar');
+        erroEl.style.display = 'none';
+        btn.disabled = true;
+        btn.innerHTML = '<span class="fac-spinner-sm"></span> Entrando...';
+
+        try {
+            await entrarFaccao({
+                faccaoId: faccaoAlvo.id,
+                apelido:  document.getElementById('inpApelido').value,
+                senha:    document.getElementById('inpSenhaEntrar').value
+            });
+            fecharModal('modalEntrar');
+            // Redirecionar para o chat
+            window.location.href = `chat.html?fac=${faccaoAlvo.id}`;
+        } catch (e) {
+            erroEl.textContent = e.message;
+            erroEl.style.display = 'flex';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-login-circle-line"></i> Entrar';
+        }
+    });
+
+    // Pressionar Enter nos campos
+    document.getElementById('inpApelido').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('btnConfirmarEntrar').click();
+    });
+    document.getElementById('inpSenhaEntrar').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('btnConfirmarEntrar').click();
+    });
+
+    // Busca
+    document.getElementById('buscaFaccao').addEventListener('input', (e) => {
+        carregarEExibirFaccoes(e.target.value);
+    });
+
+    // Atalho ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            fecharModal('modalCriar');
+            fecharModal('modalEntrar');
+        }
+    });
+}
+</script>
+</body>
+</html>
