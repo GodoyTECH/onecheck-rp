@@ -353,3 +353,26 @@ CREATE TRIGGER tg_post_likes
   A integração Neon no Netlify configura DATABASE_URL automaticamente.
   Acesse: app.netlify.com → seu site → Integrations → Database → Neon → Connect
 */
+
+ - -   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+ - -   E V E N T O S   E   T A R E F A S   ( C O M   M E T A S   E   H O R � R I O S ) 
+ - -   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+ C R E A T E   T A B L E   e v e n t o s _ t a r e f a s   ( 
+         i d   U U I D   P R I M A R Y   K E Y   D E F A U L T   u u i d _ g e n e r a t e _ v 4 ( ) , 
+         t i t u l o   V A R C H A R ( 1 0 0 )   N O T   N U L L , 
+         t i p o   V A R C H A R ( 5 0 )   N O T   N U L L   C H E C K   ( t i p o   I N   ( ' e v e n t o ' ,   ' t a r e f a ' ) ) , 
+         m e t a _ d i a r i a   I N T   D E F A U L T   0 , 
+         m e t a _ m e n s a l   I N T   D E F A U L T   0 , 
+         c r i a d o _ e m   T I M E S T A M P   W I T H   T I M E   Z O N E   D E F A U L T   N O W ( ) 
+ ) ; 
+ 
+ C R E A T E   T A B L E   e v e n t o s _ h o r a r i o s   ( 
+         i d   U U I D   P R I M A R Y   K E Y   D E F A U L T   u u i d _ g e n e r a t e _ v 4 ( ) , 
+         e v e n t o _ i d   U U I D   R E F E R E N C E S   e v e n t o s _ t a r e f a s ( i d )   O N   D E L E T E   C A S C A D E , 
+         h o r a r i o   T I M E   N O T   N U L L ,   - -   f o r m a t o   2 4 h ,   e x :   ' 1 3 : 2 0 : 0 0 ' 
+         d e s c r i c a o   V A R C H A R ( 1 5 0 ) , 
+         n o t i f i c a d o _ h o j e   D A T E   - -   E v i t a   n o t i f i c a r   2 x   n o   m e s m o   d i a 
+ ) ; 
+ 
+  
+ 
