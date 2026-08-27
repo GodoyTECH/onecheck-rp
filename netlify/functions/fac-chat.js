@@ -92,7 +92,7 @@ exports.handler = async function (event) {
 
             // Salvar no Netlify Blobs
             const buffer  = Buffer.from(audio_base64.split(',')[1] || audio_base64, 'base64');
-            const store   = getStore({ name: 'chat-audio', siteID: process.env.SITE_ID, token: process.env.NETLIFY_TOKEN });
+            const store   = getStore({ name: 'chat-audio', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
             const blobKey = `${payload.id}_${Date.now()}.webm`;
             await store.set(blobKey, buffer, { metadata: { contentType: 'audio/webm', membroId: payload.id } });
 
@@ -112,7 +112,7 @@ exports.handler = async function (event) {
         // ── GET /audio-file/:key — servir áudio ───────────────
         if (event.httpMethod === 'GET' && sub.startsWith('audio-file/')) {
             const key = sub.replace('audio-file/', '');
-            const store = getStore({ name: 'chat-audio', siteID: process.env.SITE_ID, token: process.env.NETLIFY_TOKEN });
+            const store = getStore({ name: 'chat-audio', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
             const blob  = await store.get(key, { type: 'arrayBuffer' });
             if (!blob) return erro('Áudio não encontrado', 404);
             return {

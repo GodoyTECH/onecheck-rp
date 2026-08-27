@@ -345,7 +345,7 @@ CREATE TRIGGER tg_post_likes
   6. ADMIN_MASTER_NICK → Seu nick (ex: GoddoY)
   7. ADMIN_MASTER_PIN  → PIN inicial do admin (ex: 1234 — troque após o 1º login)
 
-  8. SITE_ID           → ID do site no Netlify (Netlify → Site → General → Site ID)
+  8. NETLIFY_SITE_ID           → ID do site no Netlify (Netlify → Site → General → Site ID)
   9. NETLIFY_TOKEN     → Token de acesso (Netlify → User Settings → Applications → New access token)
 
   TOTAL: 9 variáveis (muito mais simples que Supabase!)

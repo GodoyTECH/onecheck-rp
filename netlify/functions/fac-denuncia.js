@@ -34,7 +34,7 @@ exports.handler = async function (event) {
                 const mime   = evidencia_tipo === 'video' ? 'video/mp4' : 'image/jpeg';
                 const buffer = Buffer.from(evidencia_base64.split(',')[1] || evidencia_base64, 'base64');
                 if (buffer.length > 52_428_800) return erro('Arquivo muito grande (máx 50 MB)');
-                const store  = getStore({ name: 'denuncias', siteID: process.env.SITE_ID, token: process.env.NETLIFY_TOKEN });
+                const store  = getStore({ name: 'denuncias', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
                 const key    = `${payload.id}_${Date.now()}.${ext}`;
                 await store.set(key, buffer, { metadata: { contentType: mime } });
                 evidencia_url = `/.netlify/functions/fac-denuncia/evidencia/${key}`;
@@ -70,7 +70,7 @@ exports.handler = async function (event) {
         if (event.httpMethod === 'GET' && sub.startsWith('evidencia/')) {
             if (!payload.isAdmin) return erro('Apenas admins podem ver evidências', 403);
             const key   = sub.replace('evidencia/', '');
-            const store = getStore({ name: 'denuncias', siteID: process.env.SITE_ID, token: process.env.NETLIFY_TOKEN });
+            const store = getStore({ name: 'denuncias', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
             const meta  = await store.getMetadata(key).catch(() => null);
             const blob  = await store.get(key, { type: 'arrayBuffer' }).catch(() => null);
             if (!blob) return erro('Evidência não encontrada', 404);

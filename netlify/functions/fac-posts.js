@@ -10,7 +10,7 @@ const { getStore }       = require('@netlify/blobs');
 async function uploadMidia(base64Data, mimeType, fileName) {
     const buffer = Buffer.from(base64Data.split(',')[1] || base64Data, 'base64');
     if (buffer.length > 52_428_800) throw new Error('Arquivo muito grande (máx 50 MB)');
-    const store = getStore({ name: 'posts-media', siteID: process.env.SITE_ID, token: process.env.NETLIFY_TOKEN });
+    const store = getStore({ name: 'posts-media', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
     await store.set(fileName, buffer, { metadata: { contentType: mimeType } });
     return `/.netlify/functions/fac-posts/media/${fileName}`;
 }
@@ -29,7 +29,7 @@ exports.handler = async function (event) {
         // ── GET /media/:key — servir mídia ────────────────────
         if (event.httpMethod === 'GET' && sub.startsWith('media/')) {
             const key   = sub.replace('media/', '');
-            const store = getStore({ name: 'posts-media', siteID: process.env.SITE_ID, token: process.env.NETLIFY_TOKEN });
+            const store = getStore({ name: 'posts-media', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
             const meta  = await store.getMetadata(key).catch(() => null);
             const blob  = await store.get(key, { type: 'arrayBuffer' }).catch(() => null);
             if (!blob) return erro('Mídia não encontrada', 404);
