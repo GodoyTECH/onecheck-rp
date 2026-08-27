@@ -1,31 +1,21 @@
 /**
  * OneCheck RP — Sistema de Facções
- * Configuração do Supabase
+ * Configuração — SEGURA
  *
- * INSTRUÇÕES:
- * 1. Acesse https://supabase.com e crie uma conta gratuita
- * 2. Crie um novo projeto
- * 3. Vá em Settings → API e copie:
- *    - Project URL → SUPABASE_URL abaixo
- *    - anon public key → SUPABASE_ANON_KEY abaixo
- * 4. Execute o arquivo sql/schema.sql no SQL Editor do Supabase
+ * As credenciais do Supabase ficam APENAS no Netlify (variáveis de ambiente).
+ * O frontend busca a configuração via Netlify Function.
+ * NENHUMA chave é exposta no código-fonte.
+ *
+ * No painel do Netlify → Site Settings → Environment Variables, declare:
+ *   SUPABASE_URL      = https://seu-projeto.supabase.co
+ *   SUPABASE_ANON_KEY = sua-anon-key-aqui
  */
 
-const SUPABASE_URL      = 'COLE_SUA_URL_AQUI';         // ex: https://xyzabc.supabase.co
-const SUPABASE_ANON_KEY = 'COLE_SUA_ANON_KEY_AQUI';    // chave pública (anon)
-
-// ─── Modo de operação ───────────────────────────────────────
-// true  → usa localStorage (modo demo, sem backend)
-// false → usa Supabase real
-const MODO_DEMO = (SUPABASE_URL === 'COLE_SUA_URL_AQUI');
-
-// ─── Configurações gerais ────────────────────────────────────
 const CONFIG = {
     APP_NAME:        'OneCheck RP — Facções',
-    VERSION:         '1.0.0',
+    VERSION:         '1.1.0',
     MAX_MSG_LENGTH:  500,
     MAX_AUDIO_SEC:   60,
-    MAX_FACCOES:     50,
     CARGO_RANKS: {
         'Membro':     1,
         'Veterano':   2,
@@ -34,16 +24,9 @@ const CONFIG = {
         'Líder':      5
     },
     CORES_DISPONIVEIS: [
-        '#3b82f6', // azul
-        '#ef4444', // vermelho
-        '#22c55e', // verde
-        '#f59e0b', // amarelo
-        '#a855f7', // roxo
-        '#ec4899', // rosa
-        '#06b6d4', // ciano
-        '#f97316', // laranja
-        '#64748b', // cinza
-        '#10b981', // esmeralda
+        '#3b82f6', '#ef4444', '#22c55e', '#f59e0b',
+        '#a855f7', '#ec4899', '#06b6d4', '#f97316',
+        '#64748b', '#10b981'
     ],
     ICONES_DISPONIVEIS: [
         '🏴','⚔️','🔫','🚔','🏥','🚗','💰','🦁',
@@ -52,27 +35,52 @@ const CONFIG = {
     ]
 };
 
-// ─── Inicialização do Supabase ───────────────────────────────
-let supabase = null;
+// ── Estado ─────────────────────────────────────────────────
+let _supabase    = null;
+let _modoDemo    = true;   // assume demo até confirmar Supabase
+let _configCarregada = false;
 
-function initSupabase() {
-    if (MODO_DEMO) {
-        console.warn('[FacçãoChat] Modo DEMO ativo — usando localStorage. Configure o Supabase em faccoes/js/config.js');
-        return null;
-    }
+/**
+ * Inicializa: busca credenciais via Netlify Function (seguro)
+ * Cai para modo DEMO se Supabase não estiver configurado
+ */
+async function initConfig() {
+    if (_configCarregada) return;
+
     try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            realtime: { params: { eventsPerSecond: 10 } }
-        });
-        console.log('[FacçãoChat] Supabase conectado!');
-        return supabase;
+        const res = await fetch('/.netlify/functions/fac-config', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Function indisponível');
+
+        const data = await res.json();
+
+        if (data.configured && data.url && data.anonKey && window.supabase) {
+            _supabase = window.supabase.createClient(data.url, data.anonKey, {
+                realtime: { params: { eventsPerSecond: 10 } }
+            });
+            _modoDemo = false;
+            console.log('[Facções] Supabase conectado via Netlify Function ✅');
+        } else {
+            _modoDemo = true;
+            console.warn('[Facções] Modo DEMO ativo. Configure SUPABASE_URL e SUPABASE_ANON_KEY no Netlify.');
+        }
     } catch (e) {
-        console.error('[FacçãoChat] Erro ao conectar Supabase:', e);
-        return null;
+        _modoDemo = true;
+        console.warn('[Facções] Modo DEMO ativo (function indisponível):', e.message);
     }
+
+    _configCarregada = true;
 }
 
+// ── Getters ────────────────────────────────────────────────
+function getSupabase()  { return _supabase; }
+function isModoDemo()   { return _modoDemo; }
+
 // Exportar
-window.FACCAO_CONFIG  = CONFIG;
-window.FACCAO_DEMO    = MODO_DEMO;
-window.getSupabase    = () => supabase || initSupabase();
+window.FACCAO_CONFIG = CONFIG;
+
+// Compatibilidade com código anterior
+Object.defineProperty(window, 'FACCAO_DEMO', { get: () => _modoDemo });
+Object.defineProperty(window, 'getSupabase', { value: getSupabase, writable: true });
+
+window.initFaccaoConfig = initConfig;
+window.isModoDemo       = isModoDemo;

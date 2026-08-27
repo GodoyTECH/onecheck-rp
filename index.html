@@ -1,236 +1,688 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OneCheck RP — Verificador de Regras One State RP com IA</title>
-    <meta name="description" content="Verificador de Infrações de Roleplay do One State RP com Inteligência Artificial Gemini. Descreva o acontecido e a IA identifica as regras aplicáveis.">
-    <meta name="author" content="Godoy Solutions in TECH — Caíque Eduardo">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>GoddoY RK — Plataforma Oficial</title>
+    <meta name="description" content="Plataforma oficial da gangue GoddoY RK — One State RP">
     <meta name="robots" content="noindex, nofollow">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <meta name="theme-color" content="#0a0b0e">
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/platform.css">
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!--  LOGIN VIEW                                               -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div id="loginView">
+<!-- ════════════════════════════════════════════════════════ -->
+<!--  LOGIN                                                   -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-bg-overlay"></div>
     <div class="login-card">
-        <span class="login-shield" aria-hidden="true">🛡️</span>
-        <div class="login-logo">OneCheck RP</div>
-        <div class="login-sub">One State RP · Sistema de Verificação</div>
+        <div class="login-logo-wrap">
+            <div class="login-badge">GRK</div>
+            <div class="login-brand">
+                <span class="login-title">GoddoY RK</span>
+                <span class="login-sub">Gangue de Rua · One State RP</span>
+            </div>
+        </div>
 
-        <label class="login-label" for="passwordInput">Senha de Acesso</label>
-        <input
-            type="password"
-            id="passwordInput"
-            class="login-input"
-            placeholder="••••••••••••"
-            autocomplete="current-password"
-            aria-label="Senha de acesso ao sistema"
-        >
+        <div class="login-season-bar">
+            <i class="ri-trophy-line"></i>
+            <span id="loginSeason">TEMPORADA ATIVA</span>
+        </div>
 
-        <button id="loginBtn" class="login-btn" type="button">
-            <i class="ri-lock-unlock-line"></i> ACESSAR SISTEMA
+        <div class="lf-group">
+            <label class="lf-label">SEU APELIDO NO RP</label>
+            <div class="lf-input-wrap">
+                <i class="ri-user-line"></i>
+                <input type="text" id="inpNick" class="lf-input" placeholder="Ex: João Silva" maxlength="40" autocomplete="nickname" autocapitalize="words">
+            </div>
+        </div>
+
+        <div class="lf-group">
+            <label class="lf-label">SENHA DA GANGUE</label>
+            <div class="lf-input-wrap">
+                <i class="ri-lock-line"></i>
+                <input type="password" id="inpSenha" class="lf-input" placeholder="••••••••" maxlength="30" autocomplete="current-password">
+                <button class="lf-eye" id="btnEye" type="button" aria-label="Mostrar senha">
+                    <i class="ri-eye-line"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="lf-group">
+            <label class="lf-label">SEU CARGO</label>
+            <div class="lf-select-wrap">
+                <i class="ri-medal-line"></i>
+                <select id="inpCargo" class="lf-select">
+                    <option value="Recruta">🔴 Recruta</option>
+                    <option value="Membro">🟠 Membro</option>
+                    <option value="Veterano">🟡 Veterano</option>
+                    <option value="Oficial">🔵 Oficial</option>
+                    <option value="Tenente">🟣 Tenente</option>
+                    <option value="Gerente" id="optGerente">⭐ Gerente</option>
+                    <option value="Lider">👑 Líder</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loginErro" class="lf-erro" style="display:none"></div>
+
+        <button id="btnEntrar" class="btn-login" type="button">
+            <i class="ri-login-circle-line"></i> ENTRAR NA GANGUE
         </button>
 
-        <div id="loginError" class="login-error" role="alert" aria-live="polite"></div>
-
-        <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.5;">
-            🔒 Acesso restrito. Sistema desenvolvido por<br>
-            <strong style="color: var(--text-secondary);">Godoy Solutions in TECH</strong>
+        <p class="login-footer-note">
+            Acesso restrito aos membros da <strong>GoddoY RK</strong><br>
+            <span>Desenvolvido por Godoy Solutions in TECH</span>
         </p>
     </div>
 </div>
 
+<!-- ════════════════════════════════════════════════════════ -->
+<!--  PLATAFORMA PRINCIPAL                                    -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="appScreen" class="app-screen" style="display:none">
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!--  APP VIEW                                                 -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<div id="appView" class="app-hidden">
-
-    <!-- Header -->
-    <header class="app-header" role="banner">
-        <div class="header-brand">
-            <span aria-hidden="true">🛡️</span>
-            <span class="header-logo">OneCheck RP</span>
-            <span class="header-badge">One State RP</span>
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+        <!-- Logo -->
+        <div class="sidebar-logo">
+            <div class="sidebar-badge">GRK</div>
+            <div class="sidebar-brand" id="sidebarBrand">
+                <span class="sidebar-name">GoddoY RK</span>
+                <span class="sidebar-sub">Gangue de Rua</span>
+            </div>
         </div>
 
-        <div class="header-actions">
-            <div class="header-server-badge" aria-label="Status do sistema: Online">
-                <div class="server-dot" aria-hidden="true"></div>
-                Sistema Online
+        <!-- Nav Items -->
+        <ul class="sidebar-nav" role="list">
+            <li><button class="snav-btn active" data-section="inicio" aria-label="Início">
+                <i class="ri-home-5-line"></i><span>Início</span>
+            </button></li>
+            <li><button class="snav-btn" data-section="chat" aria-label="Chat">
+                <i class="ri-message-3-line"></i><span>Chat</span>
+                <span class="snav-badge" id="chatBadge" style="display:none">0</span>
+            </button></li>
+            <li><button class="snav-btn" data-section="ranking" aria-label="Hall da Fama">
+                <i class="ri-trophy-line"></i><span>Hall da Fama</span>
+            </button></li>
+            <li><button class="snav-btn" data-section="membros" aria-label="Membros">
+                <i class="ri-group-line"></i><span>Membros</span>
+            </button></li>
+            <li><button class="snav-btn" data-section="tarefas" aria-label="Tarefas">
+                <i class="ri-task-line"></i><span>Tarefas</span>
+            </button></li>
+            <li><button class="snav-btn" data-section="recompensas" aria-label="Recompensas">
+                <i class="ri-gift-2-line"></i><span>Recompensas</span>
+            </button></li>
+            <li id="navAdmin" style="display:none"><button class="snav-btn snav-admin" data-section="admin" aria-label="Admin">
+                <i class="ri-shield-star-line"></i><span>Painel Admin</span>
+            </button></li>
+        </ul>
+
+        <!-- User info -->
+        <div class="sidebar-me">
+            <div class="sidebar-me-avatar">GRK</div>
+            <div class="sidebar-me-info">
+                <div class="sidebar-me-nick" id="meNick">...</div>
+                <div class="sidebar-me-cargo" id="meCargo">...</div>
             </div>
-            <button id="logoutBtn" class="btn-logout" type="button" aria-label="Sair do sistema">
-                <i class="ri-logout-box-line" aria-hidden="true"></i> Sair
+            <button id="btnLogout" class="sidebar-logout" title="Sair" aria-label="Sair">
+                <i class="ri-logout-box-line"></i>
             </button>
         </div>
-    </header>
+    </nav>
 
-    <!-- Hero Banner -->
-    <section class="app-hero" aria-label="Banner do OneCheck RP">
-        <img src="hero.jpg" alt="OneCheck RP — Verificador de Regras do One State RP" loading="eager">
-        <div class="app-hero-overlay">
-            <div class="hero-text">
-                <h1>Verificador de Regras RP</h1>
-                <p>Powered by Gemini AI · One State RP · Godoy Solutions in TECH</p>
-            </div>
-        </div>
-    </section>
+    <!-- OVERLAY SIDEBAR MOBILE -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Main Content -->
-    <main class="app-main" id="main-content">
+    <!-- MAIN CONTENT -->
+    <div class="main-wrap">
 
-        <!-- ─── VERIFICADOR (coluna principal) ─── -->
-        <section class="verificador-panel" aria-label="Painel de verificação de infrações">
-
-            <!-- Input de relato -->
-            <div class="panel-card">
-                <h2 class="panel-title" id="entrada-title">
-                    <i class="ri-file-text-line" aria-hidden="true"></i>
-                    Descreva o Acontecido
-                </h2>
-
-                <div class="entrada-wrapper">
-                    <textarea
-                        id="entradaTexto"
-                        class="entrada-textarea"
-                        placeholder="Descreva detalhadamente o que aconteceu no servidor. Ex: O jogador Fulano de Tal atirou em mim sem qualquer motivo ou interação prévia. Estávamos no estacionamento do hospital quando ele simplesmente sacou a arma e começou a atirar sem qualquer contexto de RP..."
-                        aria-label="Campo para descrever o acontecido no servidor"
-                        aria-describedby="entrada-title"
-                        maxlength="2000"
-                    ></textarea>
-                    <span class="entrada-meta" aria-live="polite">
-                        <span id="charCount">0</span>/2000
-                    </span>
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <button class="topbar-menu" id="btnMenu" aria-label="Menu" aria-expanded="false">
+                <i class="ri-menu-line"></i>
+            </button>
+            <div class="topbar-title" id="topbarTitle">Início</div>
+            <div class="topbar-actions">
+                <div class="topbar-season" id="topbarSeason">
+                    <i class="ri-trophy-fill"></i>
+                    <span>T75</span>
                 </div>
-
-                <div class="btn-row">
-                    <button id="btnVerificar" class="btn-verificar" type="button" aria-label="Verificar infrações com Inteligência Artificial">
-                        <i class="ri-search-eye-line" aria-hidden="true"></i> Verificar com IA
-                    </button>
-                    <button id="btnVoz" class="btn-voz" type="button" aria-label="Usar entrada por voz" title="Entrada por voz">
-                        <i class="ri-mic-line" aria-hidden="true"></i>
-                    </button>
-                    <button id="btnLimpar" class="btn-limpar" type="button" aria-label="Limpar campo e resultados" title="Limpar">
-                        <i class="ri-delete-bin-line" aria-hidden="true"></i>
-                    </button>
+                <div class="topbar-pts" id="topbarPts">
+                    <i class="ri-star-fill"></i>
+                    <span id="mesPts">0</span>
                 </div>
-
-                <p class="shortcut-hint" aria-label="Atalho de teclado: Ctrl Enter para verificar">
-                    <kbd>Ctrl</kbd> + <kbd>Enter</kbd> para verificar rapidamente
-                </p>
             </div>
+        </header>
 
-            <!-- Resultado da verificação -->
-            <div class="panel-card">
-                <h2 class="panel-title">
-                    <i class="ri-shield-check-line" aria-hidden="true"></i>
-                    Resultado da Análise
-                </h2>
+        <!-- SECTIONS -->
+        <main class="main-content">
 
-                <div id="resultadoArea" role="region" aria-live="polite" aria-label="Resultado da análise de infrações">
-                    <div class="result-placeholder">
-                        <div class="placeholder-icon" aria-hidden="true">🛡️</div>
-                        <p>Descreva o acontecido acima e clique em <strong>Verificar com IA</strong> para identificar as regras aplicáveis.</p>
-                        <span class="placeholder-hint">
-                            Dica: Seja detalhado — mencione o contexto, o que aconteceu e quem estava envolvido.<br>
-                            Você também pode clicar em uma regra ao lado para testar um exemplo.
-                        </span>
+            <!-- ── INÍCIO ── -->
+            <section class="section active" id="sec-inicio">
+                <!-- Banner da gangue -->
+                <div class="gang-banner">
+                    <div class="gang-banner-left">
+                        <div class="gang-avatar">GRK</div>
+                        <div class="gang-info">
+                            <h1 class="gang-nome">GoddoY RK</h1>
+                            <p class="gang-tipo"><i class="ri-sword-line"></i> Gangue de Rua</p>
+                            <div class="gang-stats">
+                                <span class="gstat"><i class="ri-star-fill"></i> <strong id="gangPts">302 740</strong> pts</span>
+                                <span class="gstat"><i class="ri-group-fill"></i> <strong id="gangMembros">2</strong>/45</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gang-banner-right">
+                        <div class="season-card">
+                            <div class="season-label">TEMPORADA</div>
+                            <div class="season-num" id="seasonNum">75</div>
+                            <div class="season-dates" id="seasonDates">08/19 – 09/01</div>
+                            <button class="btn-placar" onclick="navegarPara('ranking')">
+                                <i class="ri-trophy-line"></i> VER PLACAR
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Grid de cards -->
+                <div class="dash-grid">
+                    <div class="dash-card" onclick="navegarPara('chat')">
+                        <div class="dash-card-icon red"><i class="ri-message-3-fill"></i></div>
+                        <div class="dash-card-info">
+                            <div class="dash-card-label">Chat</div>
+                            <div class="dash-card-val" id="dashMsgs">0 mensagens</div>
+                        </div>
+                        <i class="ri-arrow-right-s-line dash-arrow"></i>
+                    </div>
+                    <div class="dash-card" onclick="navegarPara('ranking')">
+                        <div class="dash-card-icon gold"><i class="ri-trophy-fill"></i></div>
+                        <div class="dash-card-info">
+                            <div class="dash-card-label">Ranking</div>
+                            <div class="dash-card-val" id="dashRankPos">#1 na Temporada</div>
+                        </div>
+                        <i class="ri-arrow-right-s-line dash-arrow"></i>
+                    </div>
+                    <div class="dash-card" onclick="navegarPara('membros')">
+                        <div class="dash-card-icon blue"><i class="ri-group-fill"></i></div>
+                        <div class="dash-card-info">
+                            <div class="dash-card-label">Membros</div>
+                            <div class="dash-card-val" id="dashMemCount">0 online</div>
+                        </div>
+                        <i class="ri-arrow-right-s-line dash-arrow"></i>
+                    </div>
+                    <div class="dash-card" onclick="navegarPara('tarefas')">
+                        <div class="dash-card-icon purple"><i class="ri-task-fill"></i></div>
+                        <div class="dash-card-info">
+                            <div class="dash-card-label">Tarefas</div>
+                            <div class="dash-card-val" id="dashTasks">Ver missões</div>
+                        </div>
+                        <i class="ri-arrow-right-s-line dash-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- Últimas atividades -->
+                <div class="card-bloco">
+                    <div class="bloco-header">
+                        <i class="ri-pulse-line"></i> Atividade Recente
+                    </div>
+                    <div id="atividades" class="atividade-lista">
+                        <div class="ativ-empty">Nenhuma atividade ainda.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── CHAT ── -->
+            <section class="section" id="sec-chat">
+                <div class="chat-layout">
+                    <div class="chat-area">
+                        <div class="chat-msgs" id="chatMsgs" role="log" aria-live="polite">
+                            <div class="chat-welcome-msg">
+                                <span>🔫</span>
+                                <p>Bem-vindo ao chat da <strong>GoddoY RK</strong>!<br>
+                                Mantenha o respeito e o foco nas operações.</p>
+                            </div>
+                        </div>
+                        <div class="chat-typing-row" id="typingRow" aria-live="polite"></div>
+                        <div class="chat-input-row">
+                            <button id="btnAudio" class="chat-btn-icon" title="Áudio" aria-label="Gravar áudio">
+                                <i class="ri-mic-line"></i>
+                            </button>
+                            <textarea id="chatInput" class="chat-input" placeholder="Mensagem para a equipe..." maxlength="500" rows="1" aria-label="Campo de mensagem"></textarea>
+                            <span class="chat-count" id="chatCount" aria-live="polite">0/500</span>
+                            <button id="btnSend" class="chat-btn-send" aria-label="Enviar">
+                                <i class="ri-send-plane-fill"></i>
+                            </button>
+                        </div>
+                        <!-- Status de gravação -->
+                        <div id="recStatus" class="rec-status" style="display:none" aria-live="assertive">
+                            <div class="rec-dot"></div>
+                            <span>Gravando... <strong id="recTimer">0s</strong></span>
+                            <button id="btnStopRec" class="btn-stop-rec"><i class="ri-stop-circle-fill"></i> Enviar</button>
+                            <button id="btnCancelRec" class="btn-cancel-rec"><i class="ri-close-circle-line"></i></button>
+                        </div>
+                    </div>
+                    <aside class="chat-members" id="chatMembers" aria-label="Membros online">
+                        <div class="cm-header"><i class="ri-circle-fill" style="color:#22c55e;font-size:.5rem"></i> ONLINE</div>
+                        <div id="onlineList" class="cm-list"></div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- ── HALL DA FAMA / RANKING ── -->
+            <section class="section" id="sec-ranking">
+                <div class="section-header-row">
+                    <h2 class="section-title"><i class="ri-trophy-fill gold-icon"></i> Hall da Fama</h2>
+                    <div class="season-chip" id="rankSeason">Temporada 75</div>
+                </div>
+
+                <!-- Podium Top 3 -->
+                <div class="podium" id="podium">
+                    <div class="podium-place podium-2nd" id="pod2">
+                        <div class="pod-avatar">?</div>
+                        <div class="pod-nick">-</div>
+                        <div class="pod-pts">0 pts</div>
+                        <div class="pod-bar p2"></div>
+                        <div class="pod-medal">🥈</div>
+                    </div>
+                    <div class="podium-place podium-1st" id="pod1">
+                        <div class="pod-crown">👑</div>
+                        <div class="pod-avatar">?</div>
+                        <div class="pod-nick">-</div>
+                        <div class="pod-pts">0 pts</div>
+                        <div class="pod-bar p1"></div>
+                        <div class="pod-medal">🥇</div>
+                    </div>
+                    <div class="podium-place podium-3rd" id="pod3">
+                        <div class="pod-avatar">?</div>
+                        <div class="pod-nick">-</div>
+                        <div class="pod-pts">0 pts</div>
+                        <div class="pod-bar p3"></div>
+                        <div class="pod-medal">🥉</div>
+                    </div>
+                </div>
+
+                <!-- Tabela completa -->
+                <div class="card-bloco">
+                    <div class="bloco-header">
+                        <i class="ri-list-ordered"></i> Classificação Geral
+                        <span class="bloco-hint">Atualizado pelos gerentes</span>
+                    </div>
+                    <div id="rankingTable" class="ranking-table">
+                        <div class="ranking-empty">Nenhuma pontuação registrada ainda.<br>Os gerentes atualizam o placar.</div>
+                    </div>
+                </div>
+
+                <!-- Conquistas -->
+                <div class="card-bloco">
+                    <div class="bloco-header"><i class="ri-award-line"></i> Conquistas da Temporada</div>
+                    <div class="conquistas-grid" id="conquistasGrid">
+                        <div class="conquista-card">
+                            <div class="conq-icon">🔫</div>
+                            <div class="conq-nome">Atirador de Elite</div>
+                            <div class="conq-holder" id="cq1">-</div>
+                        </div>
+                        <div class="conquista-card">
+                            <div class="conq-icon">💰</div>
+                            <div class="conq-nome">Mais Rico</div>
+                            <div class="conq-holder" id="cq2">-</div>
+                        </div>
+                        <div class="conquista-card">
+                            <div class="conq-icon">🏆</div>
+                            <div class="conq-nome">MVP da Temporada</div>
+                            <div class="conq-holder" id="cq3">-</div>
+                        </div>
+                        <div class="conquista-card">
+                            <div class="conq-icon">🎯</div>
+                            <div class="conq-nome">Mais Missões</div>
+                            <div class="conq-holder" id="cq4">-</div>
+                        </div>
+                        <div class="conquista-card">
+                            <div class="conq-icon">⭐</div>
+                            <div class="conq-nome">Mais Leal</div>
+                            <div class="conq-holder" id="cq5">-</div>
+                        </div>
+                        <div class="conquista-card">
+                            <div class="conq-icon">🛡️</div>
+                            <div class="conq-nome">Mais Promotions</div>
+                            <div class="conq-holder" id="cq6">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── MEMBROS ── -->
+            <section class="section" id="sec-membros">
+                <div class="section-header-row">
+                    <h2 class="section-title"><i class="ri-group-fill"></i> Membros</h2>
+                    <div class="mem-count-chip"><span id="memTotal">0</span>/45</div>
+                </div>
+                <div class="mem-filter-row">
+                    <button class="mem-filter active" data-cargo="todos">Todos</button>
+                    <button class="mem-filter" data-cargo="Lider">Líder</button>
+                    <button class="mem-filter" data-cargo="Gerente">Gerentes</button>
+                    <button class="mem-filter" data-cargo="Oficial">Oficiais</button>
+                    <button class="mem-filter" data-cargo="Membro">Membros</button>
+                </div>
+                <div id="membrosGrid" class="membros-grid">
+                    <div class="mem-empty">Nenhum membro registrado.</div>
+                </div>
+            </section>
+
+            <!-- ── TAREFAS ── -->
+            <section class="section" id="sec-tarefas">
+                <div class="section-header-row">
+                    <h2 class="section-title"><i class="ri-task-fill"></i> Tarefas & Missões</h2>
+                </div>
+                <div class="tarefas-grid" id="tarefasGrid">
+                    <!-- preenchido pelo JS -->
+                </div>
+            </section>
+
+            <!-- ── RECOMPENSAS ── -->
+            <section class="section" id="sec-recompensas">
+                <div class="section-header-row">
+                    <h2 class="section-title"><i class="ri-gift-2-fill gold-icon"></i> Recompensas</h2>
+                </div>
+                <div class="recomp-banner">
+                    <div class="recomp-banner-text">
+                        <h3>Temporada 75 — Recompensas Ativas</h3>
+                        <p>Pontue, complete missões e suba no ranking para ganhar prêmios exclusivos da GoddoY RK!</p>
+                    </div>
+                </div>
+                <div class="recomp-grid" id="recompGrid">
+                    <!-- preenchido pelo JS -->
+                </div>
+            </section>
+
+            <!-- ── ADMIN ── -->
+            <section class="section" id="sec-admin">
+                <div class="section-header-row">
+                    <h2 class="section-title"><i class="ri-shield-star-fill"></i> Painel Administrativo</h2>
+                    <div class="admin-badge-chip">GERENTE</div>
+                </div>
+
+                <!-- Tabs admin -->
+                <div class="admin-tabs">
+                    <button class="atab active" data-atab="pontuar">📊 Pontuação</button>
+                    <button class="atab" data-atab="promover">⭐ Promoções</button>
+                    <button class="atab" data-atab="membros-adm">👥 Membros</button>
+                    <button class="atab" data-atab="tarefas-adm">📋 Tarefas</button>
+                    <button class="atab" data-atab="config">⚙️ Config</button>
+                </div>
+
+                <!-- Pontuar -->
+                <div class="atab-content active" id="atab-pontuar">
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-add-circle-line"></i> Adicionar Pontuação</h3>
+                        <div class="admin-form">
+                            <div class="af-group">
+                                <label>Membro</label>
+                                <select id="adm-mem-sel" class="af-select">
+                                    <option value="">Selecione o membro...</option>
+                                </select>
+                            </div>
+                            <div class="af-group">
+                                <label>Pontos</label>
+                                <input type="number" id="adm-pts-inp" class="af-input" placeholder="Ex: 1500" min="0" max="999999">
+                            </div>
+                            <div class="af-group">
+                                <label>Motivo</label>
+                                <input type="text" id="adm-pts-motivo" class="af-input" placeholder="Ex: Missão completada, participação em evento..." maxlength="100">
+                            </div>
+                            <div class="af-row">
+                                <button id="btnAddPts" class="btn-admin-action red">
+                                    <i class="ri-add-line"></i> Adicionar Pontos
+                                </button>
+                                <button id="btnRemPts" class="btn-admin-action dark">
+                                    <i class="ri-subtract-line"></i> Remover Pontos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-history-line"></i> Histórico de Pontuações</h3>
+                        <div id="ptsHistorico" class="pts-historico">
+                            <div class="hist-empty">Nenhum registro ainda.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Promover -->
+                <div class="atab-content" id="atab-promover">
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-arrow-up-circle-line"></i> Promoção / Rebaixamento</h3>
+                        <div class="admin-form">
+                            <div class="af-group">
+                                <label>Membro</label>
+                                <select id="adm-prom-sel" class="af-select">
+                                    <option value="">Selecione o membro...</option>
+                                </select>
+                            </div>
+                            <div class="af-group">
+                                <label>Novo Cargo</label>
+                                <select id="adm-cargo-sel" class="af-select">
+                                    <option value="Recruta">🔴 Recruta</option>
+                                    <option value="Membro">🟠 Membro</option>
+                                    <option value="Veterano">🟡 Veterano</option>
+                                    <option value="Oficial">🔵 Oficial</option>
+                                    <option value="Tenente">🟣 Tenente</option>
+                                    <option value="Gerente">⭐ Gerente</option>
+                                    <option value="Lider">👑 Líder</option>
+                                </select>
+                            </div>
+                            <div class="af-group">
+                                <label>Motivo</label>
+                                <input type="text" id="adm-prom-motivo" class="af-input" placeholder="Ex: Desempenho excelente na temporada" maxlength="100">
+                            </div>
+                            <button id="btnPromover" class="btn-admin-action gold">
+                                <i class="ri-arrow-up-circle-fill"></i> Confirmar Promoção
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-history-line"></i> Histórico de Promoções</h3>
+                        <div id="promHistorico" class="pts-historico">
+                            <div class="hist-empty">Nenhum registro ainda.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Membros Admin -->
+                <div class="atab-content" id="atab-membros-adm">
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-user-add-line"></i> Cadastrar Membro</h3>
+                        <div class="admin-form">
+                            <div class="af-group">
+                                <label>Apelido no RP</label>
+                                <input type="text" id="adm-new-nick" class="af-input" placeholder="Ex: Maria Santos" maxlength="40">
+                            </div>
+                            <div class="af-group">
+                                <label>Cargo Inicial</label>
+                                <select id="adm-new-cargo" class="af-select">
+                                    <option value="Recruta">🔴 Recruta</option>
+                                    <option value="Membro">🟠 Membro</option>
+                                </select>
+                            </div>
+                            <button id="btnCadMem" class="btn-admin-action red">
+                                <i class="ri-user-add-line"></i> Cadastrar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-list-check"></i> Membros Cadastrados</h3>
+                        <div id="admMemList" class="adm-mem-list">
+                            <div class="hist-empty">Nenhum membro cadastrado.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarefas Admin -->
+                <div class="atab-content" id="atab-tarefas-adm">
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-add-box-line"></i> Criar Tarefa/Missão</h3>
+                        <div class="admin-form">
+                            <div class="af-group">
+                                <label>Nome da Tarefa</label>
+                                <input type="text" id="adm-task-nome" class="af-input" placeholder="Ex: Operação Noturna" maxlength="60">
+                            </div>
+                            <div class="af-group">
+                                <label>Descrição</label>
+                                <textarea id="adm-task-desc" class="af-textarea" placeholder="Descreva a missão..." maxlength="300" rows="3"></textarea>
+                            </div>
+                            <div class="af-row">
+                                <div class="af-group" style="flex:1">
+                                    <label>Recompensa (pts)</label>
+                                    <input type="number" id="adm-task-pts" class="af-input" placeholder="500" min="0">
+                                </div>
+                                <div class="af-group" style="flex:1">
+                                    <label>Dificuldade</label>
+                                    <select id="adm-task-dif" class="af-select">
+                                        <option value="facil">🟢 Fácil</option>
+                                        <option value="media" selected>🟡 Média</option>
+                                        <option value="dificil">🔴 Difícil</option>
+                                        <option value="elite">👑 Elite</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="btnCriarTask" class="btn-admin-action red">
+                                <i class="ri-add-line"></i> Criar Tarefa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Config -->
+                <div class="atab-content" id="atab-config">
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-settings-line"></i> Configurações da Gangue</h3>
+                        <div class="admin-form">
+                            <div class="af-group">
+                                <label>Temporada Atual</label>
+                                <input type="number" id="adm-season" class="af-input" placeholder="75" min="1">
+                            </div>
+                            <div class="af-group">
+                                <label>Data Início</label>
+                                <input type="date" id="adm-season-start" class="af-input">
+                            </div>
+                            <div class="af-group">
+                                <label>Data Fim</label>
+                                <input type="date" id="adm-season-end" class="af-input">
+                            </div>
+                            <div class="af-group">
+                                <label>Senha de Acesso</label>
+                                <input type="password" id="adm-senha-atual" class="af-input" placeholder="Senha atual da gangue" maxlength="30">
+                            </div>
+                            <button id="btnSaveConfig" class="btn-admin-action gold">
+                                <i class="ri-save-line"></i> Salvar Configurações
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h3 class="admin-card-title"><i class="ri-award-line"></i> Definir Conquistas</h3>
+                        <div class="admin-form">
+                            <div class="af-group"><label>🔫 Atirador de Elite</label>
+                                <input type="text" id="cq1-inp" class="af-input" placeholder="Nick do membro"></div>
+                            <div class="af-group"><label>💰 Mais Rico</label>
+                                <input type="text" id="cq2-inp" class="af-input" placeholder="Nick do membro"></div>
+                            <div class="af-group"><label>🏆 MVP da Temporada</label>
+                                <input type="text" id="cq3-inp" class="af-input" placeholder="Nick do membro"></div>
+                            <div class="af-group"><label>🎯 Mais Missões</label>
+                                <input type="text" id="cq4-inp" class="af-input" placeholder="Nick do membro"></div>
+                            <div class="af-group"><label>⭐ Mais Leal</label>
+                                <input type="text" id="cq5-inp" class="af-input" placeholder="Nick do membro"></div>
+                            <div class="af-group"><label>🛡️ Mais Promotions</label>
+                                <input type="text" id="cq6-inp" class="af-input" placeholder="Nick do membro"></div>
+                            <button id="btnSaveConq" class="btn-admin-action gold">
+                                <i class="ri-save-line"></i> Salvar Conquistas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main><!-- /main-content -->
+    </div><!-- /main-wrap -->
+
+    <!-- BOTÃO FLUTUANTE: VERIFICADOR DE REGRAS -->
+    <button id="btnRegras" class="fab-regras" aria-label="Verificador de Regras RP" title="Verificador de Regras">
+        <i class="ri-shield-check-fill"></i>
+        <span class="fab-label">Regras RP</span>
+    </button>
+
+</div><!-- /appScreen -->
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!--  MODAL: VERIFICADOR DE REGRAS                           -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="modalRegras" class="regras-modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="regrasTitle">
+    <div class="regras-modal">
+        <!-- Header estilo celular -->
+        <div class="regras-modal-header">
+            <div class="regras-modal-notch"></div>
+            <div class="regras-modal-title-row">
+                <i class="ri-shield-check-fill"></i>
+                <span id="regrasTitle">Verificador de Regras RP</span>
+                <button class="regras-close" id="btnFecharRegras" aria-label="Fechar">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+        </div>
+        <div class="regras-modal-body">
+            <!-- Input relato -->
+            <div class="rm-group">
+                <label class="rm-label">Descreva o que aconteceu</label>
+                <textarea id="regrasInput" class="rm-textarea"
+                    placeholder="Ex: O jogador Fulano atirou em mim sem nenhuma interação ou motivo de RP. Estávamos no hospital quando ele sacou a arma..."
+                    maxlength="2000" rows="4" aria-label="Descreva o acontecido"></textarea>
+                <span class="rm-count"><span id="regrasCount">0</span>/2000</span>
+            </div>
+            <div class="rm-btns">
+                <button id="btnVerificarRegras" class="btn-verificar-regras">
+                    <i class="ri-search-eye-line"></i> Verificar com IA
+                </button>
+                <button id="btnVozRegras" class="btn-icon-regras" title="Entrada por voz" aria-label="Usar voz">
+                    <i class="ri-mic-line"></i>
+                </button>
+                <button id="btnLimparRegras" class="btn-icon-regras" title="Limpar" aria-label="Limpar">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
             </div>
 
-        </section>
-
-        <!-- ─── REGRAS LATERAL ─── -->
-        <aside class="regras-panel" aria-label="Referência rápida das regras de RP">
-            <div class="regras-panel-title">
-                <i class="ri-book-2-line" aria-hidden="true"></i> Regras do Servidor
+            <!-- Resultado -->
+            <div id="regrasResultado" class="rm-resultado">
+                <div class="rm-placeholder">
+                    <i class="ri-shield-line"></i>
+                    <p>Descreva o ocorrido e clique em <strong>Verificar com IA</strong></p>
+                </div>
             </div>
-            <p class="regras-panel-hint">
-                Clique em uma regra para carregar um exemplo de teste
-            </p>
-            <div id="regrasGrid" role="list" aria-label="Lista de regras de RP"></div>
-        </aside>
 
-    </main>
-
-    <!-- Footer -->
-    <footer class="app-footer" role="contentinfo">
-        <span>OneCheck RP &copy; 2025 · One State RP</span>
-        <span class="footer-brand">
-            Godoy Solutions in TECH · Caíque Eduardo
-        </span>
-        <span style="font-size:0.75rem;">
-            Powered by <strong style="color: var(--blue-bright);">Gemini AI</strong>
-        </span>
-    </footer>
-
-</div><!-- /appView -->
-
-
-<!-- Loading Overlay -->
-<div id="loadingOverlay" role="status" aria-label="Analisando com IA..." aria-live="polite">
-    <div class="loading-orb" aria-hidden="true"></div>
-    <div class="loading-text">Analisando com Gemini IA...</div>
+            <!-- Regras rápidas (chips) -->
+            <div class="rm-regras-rapidas">
+                <div class="rm-rrq-title">Regras (clique para exemplo)</div>
+                <div id="regrasChips" class="rm-chips"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- TOAST -->
+<div id="toast" class="toast" role="alert" aria-live="assertive"></div>
 
 <!-- Scripts -->
 <script src="js/regras-rp.js"></script>
 <script src="js/ia-engine.js"></script>
-<script src="js/app.js"></script>
+<script src="js/platform.js"></script>
 
-
-<!-- BOTÃO FLUTUANTE FACÇÕES -->
-<a href="faccoes/index.html" class="fac-float-btn" aria-label="Chat das Facções" title="Chat das Facções">
-    <span class="fac-float-icon">🏴</span>
-    <span class="fac-float-label">Facções</span>
-</a>
-
-<style>
-.fac-float-btn {
-    position: fixed;
-    bottom: 1.5rem; right: 1.5rem;
-    display: flex; align-items: center; gap: 0.5rem;
-    background: linear-gradient(135deg, #1e2128 0%, #252830 100%);
-    border: 1px solid rgba(59,130,246,0.3);
-    color: var(--text-primary, #e8eaf0);
-    text-decoration: none;
-    padding: 0.65rem 1.1rem;
-    border-radius: 50px;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.85rem; font-weight: 600;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.1);
-    transition: all 0.25s ease;
-    z-index: 500;
-    backdrop-filter: blur(8px);
-}
-.fac-float-btn:hover {
-    border-color: rgba(59,130,246,0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 15px rgba(59,130,246,0.15);
-}
-.fac-float-icon { font-size: 1.1rem; }
-.fac-float-label { white-space: nowrap; }
-@media (max-width: 480px) {
-    .fac-float-btn { bottom: 1rem; right: 1rem; padding: 0.6rem; border-radius: 50%; }
-    .fac-float-label { display: none; }
-}
-</style>
 </body>
 </html>
-
