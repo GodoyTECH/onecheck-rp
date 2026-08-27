@@ -1,0 +1,10 @@
+{
+  "name": "godoy-rk-functions",
+  "version": "1.0.0",
+  "description": "GoddoY RK — Netlify Functions com Neon PostgreSQL",
+  "engines": { "node": ">=18.0.0" },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@netlify/blobs": "^8.1.0"
+  }
+}
