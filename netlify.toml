@@ -1,5 +1,5 @@
 [build]
-  command = "echo 'Build OneCheck RP'"
+  command = "npm install && echo 'Build GoddoY RK'"
   publish = "."
   functions = "netlify/functions"
 

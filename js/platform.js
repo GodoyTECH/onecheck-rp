@@ -983,8 +983,11 @@ async function carregarAdminMembros() {
                     <div class="admin-member-cargo">${m.cargo || '—'} · Nv${m.nivel} · ${GRK.formatPts(m.pontos)} pts</div>
                 </div>
                 <div class="admin-member-actions">
-                    <button class="btn btn-ghost btn-xs btn-resetar-pin" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
-                        PIN
+                    <button class="btn btn-ghost btn-xs btn-ver-senha" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
+                        Ver
+                    </button>
+                    <button class="btn btn-ghost btn-xs btn-resetar-senha" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
+                        Reset
                     </button>
                     <button class="btn btn-ghost btn-xs btn-promover" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
                         Cargo
@@ -993,14 +996,37 @@ async function carregarAdminMembros() {
             </div>
         `).join('');
 
-        // Resetar PIN
-        list.querySelectorAll('.btn-resetar-pin').forEach(btn => {
+        // Ver Senha
+        let cacheSenhas = null;
+        list.querySelectorAll('.btn-ver-senha').forEach(btn => {
             btn.addEventListener('click', async () => {
-                GRK.confirm(`Resetar PIN de ${btn.dataset.nick}?`, async () => {
+                if (!cacheSenhas) {
                     try {
-                        const r = await API.resetarPin(btn.dataset.id);
-                        GRK.toast(`Novo PIN de ${btn.dataset.nick}: ${r.pin}`, 'success');
-                        mostrarPinGerado(btn.dataset.nick, r.pin);
+                        cacheSenhas = await API.verSenhas();
+                    } catch (e) {
+                        GRK.toast('Erro ao buscar senhas', 'error');
+                        return;
+                    }
+                }
+                const mSenha = cacheSenhas.find(x => x.id === btn.dataset.id);
+                if (mSenha) {
+                    GRK.modal('SENHA DO MEMBRO', `
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: var(--red);">${mSenha.senha}</div>
+                        </div>
+                    `, '<button class="btn btn-primary" onclick="document.querySelector(\'.modal-overlay.visible\')?.classList.remove(\'visible\')">FECHAR</button>');
+                }
+            });
+        });
+
+        // Resetar Senha
+        list.querySelectorAll('.btn-resetar-senha').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                GRK.confirm(`Resetar Senha de ${btn.dataset.nick}?`, async () => {
+                    try {
+                        const r = await API.resetarSenha(btn.dataset.id);
+                        GRK.toast(`Nova senha de ${btn.dataset.nick}: ${r.senha}`, 'success');
+                        mostrarSenhaGerada(btn.dataset.nick, r.senha);
                     } catch (e) {
                         GRK.toast('Erro ao resetar PIN', 'error');
                     }
@@ -1039,11 +1065,11 @@ async function carregarAdminMembros() {
     }
 }
 
-function mostrarPinGerado(nick, pin) {
-    const box = document.getElementById('pinGeradoBox');
+function mostrarSenhaGerada(nick, senha) {
+    const box = document.getElementById('senhaGeradaBox');
     if (!box) return;
-    setTextById('pinGeradoNick', nick);
-    setTextById('pinGeradoValor', pin);
+    setTextById('senhaGeradaNick', nick);
+    setTextById('senhaGeradaValor', senha);
     box.classList.remove('hidden');
     // Mudar para aba "criar" onde está a box
     document.querySelector('[data-admin-tab="criar"]')?.click();
@@ -1093,37 +1119,31 @@ function inicializarEventListeners() {
     }
     document.getElementById('loginContinueBtn')?.addEventListener('click', loginStep1Submit);
 
-    // ── PIN Pad ───────────────────────────────────────────
+    // ── Login Step 2 (Senha) ──────────────────────────────
     document.getElementById('pinBackBtn')?.addEventListener('click', () => {
         showEl('loginStep1');
         hideEl('loginStep2');
         pinBuffer = '';
-        atualizarPinDisplay();
+        const senhaInput = document.getElementById('loginSenhaInput');
+        if (senhaInput) senhaInput.value = '';
         document.getElementById('loginNickInput')?.focus();
     });
 
-    document.getElementById('pinDelBtn')?.addEventListener('click', () => {
-        pinBuffer = pinBuffer.slice(0, -1);
-        atualizarPinDisplay();
+    document.getElementById('loginEntrarBtn')?.addEventListener('click', async () => {
+        pinBuffer = document.getElementById('loginSenhaInput')?.value || '';
+        if (pinBuffer) await loginStep2Submit();
+        else GRK.toast('Digite sua senha', 'error');
     });
 
-    document.getElementById('pinLembrarBtn')?.addEventListener('click', () => {
-        lembrar = !lembrar;
-        const icon   = document.getElementById('pinLembrarIcon');
-        const status = document.getElementById('pinLembrarStatus');
-        if (icon)   icon.className = lembrar ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line';
-        if (status) status.innerHTML = `Lembrar dispositivo: <strong>${lembrar ? 'Sim' : 'Não'}</strong>`;
-    });
-
-    document.querySelectorAll('.pin-key[data-val]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (pinBuffer.length >= 4) return;
-            pinBuffer += btn.dataset.val;
-            atualizarPinDisplay();
-            btn.style.transform = 'scale(0.92)';
-            setTimeout(() => btn.style.transform = '', 120);
-            if (pinBuffer.length === 4) await loginStep2Submit();
+    const senhaInput = document.getElementById('loginSenhaInput');
+    if (senhaInput) {
+        senhaInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('loginEntrarBtn')?.click();
         });
+    }
+
+    document.getElementById('loginLembrarCheck')?.addEventListener('change', e => {
+        lembrar = e.target.checked;
     });
 
     // ── Navegação: Bottom nav + Sidebar nav ───────────────
@@ -1265,7 +1285,17 @@ function inicializarEventListeners() {
         const nivel    = parseInt(document.getElementById('editNivel')?.value    || '1');
         const nivel_ak = parseInt(document.getElementById('editNivelAK')?.value || '1');
         const bio      = document.getElementById('editBio')?.value?.trim() || '';
+        
+        const senhaAtual = document.getElementById('editSenhaAtual')?.value;
+        const senhaNova  = document.getElementById('editSenhaNova')?.value;
+
         try {
+            if (senhaAtual && senhaNova) {
+                await API.alterarSenha(senhaAtual, senhaNova);
+                document.getElementById('editSenhaAtual').value = '';
+                document.getElementById('editSenhaNova').value = '';
+            }
+
             const updated = await API.updateMe({ nivel, nivel_ak, bio });
             STATE.setUser({ ...STATE.user, ...updated });
             atualizarUIUsuario();
@@ -1351,18 +1381,18 @@ function inicializarEventListeners() {
         if (!nick) { GRK.toast('Informe o nick', 'error'); return; }
         try {
             const r = await API.criarMembro(nick, cargo);
-            mostrarPinGerado(r.membro?.nick || nick, r.pin);
-            GRK.toast(`${nick} adicionado! PIN: ${r.pin}`, 'success');
+            mostrarSenhaGerada(r.membro?.nick || nick, r.senha || r.pin); // API returns pin for now, but will change
+            GRK.toast(`${nick} adicionado! Senha: ${r.senha || r.pin}`, 'success');
             document.getElementById('adminNovoNick').value = '';
         } catch (e) {
             GRK.toast(e.message || 'Erro ao criar membro', 'error');
         }
     });
 
-    // Admin: copiar PIN
-    document.getElementById('pinGeradoCopiarBtn')?.addEventListener('click', () => {
-        const pin = document.getElementById('pinGeradoValor')?.textContent;
-        navigator.clipboard?.writeText(pin || '').then(() => GRK.toast('PIN copiado!', 'success'));
+    // Admin: copiar PIN/Senha
+    document.getElementById('senhaGeradaCopiarBtn')?.addEventListener('click', () => {
+        const pin = document.getElementById('senhaGeradaValor')?.textContent;
+        navigator.clipboard?.writeText(pin || '').then(() => GRK.toast('Senha copiada!', 'success'));
     });
 
     // Admin: pontuar
@@ -1448,14 +1478,19 @@ function loginStep1Submit() {
     // Guardar nick e ir para step 2
     hideEl('loginStep1');
     showEl('loginStep2');
+    const senhaInput = document.getElementById('loginSenhaInput');
+    if (senhaInput) {
+        senhaInput.value = '';
+        senhaInput.focus();
+    }
     pinBuffer = '';
     lembrar   = false;
-    atualizarPinDisplay();
+    
+    const lembrarCheck = document.getElementById('loginLembrarCheck');
+    if (lembrarCheck) lembrarCheck.checked = false;
 
     setTextById('pinNickDisplay', nick);
     setTextById('pinAvatarInitials', GRK.getInitials(nick));
-    document.getElementById('pinLembrarIcon').className = 'ri-checkbox-blank-circle-line';
-    document.getElementById('pinLembrarStatus').innerHTML = 'Lembrar dispositivo: <strong>Não</strong>';
 }
 
 async function loginStep2Submit() {
@@ -1474,19 +1509,13 @@ async function loginStep2Submit() {
         hideEl('loginLoading');
         showEl('loginStep2');
         pinBuffer = '';
-        atualizarPinDisplay('error');
-        setTimeout(() => atualizarPinDisplay(), 600);
-        mostrarErroLogin('step2', e.message || 'PIN incorreto. Tente novamente.');
+        const senhaInput = document.getElementById('loginSenhaInput');
+        if(senhaInput) {
+            senhaInput.value = '';
+            senhaInput.focus();
+        }
+        mostrarErroLogin('step2', e.message || 'Senha incorreta. Tente novamente.');
     }
-}
-
-function atualizarPinDisplay(state = 'normal') {
-    const dots = document.querySelectorAll('.pin-dot');
-    dots.forEach((dot, i) => {
-        dot.className = 'pin-dot';
-        if (state === 'error') dot.classList.add('error');
-        else if (i < pinBuffer.length) dot.classList.add('filled');
-    });
 }
 
 function mostrarErroLogin(step, msg) {

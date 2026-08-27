@@ -91,7 +91,7 @@
             <div id="loginStep1Error" class="form-error hidden"></div>
         </div>
 
-        <!-- Step 2: PIN Pad -->
+        <!-- Step 2: Senha -->
         <div id="loginStep2" class="login-card hidden">
             <button id="pinBackBtn" class="pin-back-btn" aria-label="Voltar">
                 <i class="ri-arrow-left-line"></i>
@@ -100,36 +100,24 @@
                 <span id="pinAvatarInitials"></span>
             </div>
             <div class="pin-greeting">Olá, <strong id="pinNickDisplay"></strong></div>
-            <div class="pin-sub">Digite seu PIN de 4 dígitos</div>
+            <div class="pin-sub">Digite sua senha para entrar</div>
 
-            <div class="pin-display" id="pinDisplay">
-                <div class="pin-dot" data-i="0"></div>
-                <div class="pin-dot" data-i="1"></div>
-                <div class="pin-dot" data-i="2"></div>
-                <div class="pin-dot" data-i="3"></div>
+            <div class="input-field-wrap mt-2">
+                <i class="ri-lock-password-line"></i>
+                <input type="password" id="loginSenhaInput" class="input-field" placeholder="Sua senha">
+            </div>
+            
+            <div class="pin-lembrar-row" style="margin-top: 1rem; justify-content: flex-start; cursor: pointer;" id="loginLembrarRow">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; width: 100%;">
+                    <input type="checkbox" id="loginLembrarCheck" style="width: 1.25rem; height: 1.25rem; accent-color: var(--red);">
+                    <span class="pin-lembrar-label">Lembrar dispositivo</span>
+                </label>
             </div>
 
-            <div class="pin-pad" id="pinPad">
-                <button class="pin-key" data-val="1">1</button>
-                <button class="pin-key" data-val="2">2</button>
-                <button class="pin-key" data-val="3">3</button>
-                <button class="pin-key" data-val="4">4</button>
-                <button class="pin-key" data-val="5">5</button>
-                <button class="pin-key" data-val="6">6</button>
-                <button class="pin-key" data-val="7">7</button>
-                <button class="pin-key" data-val="8">8</button>
-                <button class="pin-key" data-val="9">9</button>
-                <button class="pin-key pin-key-lembrar" id="pinLembrarBtn" title="Lembrar dispositivo">
-                    <i class="ri-checkbox-blank-circle-line" id="pinLembrarIcon"></i>
-                </button>
-                <button class="pin-key" data-val="0">0</button>
-                <button class="pin-key pin-key-del" id="pinDelBtn">
-                    <i class="ri-delete-back-2-line"></i>
-                </button>
-            </div>
-            <div class="pin-lembrar-row">
-                <span id="pinLembrarStatus" class="pin-lembrar-label">Lembrar dispositivo: <strong>Não</strong></span>
-            </div>
+            <button id="loginEntrarBtn" class="btn btn-primary w-full mt-2">
+                ENTRAR <i class="ri-login-circle-line"></i>
+            </button>
+
             <div id="loginStep2Error" class="form-error hidden"></div>
         </div>
 
@@ -738,6 +726,18 @@
                             </div>
                             <label class="form-label">Bio (máx 200 chars)</label>
                             <textarea id="editBio" class="textarea-field mb-1" placeholder="Fale sobre você..." rows="3" maxlength="200"></textarea>
+
+                            <hr style="border-color: rgba(255,255,255,0.1); margin: 1.5rem 0;">
+                            
+                            <label class="form-label text-red">Alterar Senha (opcional)</label>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-lock-unlock-line"></i>
+                                <input type="password" id="editSenhaAtual" class="input-field" placeholder="Senha atual">
+                            </div>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-lock-password-line"></i>
+                                <input type="password" id="editSenhaNova" class="input-field" placeholder="Nova senha (min. 4 chars)">
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-ghost" id="editPerfilCancelBtn">Cancelar</button>
@@ -957,14 +957,14 @@
                     </div>
 
                     <!-- PIN gerado box -->
-                    <div id="pinGeradoBox" class="pin-generated-box hidden">
+                    <div id="senhaGeradaBox" class="pin-generated-box hidden">
                         <div class="pin-gen-title">✅ Integrante criado!</div>
-                        <div class="pin-gen-info">Nick: <strong id="pinGeradoNick">—</strong></div>
-                        <div class="pin-gen-label">PIN GERADO</div>
-                        <div class="pin-gen-value" id="pinGeradoValor">0000</div>
-                        <div class="pin-gen-warn">⚠️ Envie este PIN ao integrante agora. Não é possível recuperá-lo depois.</div>
-                        <button class="btn btn-ghost w-full" id="pinGeradoCopiarBtn">
-                            <i class="ri-file-copy-line"></i> Copiar PIN
+                        <div class="pin-gen-info">Nick: <strong id="senhaGeradaNick">—</strong></div>
+                        <div class="pin-gen-label">SENHA GERADA</div>
+                        <div class="pin-gen-value" id="senhaGeradaValor">0000</div>
+                        <div class="pin-gen-warn">⚠️ Envie esta senha ao integrante agora. O admin poderá visualizar ou resetá-la futuramente na lista de membros.</div>
+                        <button class="btn btn-ghost w-full" id="senhaGeradaCopiarBtn">
+                            <i class="ri-file-copy-line"></i> Copiar Senha
                         </button>
                     </div>
                 </div>

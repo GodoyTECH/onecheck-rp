@@ -42,10 +42,10 @@ window.API = {
     },
 
     // Auth
-    login(nick, pin, lembrar) {
+    login(nick, senha, lembrar) {
         return this._fetch('/.netlify/functions/fac-auth', {
             method: 'POST',
-            body: JSON.stringify({ nick, pin, lembrar })
+            body: JSON.stringify({ nick, senha, lembrar })
         });
     },
     logout() {
@@ -57,11 +57,20 @@ window.API = {
             body: JSON.stringify({ nick, cargo })
         }, true);
     },
-    resetarPin(membro_id) {
-        return this._fetch('/.netlify/functions/fac-auth/resetar-pin', {
+    resetarSenha(membro_id) { // renamed from resetarPin
+        return this._fetch('/.netlify/functions/fac-auth/resetar-senha', {
             method: 'POST',
             body: JSON.stringify({ membro_id })
         }, true);
+    },
+    alterarSenha(senha_atual, senha_nova) {
+        return this._fetch('/.netlify/functions/fac-auth/alterar-senha', {
+            method: 'POST',
+            body: JSON.stringify({ senha_atual, senha_nova })
+        }, true);
+    },
+    verSenhas() {
+        return this._fetch('/.netlify/functions/fac-auth/ver-senhas', {}, true);
     },
 
     // Membros

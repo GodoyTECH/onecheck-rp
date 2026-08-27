@@ -15,7 +15,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS membros (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     nick            VARCHAR(50) NOT NULL UNIQUE,
-    pin_hash        TEXT        NOT NULL,
+    senha           TEXT        NOT NULL,
     cargo           VARCHAR(20) NOT NULL DEFAULT 'Recruta'
                     CHECK (cargo IN ('Recruta','Membro','Veterano','Oficial','Tenente','Gerente','Lider')),
     nivel           INTEGER     NOT NULL DEFAULT 1  CHECK (nivel BETWEEN 1 AND 100),
