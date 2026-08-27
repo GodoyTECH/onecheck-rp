@@ -1,1125 +1,1593 @@
 /**
- * GoddoY RK — Plataforma Oficial
- * platform.js — Lógica completa da plataforma
- * Modo Demo: localStorage | Modo Online: Supabase via Netlify Functions
+ * GoddoY RK — js/platform.js
+ * Lógica principal da SPA — roteamento, carregamento de dados, interações
+ * Depende de: auth.js, pwa.js, api.js, state.js, components.js
  */
 
 'use strict';
 
-// ════════════════════════════════════════════════════════════
-//  CONSTANTES & CONFIG
-// ════════════════════════════════════════════════════════════
-
-const SENHA_GANG   = 'godoy2025';        // senha padrão (admin pode trocar)
-const SENHA_GERENTE = 'admin@grk2025';   // senha extra para cargo gerente/líder
-
-const CARGO_HIERARQUIA = {
-    'Recruta': 1, 'Membro': 2, 'Veterano': 3,
-    'Oficial': 4, 'Tenente': 5, 'Gerente': 6, 'Lider': 7
+/* ═══════════════════════════════════════════════════════════
+   CONSTANTES E VIEWS
+═══════════════════════════════════════════════════════════ */
+const VIEWS = {
+    home:          { id: 'viewHome',         title: 'Início',        back: false },
+    ranking:       { id: 'viewRanking',      title: 'Ranking',       back: false },
+    chat:          { id: 'viewChat',         title: 'Chat Geral',    back: false },
+    dm:            { id: 'viewDM',           title: 'Mensagens',     back: false },
+    dmConversa:    { id: 'viewDMConversa',   title: '',              back: true  },
+    missoes:       { id: 'viewMissoes',      title: 'Missões',       back: false },
+    conquistas:    { id: 'viewConquistas',   title: 'Conquistas',    back: true  },
+    perfil:        { id: 'viewPerfil',       title: 'Perfil',        back: false },
+    membroPerfil:  { id: 'viewMembroPerfil', title: 'Perfil',        back: true  },
+    notificacoes:  { id: 'viewNotificacoes', title: 'Notificações',  back: true  },
+    config:        { id: 'viewConfig',       title: 'Configurações', back: true  },
+    admin:         { id: 'viewAdmin',        title: 'Admin',         back: true  },
 };
 
-const CARGO_EMOJI = {
-    'Recruta': '🔴', 'Membro': '🟠', 'Veterano': '🟡',
-    'Oficial': '🔵', 'Tenente': '🟣', 'Gerente': '⭐', 'Lider': '👑'
-};
+const CHAT_POLL_MS  = 3000;   // polling do chat
+const DM_POLL_MS    = 4000;   // polling de DMs
+const NOTIF_POLL_MS = 30000;  // polling de notificações
 
-const TAREFAS_DEFAULT = [
-    { id:'t1', nome:'Patrulha Noturna', desc:'Proteja o território da GoddoY RK durante a madrugada. Reporte qualquer invasão.', pts:500, dif:'facil' },
-    { id:'t2', nome:'Coleta de Recursos', desc:'Colete materiais no mapa e entregue no QG. Missão básica de abastecimento.', pts:800, dif:'facil' },
-    { id:'t3', nome:'Operação Silêncio', desc:'Infiltre-se em território rival e obtenha informações sem ser detectado.', pts:2000, dif:'dificil' },
-    { id:'t4', nome:'Defesa do QG', desc:'Mantenha o QG protegido durante evento de invasão. Coordene com a equipe.', pts:1500, dif:'media' },
-    { id:'t5', nome:'Treinamento de Recrutas', desc:'Treine pelo menos 3 novos membros nas regras e operações básicas da gangue.', pts:1200, dif:'media' },
-    { id:'t6', nome:'Missão Elite: Dominação', desc:'Domine 5 pontos estratégicos do mapa em uma única sessão. Apenas para veteranos.', pts:5000, dif:'elite' }
-];
+let currentView      = 'home';
+let chatPollTimer    = null;
+let dmPollTimer      = null;
+let notifPollTimer   = null;
+let activeConversaId = null;
+let pinBuffer        = '';
+let lembrar          = false;
+let audioRecorder    = null;
+let audioChunks      = [];
+let isRecording      = false;
+let pontuarSelectedId = null;
+let pontuarAcao      = 'add';
 
-const RECOMPENSAS_DEFAULT = [
-    { icon:'🏆', nome:'Líder da Temporada', req:'1º no ranking ao fim da temporada', pts:'10.000 pts + tag exclusiva' },
-    { icon:'💎', nome:'Diamante da Rua', req:'Acumular 50.000 pts na temporada', pts:'Skin exclusiva + cargo Veterano' },
-    { icon:'🔫', nome:'Atirador de Ouro', req:'Completar 10 missões difíceis', pts:'5.000 pts + conquista especial' },
-    { icon:'🛡️', nome:'Guardião do QG', req:'Participar de 20 defesas de território', pts:'3.000 pts + medalha' },
-    { icon:'⭐', nome:'Leal da Temporada', req:'Estar online por 30 dias consecutivos', pts:'2.000 pts + cargo Veterano' },
-    { icon:'👑', nome:'MVP da Gangue', req:'Ter mais pts de missão que qualquer outro membro', pts:'Promoção automática + recompensa especial' }
-];
+/* ═══════════════════════════════════════════════════════════
+   INICIALIZAÇÃO
+═══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+    // Mostrar splash
+    showEl('appLoading');
 
-// ════════════════════════════════════════════════════════════
-//  ESTADO
-// ════════════════════════════════════════════════════════════
-let SESSAO = null;    // {nick, cargo, isAdmin, isLider}
-let chatPollInterval  = null;
-let chatMsgIds        = new Set();
-let isGravando        = false;
-let mediaRec          = null;
-let audioChunks       = [];
-let recTimerInterval  = null;
-let recSec            = 0;
+    try {
+        // PWA: registrar service worker
+        if (window.PWA) {
+            await PWA.registrarSW();
+            PWA.configurarInstall(
+                document.getElementById('btnInstalarPWA'),
+                document.getElementById('iosInstallModal')
+            );
+        }
 
-// ════════════════════════════════════════════════════════════
-//  STORAGE HELPERS
-// ════════════════════════════════════════════════════════════
-function ls(k, def = null) {
-    try { const v = localStorage.getItem('grk_' + k); return v ? JSON.parse(v) : def; } catch { return def; }
-}
-function lsSet(k, v) {
-    try { localStorage.setItem('grk_' + k, JSON.stringify(v)); } catch {}
-}
-function lsPush(k, item, maxLen = 500) {
-    const arr = ls(k, []);
-    arr.push(item);
-    if (arr.length > maxLen) arr.splice(0, arr.length - maxLen);
-    lsSet(k, arr);
+        // Verificar se já está logado
+        if (AUTH.isLoggedIn()) {
+            await iniciarApp();
+        } else {
+            mostrarLogin();
+        }
+    } catch (err) {
+        console.error('[INIT]', err);
+        mostrarLogin();
+    }
+
+    inicializarEventListeners();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════════════ */
+function mostrarLogin() {
+    hideEl('appLoading');
+    showEl('loginScreen');
+    hideEl('appShell');
+    document.getElementById('loginNickInput')?.focus();
 }
 
-// ════════════════════════════════════════════════════════════
-//  UTILITÁRIOS
-// ════════════════════════════════════════════════════════════
-function now() { return Date.now(); }
-function horaStr(ts) {
-    return new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+async function iniciarApp() {
+    try {
+        // Carregar dados do usuário logado
+        const me = await API.getMe().catch(() => null);
+        if (!me) {
+            AUTH.logout();
+            mostrarLogin();
+            return;
+        }
+
+        STATE.setUser(me);
+
+        // Carregar configurações
+        const cfg = await API.getConfig().catch(() => ({}));
+        STATE.config = cfg;
+
+        hideEl('appLoading');
+        hideEl('loginScreen');
+        showEl('appShell');
+
+        // Preencher UI com dados do usuário
+        atualizarUIUsuario();
+
+        // Elementos de admin
+        const adminEls = document.querySelectorAll('.admin-only');
+        adminEls.forEach(el => {
+            if (STATE.user.is_admin) el.classList.remove('hidden');
+        });
+
+        // Navegar para home
+        navigateTo('home');
+
+        // Iniciar polling de notificações
+        iniciarPollingNotificacoes();
+
+        // Verificar lembrete de nível
+        verificarLembrete();
+
+    } catch (err) {
+        console.error('[INIT APP]', err);
+        AUTH.logout();
+        mostrarLogin();
+    }
 }
-function dataHora(ts) {
-    return new Date(ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+function atualizarUIUsuario() {
+    const u = STATE.user;
+    if (!u) return;
+
+    // Sidebar
+    setTextById('sidebarNick', u.nick || '—');
+    setTextById('sidebarCargo', u.cargo || '—');
+    setAvatarEl(document.getElementById('sidebarAvatar'), u.nick, u.avatar_url);
+    setAvatarEl(document.getElementById('topbarAvatar'), u.nick, u.avatar_url);
+
+    // Home
+    setTextById('homeNick', u.nick || '—');
+    setTextById('homeCargo', u.cargo || '—');
+    setAvatarEl(document.getElementById('homeAvatar'), u.nick, u.avatar_url);
+    setTextById('homeLevel', `NÍVEL ${u.nivel || 1}`);
+    const xpCur = (u.nivel || 1) * 100;
+    const xpMax = ((u.nivel || 1) + 1) * 250;
+    setTextById('homeXpCurrent', GRK.formatPts(u.pontos || 0));
+    setTextById('homeXpMax', GRK.formatPts(xpMax));
+    const xpPct = Math.min(100, Math.round((xpCur / xpMax) * 100));
+    setStyle('homeXpFill', 'width', xpPct + '%');
+    setTextById('homeTemporada', STATE.config?.temporada || '—');
+
+    // Perfil
+    setTextById('perfilNick', u.nick || '—');
+    setTextById('perfilCargo', u.cargo || '—');
+    setAvatarEl(document.getElementById('perfilAvatar'), u.nick, u.avatar_url);
+    setTextById('perfilLevel', `NÍVEL ${u.nivel || 1}`);
+    setTextById('perfilXP', `${u.pontos || 0} XP`);
+    setTextById('perfilPontos', GRK.formatPts(u.pontos || 0));
+    setTextById('perfilNivelAK', u.nivel_ak || 1);
+    const xpPerc = Math.min(100, Math.round(((u.nivel || 1) * 100) / (((u.nivel || 1) + 1) * 250) * 100));
+    setStyle('perfilXpFill', 'width', xpPerc + '%');
+    setTextById('perfilXpCurrent', GRK.formatPts(u.pontos || 0));
+    setTextById('perfilXpMax', GRK.formatPts(((u.nivel || 1) + 1) * 250));
+
+    // badge de cargo
+    document.querySelectorAll('.badge.badge-cargo').forEach(el => {
+        el.textContent = u.cargo || '—';
+        el.className = `badge badge-cargo badge-cargo-${(u.cargo || 'recruta').toLowerCase()}`;
+    });
 }
-function iniciais(nick) {
-    const p = (nick || '?').split(' ');
-    return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase().slice(0,3);
+
+/* ═══════════════════════════════════════════════════════════
+   ROTEAMENTO / NAVEGAÇÃO
+═══════════════════════════════════════════════════════════ */
+function navigateTo(viewName, extra = {}) {
+    const view = VIEWS[viewName];
+    if (!view) return;
+
+    // Parar polling anterior se saiu do chat/dm
+    if (currentView === 'chat' && viewName !== 'chat') pararChatPolling();
+    if (currentView === 'dmConversa' && viewName !== 'dmConversa') pararDMPolling();
+
+    // Esconder view atual
+    const allViews = document.querySelectorAll('.view');
+    allViews.forEach(v => v.classList.remove('active'));
+    allViews.forEach(v => v.classList.add('hidden'));
+
+    // Mostrar view destino
+    const targetEl = document.getElementById(view.id);
+    if (targetEl) {
+        targetEl.classList.remove('hidden');
+        targetEl.classList.add('active');
+        targetEl.scrollTop = 0;
+    }
+
+    // Topbar
+    setTextById('topbarTitle', view.title || extra.title || '');
+    const backBtn = document.getElementById('topbarBack');
+    if (backBtn) {
+        if (view.back) {
+            backBtn.classList.remove('hidden');
+        } else {
+            backBtn.classList.add('hidden');
+        }
+    }
+
+    // Nav ativa (mobile + sidebar)
+    const navViews = ['home', 'chat', 'ranking', 'missoes', 'perfil'];
+    const navKey   = navViews.includes(viewName) ? viewName : null;
+
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === navKey);
+    });
+    document.querySelectorAll('.sidebar-nav-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === navKey);
+    });
+
+    currentView = viewName;
+
+    // Carregar dados da view
+    switch (viewName) {
+        case 'home':        carregarHome();         break;
+        case 'ranking':     carregarRanking();      break;
+        case 'chat':        entrarNoChat();         break;
+        case 'dm':          carregarDMs();          break;
+        case 'dmConversa':  entrarNaConversa(extra.conversaId, extra.titulo); break;
+        case 'missoes':     carregarMissoes();      break;
+        case 'conquistas':  carregarConquistas();   break;
+        case 'perfil':      carregarPerfil();       break;
+        case 'membroPerfil':carregarMembroPerfil(extra.membroId); break;
+        case 'notificacoes':carregarNotificacoes(); break;
+        case 'config':      carregarConfig();       break;
+        case 'admin':       carregarAdmin();        break;
+    }
 }
-function sanitize(str) {
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
+
+/* ═══════════════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════════════ */
+async function carregarHome() {
+    atualizarUIUsuario();
+
+    // Ranking (posição do usuário)
+    try {
+        const ranking = await API.getRanking();
+        STATE.ranking = ranking;
+        const myPos = ranking.findIndex(r => r.id === STATE.user?.id);
+        if (myPos >= 0) {
+            setTextById('homeRankPos', `#${myPos + 1}`);
+            setTextById('homeRankPts', `${GRK.formatPts(ranking[myPos].pontos)} PTS`);
+            setTextById('perfilRanking', `#${myPos + 1}`);
+            setTextById('perfilMissoes', ranking[myPos].missoes || '—');
+        }
+    } catch (e) { /* silencioso */ }
+
+    // Atividade recente (notificações como activity feed)
+    try {
+        const notifs = await API.getNotificacoes();
+        const feed   = document.getElementById('activityFeed');
+        if (!feed) return;
+        if (!notifs?.length) {
+            feed.innerHTML = GRK.emptyState('ri-activity-line', 'Nenhuma atividade', 'Suas atividades recentes vão aparecer aqui');
+            return;
+        }
+        feed.innerHTML = notifs.slice(0, 5).map(n => `
+            <div class="activity-item">
+                <div class="activity-icon">${notifIcon(n.tipo)}</div>
+                <div class="activity-info">
+                    <div class="activity-text">${escapeHtml(n.mensagem)}</div>
+                    <div class="activity-time">${GRK.timeAgo(n.created_at)}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) { /* silencioso */ }
 }
-function toast(msg, tipo = '') {
-    const el = document.getElementById('toast');
+
+/* ═══════════════════════════════════════════════════════════
+   RANKING
+═══════════════════════════════════════════════════════════ */
+async function carregarRanking() {
+    // Mostrar skeletons
+    const list = document.getElementById('rankingList');
+    if (list) list.innerHTML = '<div class="skeleton-card"></div>'.repeat(5);
+
+    try {
+        const ranking = await API.getRanking();
+        STATE.ranking  = ranking;
+
+        const temporada = STATE.config?.temporada || '—';
+        setTextById('rankingTemporada', `TEMPORADA ${temporada}`);
+
+        // Pódio Top 3
+        [1, 2, 3].forEach(pos => {
+            const r = ranking[pos - 1];
+            if (!r) return;
+            const isMe = r.id === STATE.user?.id;
+            setTextById(`podiumNick${pos}`, r.nick || '—');
+            setTextById(`podiumPts${pos}`, `${GRK.formatPts(r.pontos)} PTS`);
+            setAvatarEl(document.getElementById(`podiumAvatar${pos}`), r.nick, r.avatar_url, isMe);
+        });
+
+        // Lista #4+
+        const myId = STATE.user?.id;
+        if (list) {
+            const rest = ranking.slice(3);
+            if (!rest.length) {
+                list.innerHTML = GRK.emptyState('ri-trophy-line', 'Apenas 3 membros', 'O ranking completo aparece a partir do 4º lugar');
+                return;
+            }
+            list.innerHTML = rest.map((r, i) => {
+                const pos  = i + 4;
+                const isMe = r.id === myId;
+                return `
+                    <div class="rank-item ${isMe ? 'rank-item-me' : ''}">
+                        <div class="rank-position">#${pos}</div>
+                        <div class="avatar avatar-sm rank-avatar">${GRK.getInitials(r.nick)}</div>
+                        <div class="rank-info">
+                            <div class="rank-nick">${escapeHtml(r.nick)}${isMe ? ' <span class="rank-you">VOCÊ</span>' : ''}</div>
+                            <div class="rank-cargo">${r.cargo || ''}</div>
+                        </div>
+                        <div class="rank-pts">${GRK.formatPts(r.pontos)} PTS</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Timer: temporada fictícia (sem data real da API ainda)
+        iniciarTimerRound();
+
+    } catch (e) {
+        if (list) list.innerHTML = GRK.emptyState('ri-error-warning-line', 'Erro ao carregar', 'Não foi possível carregar o ranking', 'Tentar novamente', 'carregarRanking()');
+    }
+}
+
+function iniciarTimerRound() {
+    const el = document.getElementById('rankingTimerText');
     if (!el) return;
-    el.textContent = msg;
-    el.className = 'toast visible ' + tipo;
-    clearTimeout(el._t);
-    el._t = setTimeout(() => el.classList.remove('visible'), 3000);
+    // Próximo domingo às 23:59 como referência visual
+    const now    = new Date();
+    const target = new Date();
+    target.setDate(now.getDate() + (7 - now.getDay()) % 7 || 7);
+    target.setHours(23, 59, 59, 0);
+
+    function atualizar() {
+        const diff = target - new Date();
+        if (diff <= 0) { el.textContent = 'ENCERRADO'; return; }
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        el.textContent = `${String(d).padStart(2,'0')}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+    }
+    atualizar();
+    setInterval(atualizar, 60000);
 }
 
-function chipClass(codigo) {
-    if (codigo === 'ALERT-7') return 'rm-chip rm-chip-alert';
-    if (codigo.startsWith('RP-'))    return 'rm-chip rm-chip-rp';
-    if (codigo.startsWith('COND-'))  return 'rm-chip rm-chip-cond';
-    if (codigo.startsWith('CONTA-')) return 'rm-chip rm-chip-conta';
-    return 'rm-chip rm-chip-rp';
+/* ═══════════════════════════════════════════════════════════
+   CHAT GERAL
+═══════════════════════════════════════════════════════════ */
+async function entrarNoChat() {
+    const msgArea = document.getElementById('chatMessages');
+    if (!msgArea) return;
+    msgArea.innerHTML = '<div class="chat-loading"><div class="chat-spinner"></div></div>';
+
+    try {
+        const msgs = await API.getChatMsgs();
+        STATE.chatMsgs    = msgs;
+        STATE.chatLastTs  = msgs.length ? msgs[msgs.length - 1].created_at : null;
+        renderizarChatMsgs(msgs, true);
+    } catch (e) {
+        if (msgArea) msgArea.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Sem conexão', 'Não foi possível carregar o chat');
+    }
+
+    // Iniciar polling
+    pararChatPolling();
+    chatPollTimer = setInterval(pollChat, CHAT_POLL_MS);
+
+    // Membros online (participantes)
+    carregarParticipantes();
 }
 
-// ════════════════════════════════════════════════════════════
-//  LOGIN
-// ════════════════════════════════════════════════════════════
-function initLogin() {
-    const btnEntrar = document.getElementById('btnEntrar');
-    const btnEye    = document.getElementById('btnEye');
-    const inpSenha  = document.getElementById('inpSenha');
-    const inpNick   = document.getElementById('inpNick');
-    const inpCargo  = document.getElementById('inpCargo');
-    const loginErro = document.getElementById('loginErro');
-
-    // Config da temporada
-    const cfg = ls('config', {});
-    if (cfg.temporada) document.getElementById('loginSeason').textContent = `TEMPORADA ${cfg.temporada}`;
-
-    btnEye.addEventListener('click', () => {
-        const mostrar = inpSenha.type === 'password';
-        inpSenha.type = mostrar ? 'text' : 'password';
-        btnEye.querySelector('i').className = mostrar ? 'ri-eye-off-line' : 'ri-eye-line';
-    });
-
-    inpNick.addEventListener('keydown', e => { if (e.key === 'Enter') inpSenha.focus(); });
-    inpSenha.addEventListener('keydown', e => { if (e.key === 'Enter') btnEntrar.click(); });
-
-    btnEntrar.addEventListener('click', () => {
-        const nick  = inpNick.value.trim();
-        const senha = inpSenha.value;
-        const cargo = inpCargo.value;
-
-        if (!nick) { showErro('Digite seu apelido no RP.'); return; }
-        if (nick.length < 3) { showErro('Apelido muito curto (mínimo 3 caracteres).'); return; }
-
-        const cfgAtual = ls('config', {});
-        const senhaCorreta = cfgAtual.senha || SENHA_GANG;
-
-        // Verificar senha
-        if (senha !== senhaCorreta && senha !== SENHA_GERENTE) {
-            showErro('Senha incorreta. Consulte o líder da gangue.');
-            return;
+async function pollChat() {
+    if (currentView !== 'chat') { pararChatPolling(); return; }
+    try {
+        const since = STATE.chatLastTs;
+        const novas = await API.getChatMsgs(since);
+        if (novas?.length) {
+            STATE.chatLastTs = novas[novas.length - 1].created_at;
+            renderizarChatMsgs(novas, false);
         }
-
-        // Cargo gerente/líder requer senha de admin
-        const cargoPoderoso = ['Gerente','Lider'].includes(cargo);
-        if (cargoPoderoso && senha !== SENHA_GERENTE) {
-            showErro('Cargo de Gerente/Líder requer senha administrativa.');
-            return;
-        }
-
-        // Login OK
-        SESSAO = {
-            nick, cargo,
-            isAdmin: ['Gerente','Lider'].includes(cargo),
-            isLider: cargo === 'Lider',
-            entradaTs: now()
-        };
-
-        // Registrar como membro se não existir
-        registrarMembro(nick, cargo);
-
-        // Registrar sessão ativa
-        const sessoes = ls('sessoes', {});
-        sessoes[nick] = { cargo, ts: now() };
-        lsSet('sessoes', sessoes);
-
-        iniciarPlataforma();
-    });
-
-    function showErro(msg) {
-        loginErro.innerHTML = `<i class="ri-error-warning-line"></i> ${sanitize(msg)}`;
-        loginErro.style.display = 'flex';
-    }
+    } catch (e) { /* silencioso */ }
 }
 
-function registrarMembro(nick, cargo) {
-    const membros = ls('membros', []);
-    const exists  = membros.find(m => m.nick.toLowerCase() === nick.toLowerCase());
-    if (!exists) {
-        membros.push({ nick, cargo, pts: 0, cadastroTs: now() });
-        lsSet('membros', membros);
-        lsPush('atividades', { icon:'🆕', texto: `<strong>${sanitize(nick)}</strong> entrou na GoddoY RK como ${cargo}`, ts: now() });
-    } else {
-        // Atualizar último cargo se mudou
-        exists.ultimoAcesso = now();
-        lsSet('membros', membros);
-    }
+function pararChatPolling() {
+    if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
 }
 
-// ════════════════════════════════════════════════════════════
-//  PLATAFORMA PRINCIPAL
-// ════════════════════════════════════════════════════════════
-function iniciarPlataforma() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display   = 'grid';
+function renderizarChatMsgs(msgs, clear = false) {
+    const area  = document.getElementById('chatMessages');
+    if (!area) return;
+    const atBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 100;
 
-    // Atualizar info do usuário
-    document.getElementById('meNick').textContent  = SESSAO.nick;
-    document.getElementById('meCargo').textContent = `${CARGO_EMOJI[SESSAO.cargo] || ''} ${SESSAO.cargo}`;
+    if (clear) area.innerHTML = '';
 
-    // Mostrar admin nav se gerente/líder
-    if (SESSAO.isAdmin) {
-        document.getElementById('navAdmin').style.display = 'block';
-    }
-
-    // Eventos sidebar
-    document.getElementById('btnMenu').addEventListener('click', toggleSidebar);
-    document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
-    document.getElementById('btnLogout').addEventListener('click', logout);
-
-    // Navegação
-    document.querySelectorAll('.snav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            navegarPara(btn.dataset.section);
-            closeSidebar();
-        });
-    });
-
-    // Admin tabs
-    document.querySelectorAll('.atab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.atab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.atab-content').forEach(c => c.classList.remove('active'));
-            tab.classList.add('active');
-            const el = document.getElementById('atab-' + tab.dataset.atab);
-            if (el) el.classList.add('active');
-        });
-    });
-
-    // Filtro membros
-    document.querySelectorAll('.mem-filter').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.mem-filter').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMembros(btn.dataset.cargo);
-        });
-    });
-
-    // Regras modal
-    initRegrasModal();
-
-    // Admin form
-    initAdminForms();
-
-    // Chat
-    initChat();
-
-    // Carregar dados iniciais
-    renderInicio();
-    renderRanking();
-    renderMembros();
-    renderTarefas();
-    renderRecompensas();
-    if (SESSAO.isAdmin) { renderAdminForms(); renderHistorico(); }
-
-    // Verificar sessões expiradas (limpeza)
-    limparSessoesAntigas();
-}
-
-function navegarPara(section) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('active'));
-
-    const sEl = document.getElementById('sec-' + section);
-    if (sEl) sEl.classList.add('active');
-
-    const btn = document.querySelector(`.snav-btn[data-section="${section}"]`);
-    if (btn) btn.classList.add('active');
-
-    const titles = {
-        inicio:'Início', chat:'Chat da Equipe', ranking:'Hall da Fama',
-        membros:'Membros', tarefas:'Tarefas & Missões',
-        recompensas:'Recompensas', admin:'Painel Admin'
-    };
-    document.getElementById('topbarTitle').textContent = titles[section] || section;
-
-    // Limpar badge do chat ao entrar no chat
-    if (section === 'chat') {
-        const badge = document.getElementById('chatBadge');
-        badge.style.display = 'none'; badge.textContent = '0';
-        renderOnlineMembers();
-    }
-}
-
-function toggleSidebar() {
-    const sb  = document.getElementById('sidebar');
-    const ov  = document.getElementById('sidebarOverlay');
-    const btn = document.getElementById('btnMenu');
-    const open = sb.classList.toggle('visible');
-    ov.classList.toggle('visible', open);
-    btn.setAttribute('aria-expanded', open);
-}
-function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('visible');
-    document.getElementById('sidebarOverlay').classList.remove('visible');
-    document.getElementById('btnMenu').setAttribute('aria-expanded', 'false');
-}
-
-function logout() {
-    if (!confirm(`Sair da plataforma, ${SESSAO.nick}?`)) return;
-    // Remover sessão
-    const sessoes = ls('sessoes', {});
-    delete sessoes[SESSAO.nick];
-    lsSet('sessoes', sessoes);
-    SESSAO = null;
-    if (chatPollInterval) clearInterval(chatPollInterval);
-    document.getElementById('appScreen').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('inpNick').value = '';
-    document.getElementById('inpSenha').value = '';
-    document.getElementById('loginErro').style.display = 'none';
-}
-
-function limparSessoesAntigas() {
-    const sessoes = ls('sessoes', {});
-    const limite  = now() - 4 * 60 * 60 * 1000; // 4 horas
-    let mudou = false;
-    for (const nick in sessoes) {
-        if (sessoes[nick].ts < limite) { delete sessoes[nick]; mudou = true; }
-    }
-    if (mudou) lsSet('sessoes', sessoes);
-}
-
-// ════════════════════════════════════════════════════════════
-//  INÍCIO / DASHBOARD
-// ════════════════════════════════════════════════════════════
-function renderInicio() {
-    const cfg     = ls('config', {});
-    const membros = ls('membros', []);
-    const mensagens = ls('mensagens', []);
-
-    // Config da gangue
-    if (cfg.temporada) {
-        document.getElementById('seasonNum').textContent = cfg.temporada;
-        document.getElementById('topbarSeason').querySelector('span').textContent = `T${cfg.temporada}`;
-    }
-    if (cfg.dataInicio && cfg.dataFim) {
-        const di = new Date(cfg.dataInicio).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
-        const df = new Date(cfg.dataFim).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
-        document.getElementById('seasonDates').textContent = `${di} – ${df}`;
-    }
-
-    // Minha pontuação
-    const eu = membros.find(m => m.nick.toLowerCase() === SESSAO.nick.toLowerCase());
-    const mePts = eu ? eu.pts : 0;
-    document.getElementById('mesPts').textContent = mePts.toLocaleString('pt-BR');
-
-    // Stats da gangue
-    const totalPts = membros.reduce((a, m) => a + (m.pts || 0), 0);
-    document.getElementById('gangPts').textContent = totalPts.toLocaleString('pt-BR');
-    document.getElementById('gangMembros').textContent = membros.length;
-
-    // Cards dashboard
-    document.getElementById('dashMsgs').textContent = `${mensagens.length} mensagens`;
-    document.getElementById('dashMemCount').textContent = `${Object.keys(ls('sessoes', {})).length} online`;
-
-    // Rank do jogador
-    const sorted = [...membros].sort((a, b) => (b.pts || 0) - (a.pts || 0));
-    const pos = sorted.findIndex(m => m.nick.toLowerCase() === SESSAO.nick.toLowerCase());
-    document.getElementById('dashRankPos').textContent = pos >= 0 ? `#${pos + 1} no ranking` : '#-';
-
-    // Atividades
-    renderAtividades();
-}
-
-function renderAtividades() {
-    const ativs = ls('atividades', []).slice(-20).reverse();
-    const el    = document.getElementById('atividades');
-    if (!ativs.length) { el.innerHTML = '<div class="ativ-empty">Nenhuma atividade ainda.</div>'; return; }
-    el.innerHTML = ativs.map(a => `
-        <div class="ativ-item">
-            <span class="ativ-icon">${a.icon}</span>
-            <span class="ativ-texto">${a.texto}</span>
-            <span class="ativ-hora">${horaStr(a.ts)}</span>
-        </div>`).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  RANKING / HALL DA FAMA
-// ════════════════════════════════════════════════════════════
-function renderRanking() {
-    const membros = ls('membros', []);
-    const cfg     = ls('config', {});
-    const conq    = ls('conquistas', {});
-
-    const sorted = [...membros].sort((a, b) => (b.pts || 0) - (a.pts || 0));
-
-    // Temporada
-    if (cfg.temporada) document.getElementById('rankSeason').textContent = `Temporada ${cfg.temporada}`;
-
-    // Podium
-    const podData = [sorted[0], sorted[1], sorted[2]];
-    ['pod1','pod2','pod3'].forEach((id, i) => {
-        const el = document.getElementById(id);
-        const m  = podData[i];
-        if (!m) return;
-        el.querySelector('.pod-avatar').textContent = iniciais(m.nick);
-        el.querySelector('.pod-nick').textContent   = m.nick;
-        el.querySelector('.pod-pts').textContent    = (m.pts || 0).toLocaleString('pt-BR') + ' pts';
-    });
-
-    // Tabela
-    const tbl = document.getElementById('rankingTable');
-    if (!sorted.length) { tbl.innerHTML = '<div class="ranking-empty">Nenhuma pontuação registrada ainda.</div>'; return; }
-    tbl.innerHTML = sorted.map((m, i) => {
-        const cls = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
-        return `<div class="rank-row">
-            <div class="rank-pos ${cls}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</div>
-            <div class="rank-avatar">${iniciais(m.nick)}</div>
-            <div class="rank-info">
-                <div class="rank-nick">${sanitize(m.nick)}</div>
-                <div class="rank-cargo">${CARGO_EMOJI[m.cargo] || ''} ${m.cargo}</div>
-            </div>
-            <div class="rank-pts">${(m.pts || 0).toLocaleString('pt-BR')}</div>
-        </div>`;
-    }).join('');
-
-    // Conquistas
-    ['cq1','cq2','cq3','cq4','cq5','cq6'].forEach((id, i) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = conq[`cq${i+1}`] || '-';
-    });
-}
-
-// ════════════════════════════════════════════════════════════
-//  MEMBROS
-// ════════════════════════════════════════════════════════════
-function renderMembros(filtro = 'todos') {
-    const membros = ls('membros', []);
-    const sessoes = ls('sessoes', {});
-    const grid    = document.getElementById('membrosGrid');
-
-    document.getElementById('memTotal').textContent = membros.length;
-
-    let lista = filtro === 'todos' ? membros : membros.filter(m => m.cargo === filtro);
-    lista = [...lista].sort((a, b) => (CARGO_HIERARQUIA[b.cargo] || 0) - (CARGO_HIERARQUIA[a.cargo] || 0));
-
-    if (!lista.length) { grid.innerHTML = '<div class="mem-empty">Nenhum membro encontrado.</div>'; return; }
-
-    grid.innerHTML = lista.map(m => {
-        const online = !!sessoes[m.nick];
-        return `<div class="mem-card">
-            <div class="mem-card-avatar">${iniciais(m.nick)}</div>
-            <div class="mem-card-nick">${sanitize(m.nick)}</div>
-            <div class="mem-card-cargo">${CARGO_EMOJI[m.cargo] || ''} ${m.cargo}</div>
-            <div class="mem-card-pts">${(m.pts || 0).toLocaleString('pt-BR')} pts</div>
-            <div class="mem-card-status ${online ? 'online' : 'offline'}">${online ? '● Online' : '○ Offline'}</div>
-        </div>`;
-    }).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  TAREFAS
-// ════════════════════════════════════════════════════════════
-function renderTarefas() {
-    const tarefas = ls('tarefas', TAREFAS_DEFAULT);
-    const grid    = document.getElementById('tarefasGrid');
-
-    if (!tarefas.length) { grid.innerHTML = '<div class="tarefas-empty">Nenhuma tarefa cadastrada.</div>'; return; }
-
-    const difLabel = { facil:'🟢 Fácil', media:'🟡 Média', dificil:'🔴 Difícil', elite:'👑 Elite' };
-    grid.innerHTML = tarefas.map(t => `
-        <div class="tarefa-card">
-            <div class="tarefa-top">
-                <div class="tarefa-nome">${sanitize(t.nome)}</div>
-                <div class="tarefa-dif dif-${t.dif}">${difLabel[t.dif] || t.dif}</div>
-            </div>
-            <div class="tarefa-desc">${sanitize(t.desc)}</div>
-            <div class="tarefa-pts"><i class="ri-star-fill"></i> ${(t.pts || 0).toLocaleString('pt-BR')} pts</div>
-        </div>`).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  RECOMPENSAS
-// ════════════════════════════════════════════════════════════
-function renderRecompensas() {
-    const recomp = ls('recompensas', RECOMPENSAS_DEFAULT);
-    const grid   = document.getElementById('recompGrid');
-    grid.innerHTML = recomp.map(r => `
-        <div class="recomp-card">
-            <div class="recomp-icon">${r.icon}</div>
-            <div class="recomp-nome">${sanitize(r.nome)}</div>
-            <div class="recomp-req">${sanitize(r.req)}</div>
-            <div class="recomp-pts"><i class="ri-trophy-fill"></i> ${sanitize(r.pts)}</div>
-        </div>`).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  CHAT
-// ════════════════════════════════════════════════════════════
-function initChat() {
-    const input    = document.getElementById('chatInput');
-    const btnSend  = document.getElementById('btnSend');
-    const btnAudio = document.getElementById('btnAudio');
-    const count    = document.getElementById('chatCount');
-
-    input.addEventListener('input', () => {
-        // auto-resize
-        input.style.height = 'auto';
-        input.style.height = Math.min(input.scrollHeight, 110) + 'px';
-        count.textContent = `${input.value.length}/500`;
-    });
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            enviarMensagem();
-        }
-    });
-
-    btnSend.addEventListener('click', enviarMensagem);
-    btnAudio.addEventListener('click', toggleGravacao);
-
-    document.getElementById('btnStopRec').addEventListener('click', pararGravacao);
-    document.getElementById('btnCancelRec').addEventListener('click', cancelarGravacao);
-
-    // Carregar mensagens existentes
-    carregarMensagens();
-
-    // Polling (demo mode)
-    chatPollInterval = setInterval(carregarMensagens, 3000);
-}
-
-function carregarMensagens() {
-    const msgs    = ls('mensagens', []);
-    const chatEl  = document.getElementById('chatMsgs');
-    const isBottom = chatEl.scrollHeight - chatEl.scrollTop <= chatEl.clientHeight + 50;
-
-    // Verificar novas mensagens
-    let temNovas = false;
-    msgs.forEach(m => {
-        if (!chatMsgIds.has(m.id)) {
-            chatMsgIds.add(m.id);
-            temNovas = true;
-            appendMensagem(m, false); // false = não animar primeiro carregamento
-        }
-    });
-
-    // Notificar badge se chat não estiver ativo
-    const chatAtivo = document.getElementById('sec-chat').classList.contains('active');
-    if (temNovas && !chatAtivo && msgs.length > 0) {
-        const badge = document.getElementById('chatBadge');
-        badge.style.display = 'inline';
-        badge.textContent   = String(parseInt(badge.textContent || '0') + msgs.filter(m => !chatMsgIds.has(m.id + '_seen')).length);
-    }
-
-    if (isBottom) chatEl.scrollTop = chatEl.scrollHeight;
-}
-
-function appendMensagem(msg, animate = true) {
-    const chatEl = document.getElementById('chatMsgs');
-    const eu     = msg.nick === SESSAO.nick;
-
-    if (msg.tipo === 'sistema') {
-        const div = document.createElement('div');
-        div.className = 'chat-msg chat-msg-sistema';
-        div.innerHTML = `<span class="chat-sys-txt">${sanitize(msg.conteudo)}</span>`;
-        chatEl.appendChild(div);
+    if (clear && !msgs.length) {
+        area.innerHTML = GRK.emptyState('ri-message-3-line', 'Nenhuma mensagem', 'Seja o primeiro a falar!');
         return;
     }
 
-    let conteudo = '';
-    if (msg.tipo === 'audio') {
-        conteudo = `<div class="cmsg-audio">
-            <i class="ri-mic-fill"></i>
-            <audio class="cmsg-audio-player" src="${msg.audioData}" controls preload="none"></audio>
-        </div>`;
-    } else {
-        conteudo = `<div class="cmsg-txt">${sanitize(msg.conteudo).replace(/\n/g,'<br>')}</div>`;
-    }
+    const myId = STATE.user?.id;
+    msgs.forEach(msg => {
+        if (document.getElementById(`msg-${msg.id}`)) return; // já renderizado
+        const isMe = msg.membro_id === myId;
+        const el = document.createElement('div');
+        el.id = `msg-${msg.id}`;
+        el.innerHTML = GRK.chatMessage(msg, isMe);
+        area.appendChild(el);
+    });
 
-    const div = document.createElement('div');
-    div.className = `chat-msg ${eu ? 'chat-msg-eu' : ''} ${animate ? 'chat-msg-new' : ''}`;
-    div.innerHTML = `
-        <div class="cmsg-avatar">${iniciais(msg.nick)}</div>
-        <div class="cmsg-body">
-            <div class="cmsg-meta">
-                <span class="cmsg-nick">${sanitize(msg.nick)}</span>
-                <span class="cmsg-cargo">${CARGO_EMOJI[msg.cargo] || ''} ${sanitize(msg.cargo)}</span>
-                <span class="cmsg-hora">${horaStr(msg.ts)}</span>
-            </div>
-            ${conteudo}
-        </div>`;
-
-    chatEl.appendChild(div);
-    if (animate) {
-        const isBottom = chatEl.scrollHeight - chatEl.scrollTop <= chatEl.clientHeight + 100;
-        if (isBottom || eu) setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 50);
+    if (clear || atBottom) {
+        area.scrollTop = area.scrollHeight;
     }
 }
 
-function enviarMensagem() {
+async function enviarChatMsg() {
     const input = document.getElementById('chatInput');
-    const txt   = input.value.trim();
+    const txt   = input?.value?.trim();
     if (!txt) return;
-
-    const msg = {
-        id: 'msg_' + now() + '_' + Math.random().toString(36).slice(2,6),
-        nick: SESSAO.nick, cargo: SESSAO.cargo,
-        tipo: 'texto', conteudo: txt, ts: now()
-    };
-
-    lsPush('mensagens', msg);
-    chatMsgIds.add(msg.id);
-    appendMensagem(msg, true);
 
     input.value = '';
     input.style.height = 'auto';
-    document.getElementById('chatCount').textContent = '0/500';
-    document.getElementById('chatMsgs').scrollTop = 999999;
 
-    // Atividade
-    lsPush('atividades', { icon:'💬', texto:`<strong>${sanitize(SESSAO.nick)}</strong> enviou uma mensagem no chat`, ts: now() });
-}
-
-// ─── GRAVAÇÃO DE ÁUDIO ───────────────────────────────────────
-function toggleGravacao() {
-    if (isGravando) { pararGravacao(); } else { iniciarGravacao(); }
-}
-
-async function iniciarGravacao() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRec = new MediaRecorder(stream);
-        audioChunks = [];
-        mediaRec.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-        mediaRec.onstop = () => {
-            stream.getTracks().forEach(t => t.stop());
-            if (audioChunks.length === 0) return;
-            const blob   = new Blob(audioChunks, { type: 'audio/webm' });
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const msg = {
-                    id: 'msg_' + now() + '_' + Math.random().toString(36).slice(2,6),
-                    nick: SESSAO.nick, cargo: SESSAO.cargo,
-                    tipo: 'audio', conteudo: '[Áudio]', audioData: reader.result, ts: now()
-                };
-                lsPush('mensagens', msg);
-                chatMsgIds.add(msg.id);
-                appendMensagem(msg, true);
-            };
-            reader.readAsDataURL(blob);
-            audioChunks = [];
-        };
-
-        mediaRec.start();
-        isGravando = true;
-        recSec = 0;
-        document.getElementById('recStatus').style.display = 'flex';
-        document.getElementById('btnAudio').classList.add('gravando');
-        recTimerInterval = setInterval(() => {
-            recSec++;
-            document.getElementById('recTimer').textContent = recSec + 's';
-            if (recSec >= 60) pararGravacao();
-        }, 1000);
-    } catch {
-        toast('Sem permissão de microfone.', 'error');
-    }
-}
-
-function pararGravacao() {
-    if (!isGravando) return;
-    clearInterval(recTimerInterval);
-    isGravando = false;
-    if (mediaRec && mediaRec.state !== 'inactive') mediaRec.stop();
-    document.getElementById('recStatus').style.display = 'none';
-    document.getElementById('btnAudio').classList.remove('gravando');
-}
-
-function cancelarGravacao() {
-    audioChunks = [];
-    pararGravacao();
-}
-
-function renderOnlineMembers() {
-    const sessoes = ls('sessoes', {});
-    limparSessoesAntigas();
-    const list = document.getElementById('onlineList');
-    const nicks = Object.entries(sessoes).filter(([n, s]) => s.ts > now() - 4*60*60*1000);
-    if (!nicks.length) { list.innerHTML = '<div class="cm-item" style="color:var(--text-3);font-size:.78rem">Ninguém online</div>'; return; }
-    list.innerHTML = nicks.map(([nick, s]) => `
-        <div class="cm-item">
-            <div class="cm-dot"></div>
-            <span>${sanitize(nick)}</span>
-        </div>`).join('');
-}
-
-// ════════════════════════════════════════════════════════════
-//  ADMIN
-// ════════════════════════════════════════════════════════════
-function renderAdminForms() {
-    const membros = ls('membros', []);
-    const sels    = ['adm-mem-sel', 'adm-prom-sel'];
-    const opts    = membros.map(m => `<option value="${sanitize(m.nick)}">${sanitize(m.nick)} (${m.cargo})</option>`).join('');
-
-    sels.forEach(id => {
-        const sel = document.getElementById(id);
-        const first = sel.options[0].outerHTML;
-        sel.innerHTML = first + opts;
-    });
-
-    renderAdmMemList();
-
-    // Config atual
-    const cfg = ls('config', {});
-    if (cfg.temporada) document.getElementById('adm-season').value = cfg.temporada;
-    if (cfg.dataInicio) document.getElementById('adm-season-start').value = cfg.dataInicio;
-    if (cfg.dataFim)    document.getElementById('adm-season-end').value   = cfg.dataFim;
-
-    // Conquistas
-    const conq = ls('conquistas', {});
-    ['cq1','cq2','cq3','cq4','cq5','cq6'].forEach(k => {
-        const el = document.getElementById(k + '-inp');
-        if (el) el.value = conq[k] || '';
-    });
-}
-
-function renderAdmMemList() {
-    const membros = ls('membros', []);
-    const list    = document.getElementById('admMemList');
-    if (!membros.length) { list.innerHTML = '<div class="hist-empty">Nenhum membro cadastrado.</div>'; return; }
-    list.innerHTML = membros.map((m, i) => `
-        <div class="adm-mem-row">
-            <div class="adm-mem-nick">${sanitize(m.nick)}</div>
-            <div class="adm-mem-cargo">${CARGO_EMOJI[m.cargo] || ''} ${m.cargo}</div>
-            <div style="font-family:var(--ff-title);font-size:.75rem;color:var(--red)">${(m.pts||0).toLocaleString('pt-BR')}</div>
-            ${SESSAO.isLider ? `<button class="btn-del-mem" onclick="deletarMembro(${i})" title="Remover"><i class="ri-delete-bin-line"></i></button>` : ''}
-        </div>`).join('');
-}
-
-function renderHistorico() {
-    // Pontuações
-    const hist = ls('hist_pts', []).slice().reverse();
-    const hEl  = document.getElementById('ptsHistorico');
-    if (!hist.length) { hEl.innerHTML = '<div class="hist-empty">Nenhum registro ainda.</div>'; }
-    else hEl.innerHTML = hist.map(h => `
-        <div class="hist-item">
-            <span class="hist-icon">${h.pts > 0 ? '⬆️' : '⬇️'}</span>
-            <div class="hist-info">
-                <strong>${sanitize(h.nick)}</strong> — ${sanitize(h.motivo)}
-                <span class="hist-hora">${dataHora(h.ts)} · por ${sanitize(h.por)}</span>
-            </div>
-            <div class="hist-val ${h.pts > 0 ? 'pos' : 'neg'}">${h.pts > 0 ? '+' : ''}${h.pts.toLocaleString('pt-BR')}</div>
-        </div>`).join('');
-
-    // Promoções
-    const prom  = ls('hist_prom', []).slice().reverse();
-    const pEl   = document.getElementById('promHistorico');
-    if (!prom.length) { pEl.innerHTML = '<div class="hist-empty">Nenhum registro ainda.</div>'; }
-    else pEl.innerHTML = prom.map(p => `
-        <div class="hist-item">
-            <span class="hist-icon">⭐</span>
-            <div class="hist-info">
-                <strong>${sanitize(p.nick)}</strong> → ${CARGO_EMOJI[p.novoCargo] || ''} ${sanitize(p.novoCargo)}
-                <span class="hist-hora">${dataHora(p.ts)} · ${sanitize(p.motivo)} · por ${sanitize(p.por)}</span>
-            </div>
-            <div class="hist-val pos">PROMOÇÃO</div>
-        </div>`).join('');
-}
-
-function initAdminForms() {
-    if (!SESSAO.isAdmin) return;
-
-    // Adicionar pontos
-    document.getElementById('btnAddPts').addEventListener('click', () => {
-        const nick   = document.getElementById('adm-mem-sel').value;
-        const pts    = parseInt(document.getElementById('adm-pts-inp').value);
-        const motivo = document.getElementById('adm-pts-motivo').value.trim();
-        if (!nick) return toast('Selecione um membro.', 'error');
-        if (isNaN(pts) || pts <= 0) return toast('Informe os pontos.', 'error');
-        if (!motivo) return toast('Informe o motivo.', 'error');
-        alterarPontos(nick, pts, motivo);
-    });
-
-    document.getElementById('btnRemPts').addEventListener('click', () => {
-        const nick   = document.getElementById('adm-mem-sel').value;
-        const pts    = parseInt(document.getElementById('adm-pts-inp').value);
-        const motivo = document.getElementById('adm-pts-motivo').value.trim();
-        if (!nick) return toast('Selecione um membro.', 'error');
-        if (isNaN(pts) || pts <= 0) return toast('Informe os pontos.', 'error');
-        if (!motivo) return toast('Informe o motivo.', 'error');
-        alterarPontos(nick, -pts, motivo);
-    });
-
-    // Promover
-    document.getElementById('btnPromover').addEventListener('click', () => {
-        const nick      = document.getElementById('adm-prom-sel').value;
-        const novoCargo = document.getElementById('adm-cargo-sel').value;
-        const motivo    = document.getElementById('adm-prom-motivo').value.trim();
-        if (!nick) return toast('Selecione um membro.', 'error');
-        if (!motivo) return toast('Informe o motivo.', 'error');
-        promoverMembro(nick, novoCargo, motivo);
-    });
-
-    // Cadastrar membro
-    document.getElementById('btnCadMem').addEventListener('click', () => {
-        const nick  = document.getElementById('adm-new-nick').value.trim();
-        const cargo = document.getElementById('adm-new-cargo').value;
-        if (!nick || nick.length < 3) return toast('Apelido inválido.', 'error');
-        const membros = ls('membros', []);
-        if (membros.find(m => m.nick.toLowerCase() === nick.toLowerCase())) {
-            return toast('Membro já cadastrado.', 'error');
+        const msg = await API.sendChat(txt);
+        if (msg) {
+            const myId = STATE.user?.id;
+            const el = document.createElement('div');
+            el.id = `msg-${msg.id}`;
+            el.innerHTML = GRK.chatMessage(msg, msg.membro_id === myId);
+            const area = document.getElementById('chatMessages');
+            if (area) {
+                area.appendChild(el);
+                area.scrollTop = area.scrollHeight;
+            }
+            STATE.chatLastTs = msg.created_at;
         }
-        membros.push({ nick, cargo, pts: 0, cadastroTs: now() });
-        lsSet('membros', membros);
-        lsPush('atividades', { icon:'🆕', texto:`<strong>${sanitize(nick)}</strong> foi cadastrado como ${cargo}`, ts: now() });
-        document.getElementById('adm-new-nick').value = '';
-        renderAdmMemList();
-        renderAdminForms();
-        renderMembros();
-        toast('Membro cadastrado!', 'success');
-    });
-
-    // Criar tarefa
-    document.getElementById('btnCriarTask').addEventListener('click', () => {
-        const nome = document.getElementById('adm-task-nome').value.trim();
-        const desc = document.getElementById('adm-task-desc').value.trim();
-        const pts  = parseInt(document.getElementById('adm-task-pts').value);
-        const dif  = document.getElementById('adm-task-dif').value;
-        if (!nome) return toast('Informe o nome da tarefa.', 'error');
-        if (!desc) return toast('Informe a descrição.', 'error');
-        if (isNaN(pts) || pts < 0) return toast('Pontuação inválida.', 'error');
-        const tarefas = ls('tarefas', TAREFAS_DEFAULT);
-        tarefas.push({ id:'t_'+now(), nome, desc, pts, dif });
-        lsSet('tarefas', tarefas);
-        renderTarefas();
-        document.getElementById('adm-task-nome').value = '';
-        document.getElementById('adm-task-desc').value = '';
-        document.getElementById('adm-task-pts').value  = '';
-        toast('Tarefa criada!', 'success');
-    });
-
-    // Salvar config
-    document.getElementById('btnSaveConfig').addEventListener('click', () => {
-        const temporada   = document.getElementById('adm-season').value;
-        const dataInicio  = document.getElementById('adm-season-start').value;
-        const dataFim     = document.getElementById('adm-season-end').value;
-        const senhaNova   = document.getElementById('adm-senha-atual').value.trim();
-        const cfg = ls('config', {});
-        if (temporada) cfg.temporada = parseInt(temporada);
-        if (dataInicio) cfg.dataInicio = dataInicio;
-        if (dataFim)    cfg.dataFim    = dataFim;
-        if (senhaNova && senhaNova.length >= 4) cfg.senha = senhaNova;
-        lsSet('config', cfg);
-        renderInicio();
-        renderRanking();
-        toast('Configurações salvas!', 'success');
-    });
-
-    // Salvar conquistas
-    document.getElementById('btnSaveConq').addEventListener('click', () => {
-        const conq = {};
-        ['cq1','cq2','cq3','cq4','cq5','cq6'].forEach(k => {
-            conq[k] = document.getElementById(k + '-inp').value.trim();
-        });
-        lsSet('conquistas', conq);
-        renderRanking();
-        toast('Conquistas salvas!', 'success');
-    });
-}
-
-function alterarPontos(nick, pts, motivo) {
-    const membros = ls('membros', []);
-    const m = membros.find(mb => mb.nick === nick);
-    if (!m) { toast('Membro não encontrado.', 'error'); return; }
-    m.pts = Math.max(0, (m.pts || 0) + pts);
-    lsSet('membros', membros);
-
-    lsPush('hist_pts', { nick, pts, motivo, por: SESSAO.nick, ts: now() });
-    lsPush('atividades', {
-        icon: pts > 0 ? '⬆️' : '⬇️',
-        texto: `<strong>${sanitize(nick)}</strong> ${pts > 0 ? 'ganhou' : 'perdeu'} <strong>${Math.abs(pts).toLocaleString('pt-BR')} pts</strong> — ${sanitize(motivo)}`,
-        ts: now()
-    });
-
-    // Limpar campos
-    document.getElementById('adm-pts-inp').value    = '';
-    document.getElementById('adm-pts-motivo').value = '';
-
-    renderRanking();
-    renderMembros();
-    renderHistorico();
-    renderAdminForms();
-    renderInicio();
-    toast(`${pts > 0 ? '+' : ''}${pts.toLocaleString('pt-BR')} pts para ${nick}!`, 'success');
-}
-
-function promoverMembro(nick, novoCargo, motivo) {
-    const membros = ls('membros', []);
-    const m = membros.find(mb => mb.nick === nick);
-    if (!m) { toast('Membro não encontrado.', 'error'); return; }
-    const cargAnt = m.cargo;
-    m.cargo = novoCargo;
-    lsSet('membros', membros);
-
-    lsPush('hist_prom', { nick, cargoAnt: cargAnt, novoCargo, motivo, por: SESSAO.nick, ts: now() });
-    lsPush('atividades', {
-        icon:'⭐',
-        texto:`<strong>${sanitize(nick)}</strong> foi promovido para <strong>${sanitize(novoCargo)}</strong> — ${sanitize(motivo)}`,
-        ts: now()
-    });
-
-    // Anunciar no chat
-    const msgProm = {
-        id: 'msg_'+now()+'_prom', nick:'GoddoY RK', cargo:'Sistema',
-        tipo:'sistema', conteudo:`⭐ PROMOÇÃO: ${nick} agora é ${CARGO_EMOJI[novoCargo] || ''} ${novoCargo}! Parabéns!`, ts: now()
-    };
-    lsPush('mensagens', msgProm);
-
-    document.getElementById('adm-prom-motivo').value = '';
-    renderRanking();
-    renderMembros();
-    renderHistorico();
-    renderAdminForms();
-    toast(`${nick} promovido para ${novoCargo}!`, 'success');
-}
-
-window.deletarMembro = function(idx) {
-    if (!SESSAO.isLider) { toast('Apenas o líder pode remover membros.', 'error'); return; }
-    const membros = ls('membros', []);
-    const nick = membros[idx].nick;
-    if (!confirm(`Remover ${nick} da gangue?`)) return;
-    membros.splice(idx, 1);
-    lsSet('membros', membros);
-    renderAdmMemList();
-    renderMembros();
-    toast(`${nick} removido.`);
-};
-
-// ════════════════════════════════════════════════════════════
-//  MODAL — VERIFICADOR DE REGRAS
-// ════════════════════════════════════════════════════════════
-function initRegrasModal() {
-    const fabBtn   = document.getElementById('btnRegras');
-    const modal    = document.getElementById('modalRegras');
-    const fecharBtn = document.getElementById('btnFecharRegras');
-    const input    = document.getElementById('regrasInput');
-    const count    = document.getElementById('regrasCount');
-
-    fabBtn.addEventListener('click', () => {
-        modal.classList.add('visible');
-        modal.setAttribute('aria-hidden', 'false');
-        setTimeout(() => input.focus(), 200);
-        renderRegrasChips();
-    });
-    fecharBtn.addEventListener('click', fecharModal);
-    modal.addEventListener('click', e => { if (e.target === modal) fecharModal(); });
-
-    function fecharModal() {
-        modal.classList.remove('visible');
-        modal.setAttribute('aria-hidden', 'true');
-    }
-
-    // ESC fecha
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && modal.classList.contains('visible')) fecharModal();
-    });
-
-    input.addEventListener('input', () => {
-        count.textContent = input.value.length;
-    });
-
-    document.getElementById('btnLimparRegras').addEventListener('click', () => {
-        input.value = '';
-        count.textContent = '0';
-        document.getElementById('regrasResultado').innerHTML = `
-            <div class="rm-placeholder">
-                <i class="ri-shield-line"></i>
-                <p>Descreva o ocorrido e clique em <strong>Verificar com IA</strong></p>
-            </div>`;
-    });
-
-    document.getElementById('btnVerificarRegras').addEventListener('click', verificarRegras);
-
-    // Voz
-    const btnVoz = document.getElementById('btnVozRegras');
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recog = new SR();
-        recog.lang = 'pt-BR'; recog.continuous = false; recog.interimResults = false;
-        recog.onresult = e => { input.value += e.results[0][0].transcript + ' '; count.textContent = input.value.length; };
-        recog.onerror  = () => toast('Erro no reconhecimento de voz.', 'error');
-        btnVoz.addEventListener('click', () => { recog.start(); btnVoz.classList.add('active'); });
-        recog.onend = () => btnVoz.classList.remove('active');
-    } else {
-        btnVoz.disabled = true; btnVoz.title = 'Voz não suportada neste navegador';
+    } catch (e) {
+        GRK.toast('Erro ao enviar mensagem', 'error');
     }
 }
 
-function renderRegrasChips() {
-    const chips = document.getElementById('regrasChips');
-    if (!window.REGRAS_RP) return;
-    chips.innerHTML = window.REGRAS_RP.slice(0, 12).map(r =>
-        `<button class="rm-chip-q" onclick="preencherExemplo('${r.codigo}')">${r.codigo}</button>`
-    ).join('');
-}
+async function carregarParticipantes() {
+    const list = document.getElementById('participantsList');
+    if (!list) return;
 
-window.preencherExemplo = function(codigo) {
-    if (!window.REGRAS_RP) return;
-    const regra = window.REGRAS_RP.find(r => r.codigo === codigo);
-    if (!regra || !regra.exemplos?.length) return;
-    const ex = regra.exemplos[Math.floor(Math.random() * regra.exemplos.length)];
-    document.getElementById('regrasInput').value = ex;
-    document.getElementById('regrasCount').textContent = ex.length;
-};
-
-async function verificarRegras() {
-    const input   = document.getElementById('regrasInput');
-    const relato  = input.value.trim();
-    const resEl   = document.getElementById('regrasResultado');
-
-    if (relato.length < 10) {
-        toast('Descreva melhor o que aconteceu (mínimo 10 caracteres).', 'error');
-        return;
-    }
-
-    resEl.innerHTML = `<div class="rm-placeholder"><div style="width:28px;height:28px;border:3px solid #252a38;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .5rem"></div><p>Analisando com IA...</p></div>`;
-
-    let resultado = null;
-
-    // Tentar Netlify Function
     try {
-        const r = await fetch('/.netlify/functions/verificar-ia', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ relato })
-        });
-        if (r.ok) resultado = await r.json();
-    } catch {}
+        const membros = await API.getMembros();
+        if (!membros?.length) {
+            list.innerHTML = GRK.emptyState('ri-group-line', 'Nenhum membro', '');
+            return;
+        }
+        list.innerHTML = membros.map(m => `
+            <div class="participant-item" data-id="${m.id}">
+                <div class="avatar avatar-sm">${GRK.getInitials(m.nick)}</div>
+                <div class="participant-info">
+                    <div class="participant-nick">${escapeHtml(m.nick)}</div>
+                    <div class="participant-cargo">${m.cargo || '—'}</div>
+                </div>
+                <div class="participant-level">Nv ${m.nivel || 1}</div>
+            </div>
+        `).join('');
 
-    // Fallback: análise local
-    if (!resultado && window.verificarInfracao) {
-        resultado = window.verificarInfracao(relato);
-        if (resultado) resultado._local = true;
+        // Click para ver perfil
+        list.querySelectorAll('.participant-item').forEach(item => {
+            item.addEventListener('click', () => {
+                navigateTo('membroPerfil', { membroId: item.dataset.id });
+            });
+        });
+    } catch (e) { /* silencioso */ }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DMs
+═══════════════════════════════════════════════════════════ */
+async function carregarDMs() {
+    const list = document.getElementById('dmList');
+    if (!list) return;
+    list.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+
+    try {
+        const convs = await API.getDMs();
+        STATE.dmList = convs;
+
+        if (!convs?.length) {
+            list.innerHTML = GRK.emptyState('ri-message-3-line', 'Nenhuma conversa', 'Inicie uma conversa com um membro da facção');
+            return;
+        }
+
+        list.innerHTML = convs.map(c => `
+            <div class="dm-item" data-conv-id="${c.id}" data-nick="${escapeHtml(c.outro_nick || '')}">
+                <div class="avatar avatar-md dm-item-avatar">${GRK.getInitials(c.outro_nick || '?')}</div>
+                <div class="dm-item-info">
+                    <div class="dm-item-nick">${escapeHtml(c.outro_nick || '—')}</div>
+                    <div class="dm-item-preview">${escapeHtml((c.ultima_msg || 'Sem mensagens').slice(0, 50))}</div>
+                </div>
+                <div class="dm-item-meta">
+                    <div class="dm-item-time">${c.ultima_msg_ts ? GRK.timeAgo(c.ultima_msg_ts) : ''}</div>
+                    ${Number(c.nao_lidas) > 0 ? `<span class="dm-item-unread">${c.nao_lidas}</span>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        list.querySelectorAll('.dm-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const convId = item.dataset.convId;
+                const nick   = item.dataset.nick;
+                navigateTo('dmConversa', { conversaId: convId, titulo: nick });
+            });
+        });
+    } catch (e) {
+        list.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro ao carregar', 'Não foi possível carregar as mensagens');
+    }
+}
+
+async function entrarNaConversa(conversaId, titulo = '') {
+    activeConversaId = conversaId;
+    setTextById('topbarTitle', titulo || 'Conversa');
+
+    const msgArea = document.getElementById('dmMessages');
+    if (!msgArea) return;
+    msgArea.innerHTML = '<div class="chat-loading"><div class="chat-spinner"></div></div>';
+
+    try {
+        const msgs = await API.getDMMsgs(conversaId);
+        STATE.dmMsgs[conversaId]   = msgs;
+        STATE.dmLastTs[conversaId] = msgs.length ? msgs[msgs.length - 1].created_at : null;
+        renderizarDMMsgs(conversaId, msgs, true);
+    } catch (e) {
+        msgArea.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Sem conexão', 'Não foi possível carregar as mensagens');
     }
 
-    if (!resultado) {
-        resEl.innerHTML = '<div class="rm-placeholder"><i class="ri-error-warning-line" style="color:var(--red)"></i><p>Erro ao analisar. Tente novamente.</p></div>';
+    pararDMPolling();
+    dmPollTimer = setInterval(() => pollDM(conversaId), DM_POLL_MS);
+}
+
+async function pollDM(conversaId) {
+    if (currentView !== 'dmConversa' || activeConversaId !== conversaId) { pararDMPolling(); return; }
+    try {
+        const since = STATE.dmLastTs[conversaId];
+        const novas = await API.getDMMsgs(conversaId, since);
+        if (novas?.length) {
+            STATE.dmLastTs[conversaId] = novas[novas.length - 1].created_at;
+            renderizarDMMsgs(conversaId, novas, false);
+        }
+    } catch (e) { /* silencioso */ }
+}
+
+function pararDMPolling() {
+    if (dmPollTimer) { clearInterval(dmPollTimer); dmPollTimer = null; }
+}
+
+function renderizarDMMsgs(conversaId, msgs, clear = false) {
+    const area = document.getElementById('dmMessages');
+    if (!area) return;
+    const atBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 100;
+
+    if (clear) area.innerHTML = '';
+    if (clear && !msgs.length) {
+        area.innerHTML = GRK.emptyState('ri-message-3-line', 'Nenhuma mensagem', 'Diga olá!');
         return;
     }
 
-    renderResultadoRegras(resultado, resEl);
-}
-
-function renderResultadoRegras(r, el) {
-    const regrasDetalhes = (r.regras || []).map(codigo => {
-        if (!window.REGRAS_RP) return { codigo, nome: codigo };
-        return window.REGRAS_RP.find(rg => rg.codigo === codigo) || { codigo, nome: codigo };
+    const myId = STATE.user?.id;
+    msgs.forEach(msg => {
+        if (document.getElementById(`dm-${msg.id}`)) return;
+        const isMe = msg.remetente_id === myId;
+        const el = document.createElement('div');
+        el.id = `dm-${msg.id}`;
+        el.innerHTML = GRK.chatMessage(msg, isMe);
+        area.appendChild(el);
     });
 
-    const chipsHtml = regrasDetalhes.length > 0
-        ? regrasDetalhes.map(rg => `<div class="${chipClass(rg.codigo)}">${rg.icon || ''} ${rg.codigo} — ${rg.nome}</div>`).join('')
-        : '<span class="rm-chip-none">Nenhuma regra identificada</span>';
+    if (clear || atBottom) area.scrollTop = area.scrollHeight;
+}
 
-    const badge = r._local
-        ? '<div class="rm-local-badge"><i class="ri-cpu-line"></i> Análise Local</div>'
-        : '<div class="rm-gemini-badge"><i class="ri-sparkle-line"></i> Análise IA</div>';
+async function enviarDMMsg() {
+    if (!activeConversaId) return;
+    const input = document.getElementById('dmInput');
+    const txt   = input?.value?.trim();
+    if (!txt) return;
 
-    const conf = r.confianca ? `<span class="rm-conf-badge">${r.confianca}% de confiança</span>` : '';
+    input.value = '';
+    input.style.height = 'auto';
 
-    const alert7 = r.alert7 ? `
-        <div class="rm-alert7-box">
-            <div class="rm-alert7-icon">⭐</div>
-            <div class="rm-box-title">ALERT 7 — DECISÃO GERENCIAL</div>
-            <p class="rm-box-txt">Este caso requer avaliação de um gerente ou administrador do servidor.</p>
-        </div>` : '';
+    try {
+        const msg = await API.sendDM(activeConversaId, txt);
+        if (msg) {
+            const el = document.createElement('div');
+            el.id = `dm-${msg.id}`;
+            el.innerHTML = GRK.chatMessage(msg, true);
+            const area = document.getElementById('dmMessages');
+            if (area) { area.appendChild(el); area.scrollTop = area.scrollHeight; }
+            STATE.dmLastTs[activeConversaId] = msg.created_at;
+        }
+    } catch (e) {
+        GRK.toast('Erro ao enviar mensagem', 'error');
+    }
+}
 
-    el.innerHTML = `<div class="rm-result-card">
-        <div class="rm-result-header">${badge}${conf}</div>
-        <div>
-            <div class="rm-box-title" style="margin-bottom:.4rem">Regras Violadas</div>
-            <div class="rm-regras-chips">${chipsHtml}</div>
+/* ═══════════════════════════════════════════════════════════
+   MISSÕES
+═══════════════════════════════════════════════════════════ */
+async function carregarMissoes() {
+    const dispEl = document.getElementById('missionsDisponiveis');
+    const concEl = document.getElementById('missionsConcluidas');
+    if (dispEl) dispEl.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+
+    try {
+        const tarefas = await API.getTarefas();
+
+        const disponiveis  = tarefas?.filter(t => !t.eu_conclui) || [];
+        const concluidas   = tarefas?.filter(t => t.eu_conclui)  || [];
+
+        if (dispEl) {
+            if (!disponiveis.length) {
+                dispEl.innerHTML = GRK.emptyState('ri-check-double-line', 'Tudo concluído!', 'Você concluiu todas as missões disponíveis');
+            } else {
+                dispEl.innerHTML = disponiveis.map(t => renderMissionCard(t, false)).join('');
+                dispEl.querySelectorAll('[data-concluir]').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        try {
+                            await API.concluirTarefa(btn.dataset.concluir);
+                            GRK.toast('Missão concluída! 🎯', 'success');
+                            carregarMissoes();
+                        } catch (e) {
+                            GRK.toast(e.message || 'Erro ao concluir missão', 'error');
+                        }
+                    });
+                });
+            }
+        }
+
+        if (concEl) {
+            if (!concluidas.length) {
+                concEl.innerHTML = GRK.emptyState('ri-sword-line', 'Nenhuma concluída', 'Complete missões para acumular pontos!');
+            } else {
+                concEl.innerHTML = concluidas.map(t => renderMissionCard(t, true)).join('');
+            }
+        }
+
+        // Admin: mostrar seção de criar
+        if (STATE.user?.is_admin) {
+            document.getElementById('missionCreateSection')?.classList.remove('hidden');
+        }
+
+    } catch (e) {
+        if (dispEl) dispEl.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro ao carregar', 'Não foi possível carregar as missões');
+    }
+}
+
+function renderMissionCard(t, done) {
+    const pct = t.total_concluiu > 0
+        ? Math.min(100, Math.round((t.total_concluiu / (STATE.ranking?.length || 1)) * 100))
+        : 0;
+    return `
+        <div class="mission-card ${done ? 'mission-card-done' : ''}">
+            <div class="mission-icon-wrap">
+                <div class="mission-icon"><i class="ri-sword-line"></i></div>
+            </div>
+            <div class="mission-body">
+                <div class="mission-title">${escapeHtml(t.titulo)}</div>
+                <div class="mission-desc">${escapeHtml(t.descricao || '')}</div>
+                <div class="mission-progress-row">
+                    <div class="mission-progress-bar">
+                        <div class="mission-progress-fill" style="width:${pct}%"></div>
+                    </div>
+                    <span class="mission-progress-text">${t.total_concluiu || 0} concluíram</span>
+                </div>
+                <div class="mission-footer">
+                    <span class="mission-reward"><i class="ri-star-fill"></i> ${GRK.formatPts(t.pontos)} PTS</span>
+                    ${!done ? `<button class="btn btn-primary btn-sm" data-concluir="${t.id}">Concluir</button>` : '<span class="mission-done-label">✅ Concluída</span>'}
+                </div>
+            </div>
         </div>
-        ${r.analise ? `<div class="rm-analise-box"><div class="rm-box-title">Análise</div><p class="rm-box-txt">${sanitize(r.analise)}</p></div>` : ''}
-        ${r.penalidade ? `<div class="rm-penalidade-box"><div class="rm-box-title">⚖️ Penalidade Sugerida</div><p class="rm-box-txt">${sanitize(r.penalidade)}</p></div>` : ''}
-        ${alert7}
-    </div>`;
+    `;
 }
 
-// ════════════════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-    initLogin();
-
-    // Verificar sessão anterior
-    const sessaoAnterior = sessionStorage.getItem('grk_nick');
-    if (sessaoAnterior) {
-        const nick  = sessaoAnterior;
-        const cargo = sessionStorage.getItem('grk_cargo') || 'Membro';
-        SESSAO = {
-            nick, cargo,
-            isAdmin: ['Gerente','Lider'].includes(cargo),
-            isLider: cargo === 'Lider'
-        };
-        iniciarPlataforma();
-    }
-
-    // Salvar sessão no sessionStorage após login
-    const origIniciar = iniciarPlataforma;
-    // (a sessão será salva inline nas funções)
-});
-
-// Guardar sessão em sessionStorage ao iniciar
-const _origIniciar = window.iniciarPlataforma;
-function salvarSessaoStorage() {
-    if (SESSAO) {
-        sessionStorage.setItem('grk_nick',  SESSAO.nick);
-        sessionStorage.setItem('grk_cargo', SESSAO.cargo);
-    }
-}
-
-// Interceptar iniciarPlataforma para salvar sessão
-const _orig = iniciarPlataforma;
-window.iniciarPlataforma = function() {
-    _orig();
-    salvarSessaoStorage();
+/* ═══════════════════════════════════════════════════════════
+   CONQUISTAS
+═══════════════════════════════════════════════════════════ */
+const CONQUISTAS_DEF = {
+    novato:    { icon: '🔰', nome: 'Novato',     desc: 'Alcançou o nível 5 na facção',          req: 'Nível 5'  },
+    veterano:  { icon: '⚔️', nome: 'Veterano',   desc: 'Membro fiel, alcançou o nível 20',       req: 'Nível 20' },
+    respeitado:{ icon: '👊', nome: 'Respeitado',  desc: 'Demonstrou respeito e lealdade',         req: 'Nível 40' },
+    matador:   { icon: '🎯', nome: 'Matador',    desc: 'Realizou 100 eliminações em PVP',        req: '100 eliminações' },
+    chefao:    { icon: '👑', nome: 'Chefão',     desc: 'Ascendeu ao cargo de liderança',         req: 'Promoção' },
+    lendario:  { icon: '⭐', nome: 'Lendário',   desc: 'Atingiu o nível máximo na facção',       req: 'Nível 100' },
+    dominacao: { icon: '🔥', nome: 'Dominação',  desc: 'Conquistou 13 postos no servidor',       req: '13 postos' },
+    implacavel:{ icon: '💀', nome: 'Implacável', desc: 'Realizou 500 ações de controle de área', req: '500 ações' },
+    invencivel:{ icon: '🛡️', nome: 'Invencível',desc: 'Venceu o Round da Fama',                 req: 'Round da Fama' },
 };
 
-// Expor navegarPara globalmente
-window.navegarPara = navegarPara;
+async function carregarConquistas() {
+    try {
+        const conquistas = await API.getConquistas();
+        const mapa       = Object.fromEntries((conquistas || []).map(c => [c.tipo, c.nick_vencedor]));
+
+        const grid = document.getElementById('achievementsGrid');
+        if (!grid) return;
+
+        grid.innerHTML = Object.entries(CONQUISTAS_DEF).map(([key, def]) => {
+            const vencedor  = mapa[key];
+            const desbloq   = !!vencedor;
+            return `
+                <div class="achievement-card ${desbloq ? 'achievement-unlocked' : 'achievement-locked'}"
+                     data-ach="${key}">
+                    <div class="achievement-icon">${def.icon}</div>
+                    <div class="achievement-name">${def.nome}</div>
+                    <div class="achievement-req">${vencedor ? escapeHtml(vencedor) : def.req}</div>
+                    ${!desbloq ? '<div class="achievement-lock-icon"><i class="ri-lock-line"></i></div>' : ''}
+                </div>
+            `;
+        }).join('');
+
+        // Click para modal
+        grid.querySelectorAll('.achievement-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const key    = card.dataset.ach;
+                const def    = CONQUISTAS_DEF[key];
+                const desbloq = card.classList.contains('achievement-unlocked');
+                const vencedor = mapa[key];
+
+                setTextById('achModalIcon', def.icon);
+                setTextById('achModalName', def.nome);
+                setTextById('achModalDesc',  def.desc);
+
+                const winnerEl = document.getElementById('achModalWinner');
+                const lockedEl = document.getElementById('achModalLocked');
+                if (desbloq && vencedor) {
+                    winnerEl?.classList.remove('hidden');
+                    lockedEl?.classList.add('hidden');
+                    setTextById('achModalWinnerNick', vencedor);
+                } else {
+                    winnerEl?.classList.add('hidden');
+                    lockedEl?.classList.remove('hidden');
+                }
+
+                showEl('achievementModal');
+            });
+        });
+
+        // Admin: preencher painel de conquistas admin
+        preencherConquistasAdmin(mapa);
+
+    } catch (e) {
+        const grid = document.getElementById('achievementsGrid');
+        if (grid) grid.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro', 'Não foi possível carregar conquistas');
+    }
+}
+
+function preencherConquistasAdmin(mapa) {
+    const list = document.getElementById('conquistasAdminList');
+    if (!list || !STATE.user?.is_admin) return;
+
+    list.innerHTML = Object.entries(CONQUISTAS_DEF).map(([key, def]) => `
+        <div class="conquista-admin-item">
+            <div class="conquista-admin-icon">${def.icon}</div>
+            <div class="conquista-admin-info">
+                <div class="conquista-admin-nome">${def.nome}</div>
+            </div>
+            <input type="text" class="input-field conquista-admin-input" data-tipo="${key}"
+                   placeholder="Nick do vencedor" value="${escapeHtml(mapa[key] || '')}">
+        </div>
+    `).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PERFIL
+═══════════════════════════════════════════════════════════ */
+async function carregarPerfil() {
+    try {
+        const me = await API.getMe();
+        STATE.setUser(me);
+        atualizarUIUsuario();
+        verificarLembrete();
+    } catch (e) { /* usa dados em cache */ }
+}
+
+async function carregarMembroPerfil(membroId) {
+    setAvatarEl(document.getElementById('membroAvatar'), '...', null);
+
+    try {
+        const membros = await API.getMembros();
+        const ranking = STATE.ranking?.length ? STATE.ranking : await API.getRanking();
+        const membro  = membros?.find(m => m.id === membroId);
+        if (!membro) { GRK.toast('Membro não encontrado', 'error'); return; }
+
+        const pos = ranking.findIndex(r => r.id === membroId);
+
+        setAvatarEl(document.getElementById('membroAvatar'), membro.nick, membro.avatar_url);
+        setTextById('membroNick',    membro.nick   || '—');
+        setTextById('membroCargo',   membro.cargo  || '—');
+        setTextById('membroLevel',  `NÍVEL ${membro.nivel || 1}`);
+        setTextById('membroRanking', pos >= 0 ? `#${pos + 1}` : '—');
+        setTextById('membroPontos',  GRK.formatPts(membro.pontos || 0));
+        setTextById('membroNivelAK', membro.nivel_ak || '—');
+        setTextById('membroMissoes', '—');
+
+        // Bio
+        if (membro.bio) {
+            setTextById('membroBio', membro.bio);
+            document.getElementById('membroBioWrap')?.classList.remove('hidden');
+        }
+
+        // Botão DM
+        const dmBtn = document.getElementById('membroDMBtn');
+        if (dmBtn) {
+            dmBtn.onclick = async () => {
+                try {
+                    const r = await API.iniciarDM(membroId);
+                    navigateTo('dmConversa', { conversaId: r.conversa_id, titulo: membro.nick });
+                } catch (e) {
+                    GRK.toast('Erro ao iniciar conversa', 'error');
+                }
+            };
+        }
+    } catch (e) {
+        GRK.toast('Erro ao carregar perfil', 'error');
+    }
+}
+
+function verificarLembrete() {
+    const u = STATE.user;
+    if (!u) return;
+    const reminder = document.getElementById('levelReminder');
+    const title    = document.getElementById('levelReminderTitle');
+    if (!reminder) return;
+
+    const nivelDiff   = (u.nivel || 1)    !== (u.nivel_notificado || 1);
+    const akDiff      = (u.nivel_ak || 1) !== (u.nivel_ak_notificado || 1);
+
+    if (nivelDiff || akDiff) {
+        const msg = nivelDiff ? 'Você subiu de nível! Atualize aqui.' : 'Sua AK subiu de nível! Atualize aqui.';
+        if (title) title.textContent = msg;
+        reminder.classList.remove('hidden');
+    } else {
+        reminder.classList.add('hidden');
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICAÇÕES
+═══════════════════════════════════════════════════════════ */
+async function iniciarPollingNotificacoes() {
+    await carregarContadorNotif();
+    notifPollTimer = setInterval(carregarContadorNotif, NOTIF_POLL_MS);
+}
+
+async function carregarContadorNotif() {
+    try {
+        const notifs   = await API.getNotificacoes();
+        const naoLidas = notifs?.filter(n => !n.lida)?.length || 0;
+        STATE.notifCount = naoLidas;
+
+        // Dot
+        const dot = document.getElementById('notifDot');
+        if (dot) dot.classList.toggle('hidden', naoLidas === 0);
+
+        // Pré-popular painel
+        if (document.getElementById('notifLista')) {
+            atualizarNotifPanel(notifs?.slice(0, 8) || []);
+        }
+    } catch (e) { /* silencioso */ }
+}
+
+function atualizarNotifPanel(notifs) {
+    const lista = document.getElementById('notifLista');
+    if (!lista) return;
+    if (!notifs.length) {
+        lista.innerHTML = GRK.emptyState('ri-notification-off-line', 'Sem notificações', '');
+        return;
+    }
+    lista.innerHTML = notifs.map(n => `
+        <div class="notif-item ${!n.lida ? 'notif-item-unread' : ''}" data-notif-id="${n.id}">
+            <div class="notif-item-icon">${notifIcon(n.tipo)}</div>
+            <div class="notif-item-info">
+                <div class="notif-item-title">${escapeHtml(n.titulo)}</div>
+                <div class="notif-item-msg">${escapeHtml(n.mensagem)}</div>
+                <div class="notif-item-time">${GRK.timeAgo(n.created_at)}</div>
+            </div>
+        </div>
+    `).join('');
+
+    lista.querySelectorAll('[data-notif-id]').forEach(item => {
+        item.addEventListener('click', async () => {
+            await API.lerNotificacoes(item.dataset.notifId).catch(() => {});
+            item.classList.remove('notif-item-unread');
+        });
+    });
+}
+
+async function carregarNotificacoes() {
+    const lista = document.getElementById('notifFullList');
+    if (!lista) return;
+    lista.innerHTML = '<div class="skeleton-card"></div>'.repeat(4);
+
+    try {
+        const notifs = await API.getNotificacoes();
+        await API.lerNotificacoes().catch(() => {});
+        STATE.notifCount = 0;
+        document.getElementById('notifDot')?.classList.add('hidden');
+
+        if (!notifs?.length) {
+            lista.innerHTML = GRK.emptyState('ri-notification-off-line', 'Sem notificações', 'Suas notificações aparecem aqui');
+            return;
+        }
+
+        lista.innerHTML = notifs.map(n => `
+            <div class="notif-item ${!n.lida ? 'notif-item-unread' : ''}">
+                <div class="notif-item-icon">${notifIcon(n.tipo)}</div>
+                <div class="notif-item-info">
+                    <div class="notif-item-title">${escapeHtml(n.titulo)}</div>
+                    <div class="notif-item-msg">${escapeHtml(n.mensagem)}</div>
+                    <div class="notif-item-time">${GRK.timeAgo(n.created_at)}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        lista.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro', 'Não foi possível carregar notificações');
+    }
+}
+
+function notifIcon(tipo) {
+    const icons = {
+        tarefa:   '🎯', evento: '📅', pvp: '⚔️',
+        promocao: '🎖️', denuncia: '🚨', nivel: '⬆️',
+        ak: '🔫', geral: '🔔'
+    };
+    return icons[tipo] || '🔔';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURAÇÕES
+═══════════════════════════════════════════════════════════ */
+function carregarConfig() {
+    // Push status
+    const pushText = document.getElementById('pushStatusText');
+    const pushBtn  = document.getElementById('pushToggle');
+
+    if ('Notification' in window) {
+        const perm = Notification.permission;
+        if (pushText) pushText.textContent = perm === 'granted' ? 'Ativo' : 'Inativo';
+        if (pushBtn)  pushBtn.classList.toggle('toggle-on', perm === 'granted');
+    } else {
+        if (pushText) pushText.textContent = 'Não suportado';
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN
+═══════════════════════════════════════════════════════════ */
+async function carregarAdmin() {
+    await carregarAdminMembros();
+    preencherConquistasAdmin({});
+}
+
+async function carregarAdminMembros() {
+    const list = document.getElementById('adminMembersList');
+    if (!list) return;
+    list.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+
+    try {
+        const membros = await API.getMembros();
+        if (!membros?.length) {
+            list.innerHTML = GRK.emptyState('ri-group-line', 'Nenhum membro', '');
+            return;
+        }
+        list.innerHTML = membros.map(m => `
+            <div class="admin-member-row">
+                <div class="avatar avatar-sm">${GRK.getInitials(m.nick)}</div>
+                <div class="admin-member-info">
+                    <div class="admin-member-nick">${escapeHtml(m.nick)}</div>
+                    <div class="admin-member-cargo">${m.cargo || '—'} · Nv${m.nivel} · ${GRK.formatPts(m.pontos)} pts</div>
+                </div>
+                <div class="admin-member-actions">
+                    <button class="btn btn-ghost btn-xs btn-resetar-pin" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
+                        PIN
+                    </button>
+                    <button class="btn btn-ghost btn-xs btn-promover" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
+                        Cargo
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        // Resetar PIN
+        list.querySelectorAll('.btn-resetar-pin').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                GRK.confirm(`Resetar PIN de ${btn.dataset.nick}?`, async () => {
+                    try {
+                        const r = await API.resetarPin(btn.dataset.id);
+                        GRK.toast(`Novo PIN de ${btn.dataset.nick}: ${r.pin}`, 'success');
+                        mostrarPinGerado(btn.dataset.nick, r.pin);
+                    } catch (e) {
+                        GRK.toast('Erro ao resetar PIN', 'error');
+                    }
+                });
+            });
+        });
+
+        // Promover
+        list.querySelectorAll('.btn-promover').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cargoAtual = membros.find(m => m.id === btn.dataset.id)?.cargo;
+                promoverModal(btn.dataset.id, btn.dataset.nick, cargoAtual);
+            });
+        });
+
+        // Preencher pontuar select
+        const pontuarList = document.getElementById('pontuarMemberSelect');
+        if (pontuarList) {
+            pontuarList.innerHTML = membros.map(m => `
+                <div class="pontuar-member-item" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
+                    <div class="avatar avatar-sm">${GRK.getInitials(m.nick)}</div>
+                    <div class="pontuar-member-nick">${escapeHtml(m.nick)}</div>
+                    <div class="pontuar-member-pts">${GRK.formatPts(m.pontos)} pts</div>
+                </div>
+            `).join('');
+            pontuarList.querySelectorAll('.pontuar-member-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    pontuarList.querySelectorAll('.pontuar-member-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    pontuarSelectedId = item.dataset.id;
+                });
+            });
+        }
+    } catch (e) {
+        list.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro', 'Não foi possível carregar membros');
+    }
+}
+
+function mostrarPinGerado(nick, pin) {
+    const box = document.getElementById('pinGeradoBox');
+    if (!box) return;
+    setTextById('pinGeradoNick', nick);
+    setTextById('pinGeradoValor', pin);
+    box.classList.remove('hidden');
+    // Mudar para aba "criar" onde está a box
+    document.querySelector('[data-admin-tab="criar"]')?.click();
+}
+
+function promoverModal(membroId, nick, cargoAtual) {
+    const cargos = ['Recruta','Membro','Veterano','Oficial','Tenente','Gerente','Lider'];
+    const options = cargos.map(c => `<option value="${c}" ${c === cargoAtual ? 'selected' : ''}>${c}</option>`).join('');
+    const content = `
+        <label class="form-label">Novo cargo para <strong>${escapeHtml(nick)}</strong></label>
+        <div class="select-field-wrap">
+            <select id="promoverCargoSelect" class="select-field">${options}</select>
+        </div>
+        <div class="input-field-wrap mt-1">
+            <i class="ri-chat-1-line"></i>
+            <input type="text" id="promoverMotivo" class="input-field" placeholder="Motivo da promoção">
+        </div>
+    `;
+    const fecharModal = GRK.modal('PROMOVER MEMBRO', content, `
+        <button class="btn btn-ghost" onclick="document.querySelector('.modal-overlay.visible')?.classList.remove('visible')">Cancelar</button>
+        <button class="btn btn-primary" id="confirmarPromoverBtn">CONFIRMAR</button>
+    `);
+
+    document.getElementById('confirmarPromoverBtn')?.addEventListener('click', async () => {
+        const cargo  = document.getElementById('promoverCargoSelect')?.value;
+        const motivo = document.getElementById('promoverMotivo')?.value?.trim();
+        if (!motivo) { GRK.toast('Informe o motivo', 'error'); return; }
+        try {
+            await API.promover(membroId, cargo, motivo);
+            GRK.toast(`${nick} promovido(a) para ${cargo}! 🎖️`, 'success');
+            fecharModal();
+            carregarAdminMembros();
+        } catch (e) {
+            GRK.toast('Erro ao promover membro', 'error');
+        }
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EVENT LISTENERS GLOBAIS
+═══════════════════════════════════════════════════════════ */
+function inicializarEventListeners() {
+    // ── Login Step 1 ──────────────────────────────────────
+    const nickInput = document.getElementById('loginNickInput');
+    if (nickInput) {
+        nickInput.addEventListener('keydown', e => { if (e.key === 'Enter') loginStep1Submit(); });
+    }
+    document.getElementById('loginContinueBtn')?.addEventListener('click', loginStep1Submit);
+
+    // ── PIN Pad ───────────────────────────────────────────
+    document.getElementById('pinBackBtn')?.addEventListener('click', () => {
+        showEl('loginStep1');
+        hideEl('loginStep2');
+        pinBuffer = '';
+        atualizarPinDisplay();
+        document.getElementById('loginNickInput')?.focus();
+    });
+
+    document.getElementById('pinDelBtn')?.addEventListener('click', () => {
+        pinBuffer = pinBuffer.slice(0, -1);
+        atualizarPinDisplay();
+    });
+
+    document.getElementById('pinLembrarBtn')?.addEventListener('click', () => {
+        lembrar = !lembrar;
+        const icon   = document.getElementById('pinLembrarIcon');
+        const status = document.getElementById('pinLembrarStatus');
+        if (icon)   icon.className = lembrar ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line';
+        if (status) status.innerHTML = `Lembrar dispositivo: <strong>${lembrar ? 'Sim' : 'Não'}</strong>`;
+    });
+
+    document.querySelectorAll('.pin-key[data-val]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (pinBuffer.length >= 4) return;
+            pinBuffer += btn.dataset.val;
+            atualizarPinDisplay();
+            btn.style.transform = 'scale(0.92)';
+            setTimeout(() => btn.style.transform = '', 120);
+            if (pinBuffer.length === 4) await loginStep2Submit();
+        });
+    });
+
+    // ── Navegação: Bottom nav + Sidebar nav ───────────────
+    document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.dataset.view;
+            if (view) navigateTo(view);
+        });
+    });
+
+    // Back button topbar
+    document.getElementById('topbarBack')?.addEventListener('click', () => {
+        const backMap = {
+            conquistas:    'perfil',
+            membroPerfil:  'ranking',
+            notificacoes:  'home',
+            config:        'perfil',
+            admin:         'perfil',
+            dmConversa:    'dm',
+        };
+        navigateTo(backMap[currentView] || 'home');
+    });
+
+    // ── Notificações dropdown ─────────────────────────────
+    document.getElementById('notifBtn')?.addEventListener('click', () => {
+        document.getElementById('notifPanel')?.classList.toggle('hidden');
+    });
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#notifPanel') && !e.target.closest('#notifBtn')) {
+            document.getElementById('notifPanel')?.classList.add('hidden');
+        }
+    });
+    document.getElementById('notifLerTodas')?.addEventListener('click', async () => {
+        await API.lerNotificacoes().catch(() => {});
+        document.getElementById('notifDot')?.classList.add('hidden');
+        await carregarContadorNotif();
+    });
+
+    // ── Chat ─────────────────────────────────────────────
+    document.getElementById('chatSendBtn')?.addEventListener('click', enviarChatMsg);
+    const chatInput = document.getElementById('chatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarChatMsg(); }
+        });
+        chatInput.addEventListener('input', autoResizeTextarea);
+    }
+
+    // Participants drawer
+    document.getElementById('participantsToggle')?.addEventListener('click', () => {
+        document.getElementById('participantsDrawer')?.classList.toggle('drawer-open');
+    });
+    document.getElementById('participantsClose')?.addEventListener('click', () => {
+        document.getElementById('participantsDrawer')?.classList.remove('drawer-open');
+    });
+
+    // Participants search
+    document.getElementById('participantsSearch')?.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.participant-item').forEach(item => {
+            const nick = item.querySelector('.participant-nick')?.textContent?.toLowerCase() || '';
+            item.style.display = nick.includes(q) ? '' : 'none';
+        });
+    });
+
+    // ── DMs ─────────────────────────────────────────────
+    document.getElementById('dmSendBtn')?.addEventListener('click', enviarDMMsg);
+    const dmInput = document.getElementById('dmInput');
+    if (dmInput) {
+        dmInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarDMMsg(); }
+        });
+        dmInput.addEventListener('input', autoResizeTextarea);
+    }
+
+    // Nova DM modal
+    document.getElementById('novaDMBtn')?.addEventListener('click', () => {
+        showEl('novaDMModal');
+        document.getElementById('dmSearchInput')?.focus();
+        carregarMembrosParaDM();
+    });
+    document.getElementById('novaDMClose')?.addEventListener('click', () => hideEl('novaDMModal'));
+    document.getElementById('dmSearchInput')?.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.dm-search-result').forEach(item => {
+            const nick = item.dataset.nick?.toLowerCase() || '';
+            item.style.display = nick.includes(q) ? '' : 'none';
+        });
+    });
+
+    // ── Missões tabs ─────────────────────────────────────
+    document.querySelectorAll('[data-missions-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-missions-tab]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.missionsTab;
+            document.getElementById('missionsDisponiveis')?.classList.toggle('hidden', tab !== 'disponiveis');
+            document.getElementById('missionsConcluidas')?.classList.toggle('hidden', tab !== 'concluidas');
+        });
+    });
+
+    // Criar missão (admin)
+    document.getElementById('missionCreateBtn')?.addEventListener('click', async () => {
+        const titulo  = document.getElementById('missionTitulo')?.value?.trim();
+        const desc    = document.getElementById('missionDesc')?.value?.trim();
+        const pontos  = parseInt(document.getElementById('missionPontos')?.value || '0');
+        if (!titulo) { GRK.toast('Informe o título', 'error'); return; }
+        if (!desc)   { GRK.toast('Informe a descrição', 'error'); return; }
+        try {
+            await API.criarTarefa(titulo, desc, pontos);
+            GRK.toast('Missão criada! 🎯', 'success');
+            document.getElementById('missionTitulo').value = '';
+            document.getElementById('missionDesc').value   = '';
+            document.getElementById('missionPontos').value = '';
+            carregarMissoes();
+        } catch (e) {
+            GRK.toast(e.message || 'Erro ao criar missão', 'error');
+        }
+    });
+
+    // ── Conquistas modal fechar ───────────────────────────
+    document.getElementById('achievementModalClose')?.addEventListener('click', () => hideEl('achievementModal'));
+    document.getElementById('achievementModal')?.addEventListener('click', e => {
+        if (e.target.id === 'achievementModal') hideEl('achievementModal');
+    });
+
+    // ── Perfil ───────────────────────────────────────────
+    document.getElementById('perfilEditarBtn')?.addEventListener('click', () => {
+        const u = STATE.user;
+        const el = id => document.getElementById(id);
+        if (el('editNivel'))   el('editNivel').value   = u?.nivel    || 1;
+        if (el('editNivelAK')) el('editNivelAK').value = u?.nivel_ak || 1;
+        if (el('editBio'))     el('editBio').value     = u?.bio      || '';
+        showEl('editPerfilModal');
+    });
+    document.getElementById('editPerfilClose')?.addEventListener('click',    () => hideEl('editPerfilModal'));
+    document.getElementById('editPerfilCancelBtn')?.addEventListener('click', () => hideEl('editPerfilModal'));
+    document.getElementById('editPerfilSaveBtn')?.addEventListener('click', async () => {
+        const nivel    = parseInt(document.getElementById('editNivel')?.value    || '1');
+        const nivel_ak = parseInt(document.getElementById('editNivelAK')?.value || '1');
+        const bio      = document.getElementById('editBio')?.value?.trim() || '';
+        try {
+            const updated = await API.updateMe({ nivel, nivel_ak, bio });
+            STATE.setUser({ ...STATE.user, ...updated });
+            atualizarUIUsuario();
+            hideEl('editPerfilModal');
+            GRK.toast('Perfil atualizado! ✅', 'success');
+            verificarLembrete();
+        } catch (e) {
+            GRK.toast(e.message || 'Erro ao salvar', 'error');
+        }
+    });
+
+    // Lembrete de nível
+    document.getElementById('levelReminderBtn')?.addEventListener('click', () => {
+        document.getElementById('perfilEditarBtn')?.click();
+    });
+    document.getElementById('levelReminderClose')?.addEventListener('click', () => {
+        document.getElementById('levelReminder')?.classList.add('hidden');
+    });
+
+    // Avatar upload
+    document.getElementById('perfilAvatarEdit')?.addEventListener('click', () => {
+        document.getElementById('avatarFileInput')?.click();
+    });
+    document.getElementById('avatarFileInput')?.addEventListener('change', async function() {
+        const file = this.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+            GRK.toast('Funcionalidade de avatar em desenvolvimento', 'info');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Logout
+    document.getElementById('sidebarLogout')?.addEventListener('click', fazerLogout);
+    document.getElementById('perfilLogoutBtn')?.addEventListener('click', fazerLogout);
+    document.getElementById('configSairBtn')?.addEventListener('click', fazerLogout);
+
+    // Config: push toggle
+    document.getElementById('pushToggle')?.addEventListener('click', async () => {
+        if (window.PWA) {
+            try {
+                await PWA.solicitarPermissaoPush();
+                GRK.toast('Notificações ativadas! 🔔', 'success');
+                carregarConfig();
+            } catch (e) {
+                GRK.toast('Permissão negada', 'error');
+            }
+        }
+    });
+
+    // Config: editar perfil
+    document.getElementById('configEditarPerfil')?.addEventListener('click', () => {
+        navigateTo('perfil');
+        setTimeout(() => document.getElementById('perfilEditarBtn')?.click(), 300);
+    });
+    document.getElementById('configAlterarNivel')?.addEventListener('click', () => {
+        navigateTo('perfil');
+        setTimeout(() => document.getElementById('perfilEditarBtn')?.click(), 300);
+    });
+    document.getElementById('configInstalarPWA')?.addEventListener('click', () => {
+        document.getElementById('btnInstalarPWA')?.click();
+    });
+
+    // ── Admin Tabs ────────────────────────────────────────
+    document.querySelectorAll('[data-admin-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-admin-tab]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.adminTab;
+            ['membros', 'criar', 'pontuar', 'conquistas'].forEach(t => {
+                const el = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                el?.classList.toggle('hidden', t !== tab);
+            });
+            if (tab === 'membros') carregarAdminMembros();
+        });
+    });
+
+    // Admin: criar membro
+    document.getElementById('adminCriarBtn')?.addEventListener('click', async () => {
+        const nick  = document.getElementById('adminNovoNick')?.value?.trim();
+        const cargo = document.getElementById('adminNovoCargo')?.value;
+        if (!nick) { GRK.toast('Informe o nick', 'error'); return; }
+        try {
+            const r = await API.criarMembro(nick, cargo);
+            mostrarPinGerado(r.membro?.nick || nick, r.pin);
+            GRK.toast(`${nick} adicionado! PIN: ${r.pin}`, 'success');
+            document.getElementById('adminNovoNick').value = '';
+        } catch (e) {
+            GRK.toast(e.message || 'Erro ao criar membro', 'error');
+        }
+    });
+
+    // Admin: copiar PIN
+    document.getElementById('pinGeradoCopiarBtn')?.addEventListener('click', () => {
+        const pin = document.getElementById('pinGeradoValor')?.textContent;
+        navigator.clipboard?.writeText(pin || '').then(() => GRK.toast('PIN copiado!', 'success'));
+    });
+
+    // Admin: pontuar
+    document.getElementById('pontuarBtn')?.addEventListener('click', async () => {
+        if (!pontuarSelectedId) { GRK.toast('Selecione um membro', 'error'); return; }
+        const pontos = parseInt(document.getElementById('pontuarValor')?.value || '0');
+        const motivo = document.getElementById('pontuarMotivo')?.value?.trim();
+        if (!pontos)  { GRK.toast('Informe a quantidade de pontos', 'error'); return; }
+        if (!motivo)  { GRK.toast('Informe o motivo', 'error'); return; }
+        try {
+            await API.pontuar(pontuarSelectedId, pontos, motivo, pontuarAcao);
+            GRK.toast(`Pontuação registrada! ${pontuarAcao === 'add' ? '+' : '-'}${pontos} pts`, 'success');
+            document.getElementById('pontuarValor').value  = '';
+            document.getElementById('pontuarMotivo').value = '';
+            pontuarSelectedId = null;
+            document.querySelectorAll('.pontuar-member-item').forEach(i => i.classList.remove('selected'));
+        } catch (e) {
+            GRK.toast(e.message || 'Erro ao pontuar', 'error');
+        }
+    });
+
+    document.querySelectorAll('.pontuar-acao-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.pontuar-acao-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            pontuarAcao = btn.dataset.acao;
+        });
+    });
+
+    // Admin: buscar nick para pontuar
+    document.getElementById('pontuarNickSearch')?.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.pontuar-member-item').forEach(item => {
+            const nick = item.dataset.nick?.toLowerCase() || '';
+            item.style.display = nick.includes(q) ? '' : 'none';
+        });
+    });
+
+    // Admin: salvar conquistas
+    document.getElementById('adminSalvarConquistasBtn')?.addEventListener('click', async () => {
+        const obj = {};
+        document.querySelectorAll('.conquista-admin-input').forEach(inp => {
+            if (inp.value.trim()) obj[inp.dataset.tipo] = inp.value.trim();
+        });
+        try {
+            await API.saveConquistas(obj);
+            GRK.toast('Conquistas salvas! 🏆', 'success');
+        } catch (e) {
+            GRK.toast('Erro ao salvar conquistas', 'error');
+        }
+    });
+
+    // Ranking tabs (visuais por enquanto — todos usam mesmo endpoint)
+    document.querySelectorAll('[data-ranking-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-ranking-tab]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    // Avatar click na topbar
+    document.getElementById('topbarAvatar')?.addEventListener('click', () => navigateTo('perfil'));
+
+    // Modais: fechar clicando fora
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.add('hidden');
+        });
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN FLOW
+═══════════════════════════════════════════════════════════ */
+function loginStep1Submit() {
+    const nick = document.getElementById('loginNickInput')?.value?.trim();
+    if (!nick || nick.length < 2) {
+        mostrarErroLogin('step1', 'Informe um nick válido (mínimo 2 caracteres)');
+        return;
+    }
+    ocultarErroLogin('step1');
+
+    // Guardar nick e ir para step 2
+    hideEl('loginStep1');
+    showEl('loginStep2');
+    pinBuffer = '';
+    lembrar   = false;
+    atualizarPinDisplay();
+
+    setTextById('pinNickDisplay', nick);
+    setTextById('pinAvatarInitials', GRK.getInitials(nick));
+    document.getElementById('pinLembrarIcon').className = 'ri-checkbox-blank-circle-line';
+    document.getElementById('pinLembrarStatus').innerHTML = 'Lembrar dispositivo: <strong>Não</strong>';
+}
+
+async function loginStep2Submit() {
+    const nick = document.getElementById('loginNickInput')?.value?.trim();
+    showEl('loginLoading');
+    hideEl('loginStep2');
+
+    try {
+        const result = await API.login(nick, pinBuffer, lembrar);
+
+        AUTH.login(result, lembrar); // salvar token no auth module
+
+        STATE.setUser(result.membro);
+        await iniciarApp();
+    } catch (e) {
+        hideEl('loginLoading');
+        showEl('loginStep2');
+        pinBuffer = '';
+        atualizarPinDisplay('error');
+        setTimeout(() => atualizarPinDisplay(), 600);
+        mostrarErroLogin('step2', e.message || 'PIN incorreto. Tente novamente.');
+    }
+}
+
+function atualizarPinDisplay(state = 'normal') {
+    const dots = document.querySelectorAll('.pin-dot');
+    dots.forEach((dot, i) => {
+        dot.className = 'pin-dot';
+        if (state === 'error') dot.classList.add('error');
+        else if (i < pinBuffer.length) dot.classList.add('filled');
+    });
+}
+
+function mostrarErroLogin(step, msg) {
+    const el = document.getElementById(`loginStep${step === 'step1' ? '1' : '2'}Error`);
+    if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+}
+function ocultarErroLogin(step) {
+    const el = document.getElementById(`loginStep${step === 'step1' ? '1' : '2'}Error`);
+    el?.classList.add('hidden');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOGOUT
+═══════════════════════════════════════════════════════════ */
+async function fazerLogout() {
+    GRK.confirm('Deseja sair da sua conta?', async () => {
+        clearInterval(chatPollTimer);
+        clearInterval(dmPollTimer);
+        clearInterval(notifPollTimer);
+        await API.logout().catch(() => {});
+        AUTH.logout();
+        STATE.clear();
+        hideEl('appShell');
+        showEl('loginScreen');
+        document.getElementById('loginNickInput').value = '';
+        pinBuffer = '';
+        document.getElementById('loginNickInput')?.focus();
+        showEl('loginStep1');
+        hideEl('loginStep2');
+        hideEl('loginLoading');
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS DE DM: BUSCAR MEMBROS
+═══════════════════════════════════════════════════════════ */
+async function carregarMembrosParaDM() {
+    const results = document.getElementById('dmSearchResults');
+    if (!results) return;
+    results.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+
+    try {
+        const membros = await API.getMembros();
+        const myId    = STATE.user?.id;
+        results.innerHTML = membros
+            .filter(m => m.id !== myId)
+            .map(m => `
+                <div class="dm-search-result" data-id="${m.id}" data-nick="${escapeHtml(m.nick)}">
+                    <div class="avatar avatar-sm">${GRK.getInitials(m.nick)}</div>
+                    <div class="dm-search-nick">${escapeHtml(m.nick)}</div>
+                    <div class="dm-search-cargo">${m.cargo || ''}</div>
+                </div>
+            `).join('');
+
+        results.querySelectorAll('.dm-search-result').forEach(item => {
+            item.addEventListener('click', async () => {
+                try {
+                    const r = await API.iniciarDM(item.dataset.id);
+                    hideEl('novaDMModal');
+                    navigateTo('dmConversa', { conversaId: r.conversa_id, titulo: item.dataset.nick });
+                } catch (e) {
+                    GRK.toast('Erro ao iniciar conversa', 'error');
+                }
+            });
+        });
+    } catch (e) {
+        results.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro', 'Não foi possível buscar membros');
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITÁRIOS DOM
+═══════════════════════════════════════════════════════════ */
+function showEl(id)  { document.getElementById(id)?.classList.remove('hidden'); }
+function hideEl(id)  { document.getElementById(id)?.classList.add('hidden');    }
+function setTextById(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+function setStyle(id, prop, val) { const el = document.getElementById(id); if (el) el.style[prop] = val; }
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function setAvatarEl(el, nick, avatarUrl, isMe = false) {
+    if (!el) return;
+    el.className = el.className.replace(/avatar-\w+/g, '').trim();
+    if (isMe) el.classList.add('avatar-me');
+    if (avatarUrl) {
+        el.innerHTML = `<img src="${avatarUrl}" alt="${escapeHtml(nick)}" loading="lazy">`;
+    } else {
+        el.textContent = GRK.getInitials(nick || '?');
+    }
+}
+
+function autoResizeTextarea(e) {
+    const ta = e.target;
+    ta.style.height = 'auto';
+    const max = 120;
+    ta.style.height = Math.min(ta.scrollHeight, max) + 'px';
+    ta.style.overflowY = ta.scrollHeight > max ? 'auto' : 'hidden';
+}

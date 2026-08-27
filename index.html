@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>GoddoY RK — One State RP</title>
     <meta name="description" content="Plataforma oficial da gangue GoddoY RK. Viva sua história. Escolha seu caminho. One State RP.">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#c41c1c">
+    <meta name="theme-color" content="#FF0000">
 
     <!-- PWA / Apple -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,875 +16,1047 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png">
     <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png">
     <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128.png">
     <link rel="apple-touch-startup-image" href="/icons/icon-512.png">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72.png">
+    <link rel="icon" type="image/png" href="/icons/icon-96.png">
     <link rel="shortcut icon" href="/icons/icon-192.png">
 
-    <!-- Open Graph (WhatsApp, Facebook, Telegram) -->
-    <meta property="og:type"        content="website">
-    <meta property="og:title"       content="GoddoY RK — One State RP">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="GoddoY RK — One State RP">
     <meta property="og:description" content="Plataforma oficial da gangue GoddoY RK. Viva sua história. Escolha seu caminho.">
-    <meta property="og:image"       content="/images/logo.jpg">
+    <meta property="og:image" content="/images/logo.jpg">
     <meta property="og:image:width" content="1024">
     <meta property="og:image:height" content="1024">
-    <meta property="og:image:alt"   content="GoddoY RK — Logo oficial">
-    <meta property="og:locale"      content="pt_BR">
+    <meta property="og:locale" content="pt_BR">
 
     <!-- Twitter Card -->
-    <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="GoddoY RK — One State RP">
-    <meta name="twitter:description" content="Plataforma oficial da gangue GoddoY RK. Viva sua história.">
-    <meta name="twitter:image"       content="/images/logo.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GoddoY RK — One State RP">
+    <meta name="twitter:image" content="/images/logo.jpg">
 
-    <!-- Fonts & Icons -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
+    <!-- CSS -->
     <link rel="stylesheet" href="css/platform.css">
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════ -->
-<!--  LOGIN — TELA DE ENTRADA                                 -->
-<!-- ════════════════════════════════════════════════════════ -->
-<div id="loginScreen" class="login-screen">
-    <div class="login-bg-overlay"></div>
-
-    <!-- STEP 1: Nick -->
-    <div class="login-card" id="loginStep1">
-        <div class="login-logo-wrap">
-            <div class="login-badge">
-                <img src="/images/logo.jpg" alt="GoddoY RK" class="login-logo-img">
-            </div>
-            <div class="login-brand">
-                <span class="login-title">GoddoY RK</span>
-                <span class="login-sub">Gangue de Rua · One State RP</span>
-            </div>
-        </div>
-
-        <div class="login-season-bar" id="loginSeasonBar">
-            <i class="ri-trophy-line"></i>
-            <span id="loginSeasonTxt">TEMPORADA ATIVA</span>
-        </div>
-
-        <div class="lf-group">
-            <label class="lf-label">SEU NICK NO ONE STATE RP</label>
-            <div class="lf-input-wrap">
-                <i class="ri-user-line"></i>
-                <input type="text" id="inpNick" class="lf-input"
-                    placeholder="Ex: João Silva"
-                    maxlength="40" autocomplete="nickname"
-                    autocapitalize="words" enterkeyhint="next">
-            </div>
-        </div>
-
-        <button id="btnIrPIN" class="btn-login" type="button">
-            <i class="ri-arrow-right-circle-line"></i> CONTINUAR
-        </button>
-
-        <!-- Botão instalar PWA -->
-        <button id="btnInstalarPWA" class="btn-instalar-pwa" style="display:none" type="button">
-            <i class="ri-smartphone-line"></i> Instalar no Celular
-        </button>
-
-        <p class="login-footer-note">
-            Apenas membros da <strong>GoddoY RK</strong> têm acesso.<br>
-            <span>Fale com o líder para obter seu PIN.</span>
-        </p>
-    </div>
-
-    <!-- STEP 2: PIN pad (4 dígitos) -->
-    <div class="login-card pin-card" id="loginStep2" style="display:none">
-        <button id="btnVoltarLogin" class="pin-back-btn">
-            <i class="ri-arrow-left-line"></i>
-        </button>
-        <div class="pin-avatar">GRK</div>
-        <div class="pin-greeting">Olá, <strong id="pinNickLabel"></strong>!</div>
-        <div class="pin-sub">Digite seu PIN de 4 dígitos</div>
-
-        <!-- Exibição dos dígitos -->
-        <div class="pin-display" id="pinDisplay">
-            <span class="pin-dot" data-idx="0"></span>
-            <span class="pin-dot" data-idx="1"></span>
-            <span class="pin-dot" data-idx="2"></span>
-            <span class="pin-dot" data-idx="3"></span>
-        </div>
-
-        <div id="pinErro" class="lf-erro" style="display:none"></div>
-
-        <!-- Teclado numérico -->
-        <div class="pin-pad">
-            <button class="pin-key" data-digit="1">1</button>
-            <button class="pin-key" data-digit="2">2</button>
-            <button class="pin-key" data-digit="3">3</button>
-            <button class="pin-key" data-digit="4">4</button>
-            <button class="pin-key" data-digit="5">5</button>
-            <button class="pin-key" data-digit="6">6</button>
-            <button class="pin-key" data-digit="7">7</button>
-            <button class="pin-key" data-digit="8">8</button>
-            <button class="pin-key" data-digit="9">9</button>
-            <button class="pin-key pin-lembrar" id="btnLembrar" title="Lembrar dispositivo">
-                <i class="ri-checkbox-blank-circle-line" id="icnLembrar"></i>
-            </button>
-            <button class="pin-key" data-digit="0">0</button>
-            <button class="pin-key pin-del" id="btnPinDel">
-                <i class="ri-delete-back-2-line"></i>
-            </button>
-        </div>
-
-        <div class="pin-lembrar-label">
-            <i class="ri-information-line"></i>
-            <span id="lembrarLabel">Não lembrar este dispositivo</span>
-        </div>
+<!-- ═══════════════════════════════════════════════════════════
+     APP LOADING SPLASH
+═══════════════════════════════════════════════════════════ -->
+<div id="appLoading" class="app-loading">
+    <div class="app-loading-inner">
+        <img src="/images/logo.jpg" alt="GoddoY RK" class="app-loading-logo">
+        <div class="app-loading-name">GoddoY RK</div>
+        <div class="app-loading-spinner"></div>
     </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════ -->
-<!--  PLATAFORMA PRINCIPAL                                    -->
-<!-- ════════════════════════════════════════════════════════ -->
-<div id="appScreen" class="app-screen" style="display:none">
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="login-screen hidden">
+    <div class="login-bg"></div>
+    <div class="login-bg-overlay"></div>
 
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <div class="sidebar-badge">
-                <img src="/images/logo.jpg" alt="GoddoY RK" class="sidebar-logo-img">
-            </div>
-            <div class="sidebar-brand">
-                <span class="sidebar-name">GoddoY RK</span>
-                <span class="sidebar-sub">Gangue de Rua</span>
-            </div>
+    <div class="login-content">
+        <!-- Logo / Identity -->
+        <div class="login-identity">
+            <img src="/images/logo.jpg" alt="GoddoY RK" class="login-logo-img">
+            <div class="login-gang-name">GoddoY RK</div>
+            <div class="login-tagline">Gangue de Rua · One State RP</div>
         </div>
 
-        <ul class="sidebar-nav">
-            <li><button class="snav-btn active" data-section="inicio">
-                <i class="ri-home-5-line"></i><span>Início</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="feed">
-                <i class="ri-image-line"></i><span>Feed</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="chat">
-                <i class="ri-message-3-line"></i><span>Chat Geral</span>
-                <span class="snav-badge" id="chatBadge" style="display:none">0</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="dms">
-                <i class="ri-chat-private-line"></i><span>Mensagens</span>
-                <span class="snav-badge" id="dmBadge" style="display:none">0</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="ranking">
-                <i class="ri-trophy-line"></i><span>Hall da Fama</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="membros">
-                <i class="ri-group-line"></i><span>Membros</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="tarefas">
-                <i class="ri-task-line"></i><span>Tarefas</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="denuncias">
-                <i class="ri-alert-line"></i><span>Denúncias</span>
-            </button></li>
-            <li><button class="snav-btn" data-section="perfil">
-                <i class="ri-user-line"></i><span>Meu Perfil</span>
-            </button></li>
-            <li id="navAdmin" style="display:none"><button class="snav-btn snav-admin" data-section="admin">
-                <i class="ri-shield-star-line"></i><span>Admin</span>
-            </button></li>
-        </ul>
-
-        <div class="sidebar-me">
-            <div class="sidebar-me-avatar" id="sidebarAvatar">GRK</div>
-            <div class="sidebar-me-info">
-                <div class="sidebar-me-nick" id="meNick">...</div>
-                <div class="sidebar-me-cargo" id="meCargo">...</div>
+        <!-- Step 1: Nick -->
+        <div id="loginStep1" class="login-card">
+            <div class="login-card-title">BEM-VINDO</div>
+            <div class="login-card-sub">Digite seu nick para continuar</div>
+            <div class="input-field-wrap">
+                <i class="ri-user-3-line"></i>
+                <input type="text" id="loginNickInput" class="input-field" placeholder="Seu nick da facção"
+                    autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="50">
             </div>
-            <button id="btnLogout" class="sidebar-logout" title="Sair">
-                <i class="ri-logout-box-line"></i>
+            <button id="loginContinueBtn" class="btn btn-primary w-full">
+                CONTINUAR <i class="ri-arrow-right-line"></i>
+            </button>
+            <div id="loginStep1Error" class="form-error hidden"></div>
+        </div>
+
+        <!-- Step 2: PIN Pad -->
+        <div id="loginStep2" class="login-card hidden">
+            <button id="pinBackBtn" class="pin-back-btn" aria-label="Voltar">
+                <i class="ri-arrow-left-line"></i>
+            </button>
+            <div id="pinAvatar" class="pin-avatar">
+                <span id="pinAvatarInitials"></span>
+            </div>
+            <div class="pin-greeting">Olá, <strong id="pinNickDisplay"></strong></div>
+            <div class="pin-sub">Digite seu PIN de 4 dígitos</div>
+
+            <div class="pin-display" id="pinDisplay">
+                <div class="pin-dot" data-i="0"></div>
+                <div class="pin-dot" data-i="1"></div>
+                <div class="pin-dot" data-i="2"></div>
+                <div class="pin-dot" data-i="3"></div>
+            </div>
+
+            <div class="pin-pad" id="pinPad">
+                <button class="pin-key" data-val="1">1</button>
+                <button class="pin-key" data-val="2">2</button>
+                <button class="pin-key" data-val="3">3</button>
+                <button class="pin-key" data-val="4">4</button>
+                <button class="pin-key" data-val="5">5</button>
+                <button class="pin-key" data-val="6">6</button>
+                <button class="pin-key" data-val="7">7</button>
+                <button class="pin-key" data-val="8">8</button>
+                <button class="pin-key" data-val="9">9</button>
+                <button class="pin-key pin-key-lembrar" id="pinLembrarBtn" title="Lembrar dispositivo">
+                    <i class="ri-checkbox-blank-circle-line" id="pinLembrarIcon"></i>
+                </button>
+                <button class="pin-key" data-val="0">0</button>
+                <button class="pin-key pin-key-del" id="pinDelBtn">
+                    <i class="ri-delete-back-2-line"></i>
+                </button>
+            </div>
+            <div class="pin-lembrar-row">
+                <span id="pinLembrarStatus" class="pin-lembrar-label">Lembrar dispositivo: <strong>Não</strong></span>
+            </div>
+            <div id="loginStep2Error" class="form-error hidden"></div>
+        </div>
+
+        <!-- Loading overlay for login -->
+        <div id="loginLoading" class="login-loading hidden">
+            <div class="login-spinner"></div>
+            <div class="login-loading-text">Entrando...</div>
+        </div>
+
+        <!-- Install PWA button -->
+        <button id="btnInstalarPWA" class="btn-instalar-pwa hidden">
+            <i class="ri-install-line"></i> Instalar no celular
+        </button>
+    </div>
+</div>
+
+<!-- iOS install instructions modal -->
+<div id="iosInstallModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <button class="modal-close" id="iosInstallClose"><i class="ri-close-line"></i></button>
+        <div class="ios-install-icon">📱</div>
+        <h3>Instalar GoddoY RK</h3>
+        <p>Para instalar no iPhone/iPad:</p>
+        <ol>
+            <li>Toque em <strong>Compartilhar</strong> <span>⬆️</span> na barra do Safari</li>
+            <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+            <li>Toque em <strong>Adicionar</strong></li>
+        </ol>
+        <p class="text-muted text-sm">Funciona como um aplicativo instalado no seu dispositivo.</p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL (visível após login)
+═══════════════════════════════════════════════════════════ -->
+<div id="appShell" class="app-shell hidden">
+
+    <!-- ── SIDEBAR (desktop) ──────────────────────────────── -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-logo">
+                <img src="/images/logo.jpg" alt="GoddoY RK" class="sidebar-logo-img">
+                <div class="sidebar-logo-text">
+                    <div class="sidebar-gang-name">GoddoY RK</div>
+                    <div class="sidebar-gang-sub">Gangue de Rua</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="sidebar-nav-item active" data-view="home">
+                    <i class="ri-home-5-fill sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Início</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="chat">
+                    <i class="ri-message-3-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Chat</span>
+                    <span class="sidebar-nav-badge hidden" id="sidebarChatBadge">0</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="ranking">
+                    <i class="ri-trophy-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Ranking</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="missoes">
+                    <i class="ri-sword-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Missões</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="perfil">
+                    <i class="ri-user-3-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Perfil</span>
+                </button>
+                <button class="sidebar-nav-item admin-only hidden" data-view="admin">
+                    <i class="ri-shield-star-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Admin</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar avatar-sm" id="sidebarAvatar"></div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-nick" id="sidebarNick">—</div>
+                    <div class="sidebar-user-cargo" id="sidebarCargo">—</div>
+                </div>
+            </div>
+            <button class="btn-icon" id="sidebarLogout" title="Sair" aria-label="Sair">
+                <i class="ri-logout-box-r-line"></i>
             </button>
         </div>
     </nav>
 
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
+    <!-- ── MAIN AREA ──────────────────────────────────────── -->
     <div class="main-wrap">
 
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <button class="topbar-menu" id="btnMenu">
-                <i class="ri-menu-line"></i>
+        <!-- Topbar (mobile + desktop) -->
+        <header class="topbar" id="topbar">
+            <button class="topbar-back hidden" id="topbarBack" aria-label="Voltar">
+                <i class="ri-arrow-left-line"></i>
             </button>
             <div class="topbar-title" id="topbarTitle">Início</div>
             <div class="topbar-actions">
                 <!-- Notificações -->
-                <button class="topbar-notif-btn" id="btnNotif" title="Notificações">
+                <button class="topbar-btn notif-btn" id="notifBtn" aria-label="Notificações">
                     <i class="ri-notification-3-line"></i>
-                    <span class="notif-dot" id="notifDot" style="display:none"></span>
+                    <span class="notif-dot hidden" id="notifDot"></span>
                 </button>
-                <div class="topbar-season" id="topbarSeason">
-                    <i class="ri-trophy-fill"></i><span id="topSeason">T75</span>
-                </div>
-                <div class="topbar-pts">
-                    <i class="ri-star-fill"></i>
-                    <span id="mesPts">0</span>
-                </div>
+                <!-- Avatar rápido -->
+                <div class="avatar avatar-sm topbar-avatar" id="topbarAvatar" data-view="perfil"></div>
             </div>
         </header>
 
-        <!-- PAINEL DE NOTIFICAÇÕES -->
-        <div class="notif-panel" id="notifPanel" style="display:none">
+        <!-- Notification panel (dropdown) -->
+        <div id="notifPanel" class="notif-panel hidden">
             <div class="notif-panel-header">
                 <span>Notificações</span>
-                <button id="btnLerTodas" class="notif-ler-todas">Ler todas</button>
+                <button class="btn-link" id="notifLerTodas">Ler todas</button>
             </div>
-            <div id="notifLista" class="notif-lista">
-                <div class="notif-empty">Nenhuma notificação.</div>
+            <div class="notif-lista" id="notifLista">
+                <div class="empty-state">
+                    <i class="ri-notification-off-line"></i>
+                    <p>Nenhuma notificação</p>
+                </div>
             </div>
         </div>
 
-        <main class="main-content">
+        <!-- Content area (all views rendered here) -->
+        <main class="content-area" id="contentArea">
 
-            <!-- ── INÍCIO ── -->
-            <section class="section active" id="sec-inicio">
-                <div class="gang-banner">
-                    <div class="gang-banner-left">
-                        <div class="gang-avatar">GRK</div>
-                        <div class="gang-info">
-                            <h1 class="gang-nome">GoddoY RK</h1>
-                            <p class="gang-tipo"><i class="ri-sword-line"></i> Gangue de Rua</p>
-                            <div class="gang-stats">
-                                <span class="gstat"><i class="ri-star-fill"></i> <strong id="gangPts">302 740</strong> pts</span>
-                                <span class="gstat"><i class="ri-group-fill"></i> <strong id="gangMembros">–</strong>/45</span>
+            <!-- ══════════════════════════════════════════════
+                 VIEW: HOME
+            ══════════════════════════════════════════════ -->
+            <div id="viewHome" class="view active">
+                <!-- User Hero -->
+                <div class="home-hero">
+                    <div class="home-hero-left">
+                        <div class="home-greeting">BEM-VINDO</div>
+                        <div class="home-nick" id="homeNick">—</div>
+                        <div class="home-cargo-wrap">
+                            <span class="badge badge-cargo" id="homeCargo">—</span>
+                        </div>
+                    </div>
+                    <div class="home-hero-right">
+                        <div class="avatar avatar-lg" id="homeAvatar"></div>
+                    </div>
+                </div>
+
+                <!-- XP Progress Card -->
+                <div class="card card-xp">
+                    <div class="card-xp-header">
+                        <span class="xp-label">SEU PROGRESSO</span>
+                        <span class="level-badge" id="homeLevel">NÍVEL —</span>
+                    </div>
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar">
+                            <div class="xp-bar-fill" id="homeXpFill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="xp-numbers">
+                        <span id="homeXpCurrent">0</span> / <span id="homeXpMax">5.000</span> XP
+                    </div>
+                </div>
+
+                <!-- Faction Card -->
+                <div class="card faction-card">
+                    <div class="faction-logo-mini">
+                        <img src="/images/logo.jpg" alt="GoddoY RK">
+                    </div>
+                    <div class="faction-info">
+                        <div class="faction-name">GoddoY RK</div>
+                        <div class="faction-sub">Gangue de Rua · One State RP</div>
+                    </div>
+                    <div class="faction-season">
+                        <div class="faction-season-label">TEMPORADA</div>
+                        <div class="faction-season-num" id="homeTemporada">—</div>
+                    </div>
+                </div>
+
+                <!-- Round da Fama Preview -->
+                <div class="card round-preview-card">
+                    <div class="round-preview-header">
+                        <div class="round-preview-title">ROUND DA FAMA</div>
+                        <button class="btn-link" data-view="ranking">VER RANKING <i class="ri-arrow-right-line"></i></button>
+                    </div>
+                    <div class="round-my-pos">
+                        <div class="round-pos-label">SUA COLOCAÇÃO</div>
+                        <div class="round-pos-val" id="homeRankPos">#—</div>
+                        <div class="round-pos-pts" id="homeRankPts">— PTS</div>
+                    </div>
+                </div>
+
+                <!-- Atividade Recente -->
+                <div class="section-header">
+                    <div class="section-title">ATIVIDADE RECENTE</div>
+                </div>
+                <div class="activity-feed" id="activityFeed">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: RANKING (Round da Fama + Completo)
+            ══════════════════════════════════════════════ -->
+            <div id="viewRanking" class="view hidden">
+                <!-- Round da Fama header -->
+                <div class="round-header">
+                    <div class="round-header-title">ROUND DA FAMA</div>
+                    <div class="round-timer" id="rankingTimer">
+                        <i class="ri-time-line"></i>
+                        <span id="rankingTimerText">—</span>
+                    </div>
+                    <div class="ranking-season" id="rankingTemporada">TEMPORADA —</div>
+                </div>
+
+                <!-- Podium Top 3 -->
+                <div class="podium-wrap">
+                    <div class="podium">
+                        <!-- 2nd place -->
+                        <div class="podium-slot podium-2" id="podium2">
+                            <div class="podium-medal">🥈</div>
+                            <div class="podium-avatar-wrap">
+                                <div class="avatar avatar-md podium-avatar" id="podiumAvatar2"></div>
                             </div>
+                            <div class="podium-nick" id="podiumNick2">—</div>
+                            <div class="podium-pts" id="podiumPts2">— PTS</div>
+                            <div class="podium-platform podium-platform-2">2</div>
                         </div>
-                    </div>
-                    <div class="gang-banner-right">
-                        <div class="season-card">
-                            <div class="season-label">TEMPORADA</div>
-                            <div class="season-num" id="seasonNum">75</div>
-                            <div class="season-dates" id="seasonDates">–</div>
-                            <button class="btn-placar" onclick="navegarPara('ranking')">
-                                <i class="ri-trophy-line"></i> VER PLACAR
-                            </button>
+                        <!-- 1st place -->
+                        <div class="podium-slot podium-1" id="podium1">
+                            <div class="podium-crown">👑</div>
+                            <div class="podium-avatar-wrap">
+                                <div class="avatar avatar-lg podium-avatar avatar-gold" id="podiumAvatar1"></div>
+                            </div>
+                            <div class="podium-nick" id="podiumNick1">—</div>
+                            <div class="podium-pts" id="podiumPts1">— PTS</div>
+                            <div class="podium-platform podium-platform-1">1</div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Lembrete de nível -->
-                <div class="nivel-reminder" id="nivelReminder" style="display:none">
-                    <div class="nivel-reminder-inner">
-                        <i class="ri-arrow-up-circle-fill"></i>
-                        <div>
-                            <div class="nivel-reminder-titulo" id="nivelReminderTxt">⬆️ Você subiu de nível!</div>
-                            <div class="nivel-reminder-sub">Atualize seu perfil para registrar sua evolução 🔥</div>
-                        </div>
-                        <button class="nivel-reminder-btn" onclick="navegarPara('perfil')">Atualizar</button>
-                        <button class="nivel-reminder-close" id="btnFecharReminder"><i class="ri-close-line"></i></button>
-                    </div>
-                </div>
-
-                <div class="dash-grid">
-                    <div class="dash-card" onclick="navegarPara('feed')">
-                        <div class="dash-card-icon red"><i class="ri-image-fill"></i></div>
-                        <div class="dash-card-info"><div class="dash-card-label">Feed</div><div class="dash-card-val">Fotos e posts</div></div>
-                        <i class="ri-arrow-right-s-line dash-arrow"></i>
-                    </div>
-                    <div class="dash-card" onclick="navegarPara('chat')">
-                        <div class="dash-card-icon blue"><i class="ri-message-3-fill"></i></div>
-                        <div class="dash-card-info"><div class="dash-card-label">Chat</div><div class="dash-card-val" id="dashMsgs">Chat geral</div></div>
-                        <i class="ri-arrow-right-s-line dash-arrow"></i>
-                    </div>
-                    <div class="dash-card" onclick="navegarPara('ranking')">
-                        <div class="dash-card-icon gold"><i class="ri-trophy-fill"></i></div>
-                        <div class="dash-card-info"><div class="dash-card-label">Ranking</div><div class="dash-card-val" id="dashRankPos">#–</div></div>
-                        <i class="ri-arrow-right-s-line dash-arrow"></i>
-                    </div>
-                    <div class="dash-card" onclick="navegarPara('denuncias')">
-                        <div class="dash-card-icon purple"><i class="ri-alert-fill"></i></div>
-                        <div class="dash-card-info"><div class="dash-card-label">Denúncias</div><div class="dash-card-val">Registrar ocorrência</div></div>
-                        <i class="ri-arrow-right-s-line dash-arrow"></i>
-                    </div>
-                </div>
-
-                <div class="card-bloco">
-                    <div class="bloco-header"><i class="ri-pulse-line"></i> Atividade Recente</div>
-                    <div id="atividades" class="atividade-lista">
-                        <div class="ativ-empty">Carregando...</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ── FEED SOCIAL ── -->
-            <section class="section" id="sec-feed">
-                <!-- Criar post -->
-                <div class="feed-create">
-                    <div class="feed-create-avatar" id="feedAvatar">GRK</div>
-                    <div class="feed-create-body">
-                        <textarea id="feedTexto" class="feed-create-input"
-                            placeholder="Compartilhe algo com a gangue... 🏴"
-                            maxlength="500" rows="2"></textarea>
-                        <div class="feed-create-actions">
-                            <label class="feed-media-btn" title="Foto">
-                                <i class="ri-image-add-line"></i>
-                                <input type="file" id="feedImgInput" accept="image/*,video/*" style="display:none">
-                            </label>
-                            <div class="feed-media-preview" id="feedMediaPreview"></div>
-                            <button id="btnPostar" class="btn-postar">
-                                <i class="ri-send-plane-fill"></i> Postar
-                            </button>
+                        <!-- 3rd place -->
+                        <div class="podium-slot podium-3" id="podium3">
+                            <div class="podium-medal">🥉</div>
+                            <div class="podium-avatar-wrap">
+                                <div class="avatar avatar-md podium-avatar" id="podiumAvatar3"></div>
+                            </div>
+                            <div class="podium-nick" id="podiumNick3">—</div>
+                            <div class="podium-pts" id="podiumPts3">— PTS</div>
+                            <div class="podium-platform podium-platform-3">3</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Lista de posts -->
-                <div id="feedLista" class="feed-lista">
-                    <div class="feed-loading">
-                        <div class="feed-spinner"></div> Carregando feed...
+                <!-- Ranking Tabs -->
+                <div class="tab-bar ranking-tabs">
+                    <button class="tab-item active" data-ranking-tab="round">Round</button>
+                    <button class="tab-item" data-ranking-tab="semana">Semana</button>
+                    <button class="tab-item" data-ranking-tab="mes">Mês</button>
+                    <button class="tab-item" data-ranking-tab="geral">Geral</button>
+                </div>
+
+                <!-- Ranking list #4+ -->
+                <div class="ranking-list" id="rankingList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CHAT GERAL
+            ══════════════════════════════════════════════ -->
+            <div id="viewChat" class="view view-chat hidden">
+                <!-- Chat messages area -->
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-loading">
+                        <div class="chat-spinner"></div>
                     </div>
                 </div>
 
-                <button id="btnCarregarMaisPosts" class="btn-carregar-mais" style="display:none">
-                    Carregar mais posts
+                <!-- Chat typing indicator -->
+                <div class="chat-typing-row" id="chatTyping"></div>
+
+                <!-- Chat input -->
+                <div class="chat-input-row">
+                    <button class="chat-btn-icon" id="chatAudioBtn" aria-label="Gravar áudio">
+                        <i class="ri-mic-line"></i>
+                    </button>
+                    <textarea id="chatInput" class="chat-input" placeholder="Digite uma mensagem..." rows="1"
+                        maxlength="500" aria-label="Mensagem"></textarea>
+                    <button class="chat-btn-send" id="chatSendBtn" aria-label="Enviar">
+                        <i class="ri-send-plane-fill"></i>
+                    </button>
+                </div>
+
+                <!-- Participants drawer toggle (desktop) -->
+                <button class="participants-toggle" id="participantsToggle" title="Ver participantes">
+                    <i class="ri-group-line"></i>
                 </button>
-            </section>
 
-            <!-- ── CHAT GERAL ── -->
-            <section class="section" id="sec-chat">
-                <div class="chat-layout">
-                    <div class="chat-area">
-                        <div class="chat-msgs" id="chatMsgs">
-                            <div class="chat-welcome-msg">
-                                <span>🔫</span>
-                                <p>Bem-vindo ao chat da <strong>GoddoY RK</strong>!<br>Mantenha o respeito e o foco.</p>
+                <!-- Participants drawer -->
+                <div class="participants-drawer" id="participantsDrawer">
+                    <div class="participants-drawer-header">
+                        <span>MEMBROS</span>
+                        <button class="btn-icon" id="participantsClose"><i class="ri-close-line"></i></button>
+                    </div>
+                    <div class="participants-search">
+                        <i class="ri-search-line"></i>
+                        <input type="text" id="participantsSearch" placeholder="Buscar membro..." class="search-input">
+                    </div>
+                    <div class="participants-list" id="participantsList">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: DMs (Lista de conversas)
+            ══════════════════════════════════════════════ -->
+            <div id="viewDM" class="view hidden">
+                <div class="dm-list-header">
+                    <span>MENSAGENS</span>
+                    <button class="btn btn-primary btn-sm" id="novaDMBtn">
+                        <i class="ri-add-line"></i> Nova
+                    </button>
+                </div>
+
+                <div class="dm-list" id="dmList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- Nova DM: member search modal -->
+                <div id="novaDMModal" class="modal-overlay hidden">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <span class="modal-title">Nova Conversa</span>
+                            <button class="modal-close" id="novaDMClose"><i class="ri-close-line"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-field-wrap">
+                                <i class="ri-search-line"></i>
+                                <input type="text" id="dmSearchInput" class="input-field" placeholder="Buscar membro...">
                             </div>
-                        </div>
-                        <div class="chat-typing-row" id="typingRow"></div>
-                        <div class="chat-input-row">
-                            <button id="btnAudio" class="chat-btn-icon"><i class="ri-mic-line"></i></button>
-                            <textarea id="chatInput" class="chat-input" placeholder="Mensagem para a equipe..." maxlength="500" rows="1"></textarea>
-                            <span class="chat-count" id="chatCount">0/500</span>
-                            <button id="btnSend" class="chat-btn-send"><i class="ri-send-plane-fill"></i></button>
-                        </div>
-                        <div id="recStatus" class="rec-status" style="display:none">
-                            <div class="rec-dot"></div>
-                            <span>Gravando... <strong id="recTimer">0s</strong></span>
-                            <button id="btnStopRec" class="btn-stop-rec"><i class="ri-stop-circle-fill"></i> Enviar</button>
-                            <button id="btnCancelRec" class="btn-cancel-rec"><i class="ri-close-circle-line"></i></button>
+                            <div class="dm-search-results" id="dmSearchResults"></div>
                         </div>
                     </div>
-                    <aside class="chat-members" id="chatMembers">
-                        <div class="cm-header"><i class="ri-circle-fill" style="color:#22c55e;font-size:.45rem"></i> ONLINE</div>
-                        <div id="onlineList" class="cm-list"></div>
-                    </aside>
                 </div>
-            </section>
+            </div>
 
-            <!-- ── MENSAGENS PRIVADAS (DMs) ── -->
-            <section class="section" id="sec-dms">
-                <!-- Lista de conversas -->
-                <div id="dmLista" class="dm-lista">
-                    <div class="dm-lista-header">
-                        <span>Conversas</span>
-                        <button id="btnNovaDM" class="btn-nova-dm">
-                            <i class="ri-edit-line"></i> Nova
-                        </button>
-                    </div>
-                    <div id="dmConversas" class="dm-conversas">
-                        <div class="dm-empty">Nenhuma conversa ainda.<br>Clique em <strong>Nova</strong> para começar.</div>
-                    </div>
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CONVERSA PRIVADA
+            ══════════════════════════════════════════════ -->
+            <div id="viewDMConversa" class="view view-chat hidden">
+                <!-- Messages -->
+                <div class="chat-messages" id="dmMessages"></div>
+
+                <!-- Input -->
+                <div class="chat-input-row">
+                    <textarea id="dmInput" class="chat-input" placeholder="Digite uma mensagem..." rows="1"
+                        maxlength="500" aria-label="Mensagem privada"></textarea>
+                    <button class="chat-btn-send" id="dmSendBtn" aria-label="Enviar">
+                        <i class="ri-send-plane-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: MISSÕES
+            ══════════════════════════════════════════════ -->
+            <div id="viewMissoes" class="view hidden">
+                <div class="tab-bar missions-tabs">
+                    <button class="tab-item active" data-missions-tab="disponiveis">DISPONÍVEIS</button>
+                    <button class="tab-item" data-missions-tab="concluidas">CONCLUÍDAS</button>
                 </div>
 
-                <!-- Janela da conversa (oculta inicialmente) -->
-                <div id="dmConversa" class="dm-conversa" style="display:none">
-                    <div class="dm-conversa-header">
-                        <button id="btnVoltarDM" class="dm-back"><i class="ri-arrow-left-line"></i></button>
-                        <div class="dm-conversa-avatar" id="dmAvatarOther">GRK</div>
-                        <div class="dm-conversa-info">
-                            <div class="dm-other-nick" id="dmOutroNick">–</div>
-                            <div class="dm-other-cargo" id="dmOutroCargo">–</div>
-                        </div>
-                    </div>
-                    <div class="dm-msgs" id="dmMsgs">
-                        <div class="chat-welcome-msg"><span>💬</span><p>Início da conversa</p></div>
-                    </div>
-                    <div class="chat-input-row dm-input-row">
-                        <textarea id="dmInput" class="chat-input" placeholder="Mensagem privada..." maxlength="500" rows="1"></textarea>
-                        <button id="btnDMSend" class="chat-btn-send"><i class="ri-send-plane-fill"></i></button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ── HALL DA FAMA ── -->
-            <section class="section" id="sec-ranking">
-                <div class="section-header-row">
-                    <h2 class="section-title"><i class="ri-trophy-fill gold-icon"></i> Hall da Fama</h2>
-                    <div class="season-chip" id="rankSeason">Temporada 75</div>
-                </div>
-                <div class="podium" id="podium">
-                    <div class="podium-place podium-2nd" id="pod2">
-                        <div class="pod-avatar">?</div><div class="pod-nick">–</div>
-                        <div class="pod-pts">0 pts</div><div class="pod-bar p2"></div><div class="pod-medal">🥈</div>
-                    </div>
-                    <div class="podium-place podium-1st" id="pod1">
-                        <div class="pod-crown">👑</div><div class="pod-avatar">?</div>
-                        <div class="pod-nick">–</div><div class="pod-pts">0 pts</div>
-                        <div class="pod-bar p1"></div><div class="pod-medal">🥇</div>
-                    </div>
-                    <div class="podium-place podium-3rd" id="pod3">
-                        <div class="pod-avatar">?</div><div class="pod-nick">–</div>
-                        <div class="pod-pts">0 pts</div><div class="pod-bar p3"></div><div class="pod-medal">🥉</div>
-                    </div>
-                </div>
-                <div class="card-bloco">
-                    <div class="bloco-header"><i class="ri-list-ordered"></i> Classificação Geral</div>
-                    <div id="rankingTable" class="ranking-table">
-                        <div class="ranking-empty">Carregando...</div>
-                    </div>
-                </div>
-                <div class="card-bloco">
-                    <div class="bloco-header"><i class="ri-award-line"></i> Conquistas da Temporada</div>
-                    <div class="conquistas-grid" id="conquistasGrid">
-                        <div class="conquista-card"><div class="conq-icon">🔫</div><div class="conq-nome">Atirador de Elite</div><div class="conq-holder" id="cq1">–</div></div>
-                        <div class="conquista-card"><div class="conq-icon">💰</div><div class="conq-nome">Mais Rico</div><div class="conq-holder" id="cq2">–</div></div>
-                        <div class="conquista-card"><div class="conq-icon">🏆</div><div class="conq-nome">MVP</div><div class="conq-holder" id="cq3">–</div></div>
-                        <div class="conquista-card"><div class="conq-icon">🎯</div><div class="conq-nome">Mais Missões</div><div class="conq-holder" id="cq4">–</div></div>
-                        <div class="conquista-card"><div class="conq-icon">⭐</div><div class="conq-nome">Mais Leal</div><div class="conq-holder" id="cq5">–</div></div>
-                        <div class="conquista-card"><div class="conq-icon">🛡️</div><div class="conq-nome">Mais Promotions</div><div class="conq-holder" id="cq6">–</div></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ── MEMBROS ── -->
-            <section class="section" id="sec-membros">
-                <div class="section-header-row">
-                    <h2 class="section-title"><i class="ri-group-fill"></i> Membros</h2>
-                    <div class="mem-count-chip"><span id="memTotal">–</span>/45</div>
-                </div>
-                <div class="mem-filter-row">
-                    <button class="mem-filter active" data-cargo="todos">Todos</button>
-                    <button class="mem-filter" data-cargo="Lider">Líder</button>
-                    <button class="mem-filter" data-cargo="Gerente">Gerentes</button>
-                    <button class="mem-filter" data-cargo="Oficial">Oficiais</button>
-                    <button class="mem-filter" data-cargo="Membro">Membros</button>
-                </div>
-                <div id="membrosGrid" class="membros-grid">
-                    <div class="mem-empty">Carregando...</div>
-                </div>
-            </section>
-
-            <!-- ── TAREFAS ── -->
-            <section class="section" id="sec-tarefas">
-                <div class="section-header-row">
-                    <h2 class="section-title"><i class="ri-task-fill"></i> Tarefas & Missões</h2>
-                </div>
-                <div id="tarefasGrid" class="tarefas-grid">
-                    <div class="tarefas-empty">Carregando tarefas...</div>
-                </div>
-            </section>
-
-            <!-- ── DENÚNCIAS ── -->
-            <section class="section" id="sec-denuncias">
-                <div class="section-header-row">
-                    <h2 class="section-title"><i class="ri-alert-fill" style="color:var(--red)"></i> Denúncias</h2>
+                <div id="missionsDisponiveis" class="missions-list">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
                 </div>
 
-                <!-- Formulário de denúncia -->
-                <div class="card-bloco" id="formDenuncia">
-                    <div class="bloco-header"><i class="ri-add-circle-line"></i> Nova Denúncia</div>
-                    <div class="denuncia-form">
-                        <div class="af-group">
-                            <label class="lf-label">NICK DO INFRATOR</label>
-                            <div class="lf-input-wrap">
-                                <i class="ri-user-forbid-line"></i>
-                                <input type="text" id="denNick" class="lf-input" placeholder="Ex: Fulano Silva" maxlength="50">
-                            </div>
+                <div id="missionsConcluidas" class="missions-list hidden"></div>
+
+                <!-- Admin: criar missão -->
+                <div class="admin-only hidden" id="missionCreateSection">
+                    <div class="section-header mt-2">
+                        <div class="section-title">CRIAR MISSÃO</div>
+                    </div>
+                    <div class="card">
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-sword-line"></i>
+                            <input type="text" id="missionTitulo" class="input-field" placeholder="Título da missão">
                         </div>
-                        <div class="af-group">
-                            <label class="lf-label">TIPO DE INFRAÇÃO</label>
-                            <div class="lf-select-wrap">
-                                <i class="ri-error-warning-line"></i>
-                                <select id="denTipo" class="lf-select">
-                                    <option value="">Selecione...</option>
-                                    <option value="dm_sem_motivo">🔫 DM sem motivo (atacou sem contexto de RP)</option>
-                                    <option value="rdm_na_rua">🚶 RDM na rua (matou random na rua)</option>
-                                    <option value="taser_veiculo">🚗 Taser em veículo sem motivo</option>
-                                    <option value="invasao_territorio">🏴 Invasão de território</option>
-                                    <option value="desrespeito_toxicidade">🤬 Desrespeito / Toxicidade</option>
-                                    <option value="contra_integrante">👥 Contra integrante da gangue</option>
-                                    <option value="outro">📝 Outro (descrever)</option>
-                                </select>
-                            </div>
+                        <textarea id="missionDesc" class="textarea-field mb-1" placeholder="Descrição..." rows="3"></textarea>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-star-line"></i>
+                            <input type="number" id="missionPontos" class="input-field" placeholder="Pontos de recompensa" min="0" max="99999">
                         </div>
-                        <div class="af-group">
-                            <label class="lf-label">DESCRIÇÃO DO OCORRIDO</label>
-                            <textarea id="denDesc" class="af-textarea" placeholder="Descreva detalhadamente o que aconteceu... (mínimo 20 caracteres)" maxlength="1000" rows="4"></textarea>
-                        </div>
-                        <div class="af-group">
-                            <label class="lf-label">EVIDÊNCIA (foto ou vídeo até 30 segundos)</label>
-                            <label class="evidencia-upload" id="evidenciaLabel">
-                                <i class="ri-attachment-2"></i>
-                                <span id="evidenciaNome">Clique para anexar foto ou vídeo</span>
-                                <input type="file" id="denEvidencia" accept="image/*,video/*" style="display:none">
-                            </label>
-                            <div id="evidenciaPreview" class="evidencia-preview" style="display:none"></div>
-                        </div>
-                        <div id="denErro" class="lf-erro" style="display:none"></div>
-                        <button id="btnEnviarDenuncia" class="btn-admin-action red">
-                            <i class="ri-send-plane-fill"></i> Enviar Denúncia
+                        <button class="btn btn-primary w-full" id="missionCreateBtn">
+                            <i class="ri-add-line"></i> CRIAR MISSÃO
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Minhas denúncias -->
-                <div class="card-bloco">
-                    <div class="bloco-header"><i class="ri-history-line"></i> Minhas Denúncias</div>
-                    <div id="minhasDenuncias" class="pts-historico">
-                        <div class="hist-empty">Nenhuma denúncia registrada.</div>
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CONQUISTAS
+            ══════════════════════════════════════════════ -->
+            <div id="viewConquistas" class="view hidden">
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Conquistas padrão da facção -->
+                    <div class="achievement-card" data-ach="novato">
+                        <div class="achievement-icon">🔰</div>
+                        <div class="achievement-name">Novato</div>
+                        <div class="achievement-req">Nível 5</div>
+                        <div class="achievement-lock hidden"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="veterano">
+                        <div class="achievement-icon">⚔️</div>
+                        <div class="achievement-name">Veterano</div>
+                        <div class="achievement-req">Nível 20</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="respeitado">
+                        <div class="achievement-icon">👊</div>
+                        <div class="achievement-name">Respeitado</div>
+                        <div class="achievement-req">Nível 40</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="matador">
+                        <div class="achievement-icon">🎯</div>
+                        <div class="achievement-name">Matador</div>
+                        <div class="achievement-req">100 eliminações</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="chefao">
+                        <div class="achievement-icon">👑</div>
+                        <div class="achievement-name">Chefão</div>
+                        <div class="achievement-req">Promoção</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="lendario">
+                        <div class="achievement-icon">⭐</div>
+                        <div class="achievement-name">Lendário</div>
+                        <div class="achievement-req">Nível 100</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="dominacao">
+                        <div class="achievement-icon">🔥</div>
+                        <div class="achievement-name">Dominação</div>
+                        <div class="achievement-req">13 postos</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="implacavel">
+                        <div class="achievement-icon">💀</div>
+                        <div class="achievement-name">Implacável</div>
+                        <div class="achievement-req">500 ações</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="invencivel">
+                        <div class="achievement-icon">🛡️</div>
+                        <div class="achievement-name">Invencível</div>
+                        <div class="achievement-req">Round da Fama</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Admin: todas as denúncias -->
-                <div class="card-bloco" id="todasDenunciasBloco" style="display:none">
-                    <div class="bloco-header"><i class="ri-shield-star-line"></i> Todas as Denúncias (Admin)</div>
-                    <div id="todasDenuncias" class="pts-historico"></div>
+            <!-- Achievement detail modal -->
+            <div id="achievementModal" class="modal-overlay hidden">
+                <div class="modal-card modal-achievement">
+                    <button class="modal-close" id="achievementModalClose"><i class="ri-close-line"></i></button>
+                    <div class="achievement-modal-icon" id="achModalIcon">🔰</div>
+                    <div class="achievement-modal-name" id="achModalName">—</div>
+                    <div class="achievement-modal-desc" id="achModalDesc">—</div>
+                    <div class="achievement-modal-winner hidden" id="achModalWinner">
+                        <i class="ri-user-star-line"></i>
+                        <span id="achModalWinnerNick">—</span>
+                    </div>
+                    <div class="achievement-modal-locked hidden" id="achModalLocked">
+                        <i class="ri-lock-line"></i> Conquista bloqueada
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- ── MEU PERFIL ── -->
-            <section class="section" id="sec-perfil">
-                <div class="perfil-hero">
-                    <!-- Avatar -->
-                    <div class="perfil-avatar-wrap">
-                        <div class="perfil-avatar" id="perfilAvatar">GRK</div>
-                        <label class="perfil-avatar-edit" title="Trocar foto" id="perfilAvatarLabel">
+            <!-- ══════════════════════════════════════════════
+                 VIEW: PERFIL PRÓPRIO
+            ══════════════════════════════════════════════ -->
+            <div id="viewPerfil" class="view hidden">
+                <!-- Profile Hero -->
+                <div class="profile-hero">
+                    <div class="profile-avatar-wrap">
+                        <div class="avatar avatar-xl" id="perfilAvatar"></div>
+                        <button class="profile-avatar-edit" id="perfilAvatarEdit" aria-label="Editar avatar">
                             <i class="ri-camera-line"></i>
-                            <input type="file" id="perfilAvatarInput" accept="image/*" style="display:none">
-                        </label>
+                        </button>
+                        <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
                     </div>
-                    <div class="perfil-hero-info">
-                        <h2 class="perfil-nick" id="perfilNick">–</h2>
-                        <div class="perfil-cargo" id="perfilCargo">–</div>
-                        <div class="perfil-pts" id="perfilPts">0 pts</div>
+                    <div class="profile-info">
+                        <div class="profile-nick" id="perfilNick">—</div>
+                        <div class="profile-cargo-wrap">
+                            <span class="badge badge-cargo" id="perfilCargo">—</span>
+                        </div>
+                        <div class="profile-level-row">
+                            <span class="level-badge" id="perfilLevel">NÍVEL —</span>
+                            <span class="profile-xp-text" id="perfilXP">— XP</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Stats -->
-                <div class="perfil-stats">
-                    <div class="pstat">
-                        <div class="pstat-val" id="perfilNivel">1</div>
-                        <div class="pstat-label">Nível</div>
+                <!-- XP Bar -->
+                <div class="profile-xp-card">
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar">
+                            <div class="xp-bar-fill" id="perfilXpFill" style="width:0%"></div>
+                        </div>
                     </div>
-                    <div class="pstat">
-                        <div class="pstat-val" id="perfilAK">1</div>
-                        <div class="pstat-label">Nível AK-47</div>
-                    </div>
-                    <div class="pstat">
-                        <div class="pstat-val" id="perfilPosRanking">#–</div>
-                        <div class="pstat-label">Ranking</div>
+                    <div class="xp-numbers">
+                        <span id="perfilXpCurrent">0</span> / <span id="perfilXpMax">5.000</span> XP
                     </div>
                 </div>
 
-                <!-- Editar perfil -->
-                <div class="card-bloco">
-                    <div class="bloco-header"><i class="ri-edit-line"></i> Atualizar Perfil</div>
-                    <div class="admin-form">
-                        <div class="af-row">
-                            <div class="af-group" style="flex:1">
-                                <label>Meu Nível no Jogo</label>
-                                <div style="display:flex;align-items:center;gap:.5rem">
-                                    <button class="nivel-btn" id="btnNivelMenos"><i class="ri-subtract-line"></i></button>
-                                    <input type="number" id="inpMeuNivel" class="af-input" placeholder="1" min="1" max="100" style="text-align:center;font-family:var(--ff-title);font-size:1.1rem;font-weight:700">
-                                    <button class="nivel-btn" id="btnNivelMais"><i class="ri-add-line"></i></button>
-                                </div>
-                            </div>
-                            <div class="af-group" style="flex:1">
-                                <label>Nível da AK-47 🔫</label>
-                                <div style="display:flex;align-items:center;gap:.5rem">
-                                    <button class="nivel-btn" id="btnAKMenos"><i class="ri-subtract-line"></i></button>
-                                    <input type="number" id="inpMeuAK" class="af-input" placeholder="1" min="1" max="50" style="text-align:center;font-family:var(--ff-title);font-size:1.1rem;font-weight:700">
-                                    <button class="nivel-btn" id="btnAKMais"><i class="ri-add-line"></i></button>
-                                </div>
-                            </div>
+                <!-- Stats Grid -->
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilRanking">#—</div>
+                        <div class="stat-label">Ranking</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilPontos">—</div>
+                        <div class="stat-label">Pontos</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilMissoes">—</div>
+                        <div class="stat-label">Missões</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilNivelAK">—</div>
+                        <div class="stat-label">Nível AK</div>
+                    </div>
+                </div>
+
+                <!-- Level Reminder Banner (shown when level changed) -->
+                <div id="levelReminder" class="level-reminder hidden">
+                    <div class="level-reminder-inner">
+                        <i class="ri-arrow-up-circle-fill"></i>
+                        <div class="level-reminder-text">
+                            <div class="level-reminder-title" id="levelReminderTitle">Você subiu de nível!</div>
+                            <div class="level-reminder-sub">Atualize seu nível no perfil</div>
                         </div>
-                        <div class="af-group">
-                            <label>Bio (sobre você)</label>
-                            <textarea id="inpBio" class="af-textarea" placeholder="Ex: Veterano das ruas, sempre pronto para a gangue..." maxlength="200" rows="2"></textarea>
+                        <button class="btn btn-primary btn-sm" id="levelReminderBtn">Atualizar</button>
+                        <button class="btn-icon" id="levelReminderClose"><i class="ri-close-line"></i></button>
+                    </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div class="profile-menu">
+                    <button class="profile-menu-item" data-view="conquistas">
+                        <i class="ri-award-line"></i>
+                        <span>Conquistas</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item" id="perfilEditarBtn">
+                        <i class="ri-edit-line"></i>
+                        <span>Editar Perfil</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item" data-view="config">
+                        <i class="ri-settings-3-line"></i>
+                        <span>Configurações</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item admin-only hidden" data-view="admin">
+                        <i class="ri-shield-star-line"></i>
+                        <span>Painel Admin</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item profile-menu-danger" id="perfilLogoutBtn">
+                        <i class="ri-logout-box-r-line"></i>
+                        <span>Sair da conta</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                </div>
+
+                <!-- Edit Profile Modal -->
+                <div id="editPerfilModal" class="modal-overlay hidden">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <span class="modal-title">Editar Perfil</span>
+                            <button class="modal-close" id="editPerfilClose"><i class="ri-close-line"></i></button>
                         </div>
-                        <button id="btnSalvarPerfil" class="btn-admin-action red">
-                            <i class="ri-save-line"></i> Salvar Perfil
+                        <div class="modal-body">
+                            <label class="form-label">Nível (1–100)</label>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-bar-chart-line"></i>
+                                <input type="number" id="editNivel" class="input-field" min="1" max="100" placeholder="Nível atual">
+                            </div>
+                            <label class="form-label">Nível AK-47 (1–50)</label>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-gun-line"></i>
+                                <input type="number" id="editNivelAK" class="input-field" min="1" max="50" placeholder="Nível da AK">
+                            </div>
+                            <label class="form-label">Bio (máx 200 chars)</label>
+                            <textarea id="editBio" class="textarea-field mb-1" placeholder="Fale sobre você..." rows="3" maxlength="200"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-ghost" id="editPerfilCancelBtn">Cancelar</button>
+                            <button class="btn btn-primary" id="editPerfilSaveBtn">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: PERFIL DE OUTRO MEMBRO
+            ══════════════════════════════════════════════ -->
+            <div id="viewMembroPerfil" class="view hidden">
+                <div class="profile-hero">
+                    <div class="profile-avatar-wrap">
+                        <div class="avatar avatar-xl" id="membroAvatar"></div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-nick" id="membroNick">—</div>
+                        <div class="profile-cargo-wrap">
+                            <span class="badge badge-cargo" id="membroCargo">—</span>
+                        </div>
+                        <div class="profile-level-row">
+                            <span class="level-badge" id="membroLevel">NÍVEL —</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroRanking">#—</div>
+                        <div class="stat-label">Ranking</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroPontos">—</div>
+                        <div class="stat-label">Pontos</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroNivelAK">—</div>
+                        <div class="stat-label">Nível AK</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroMissoes">—</div>
+                        <div class="stat-label">Missões</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn btn-primary w-full" id="membroDMBtn">
+                        <i class="ri-message-3-line"></i> Enviar Mensagem
+                    </button>
+                </div>
+
+                <div class="profile-bio-wrap hidden" id="membroBioWrap">
+                    <div class="profile-bio" id="membroBio"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: NOTIFICAÇÕES
+            ══════════════════════════════════════════════ -->
+            <div id="viewNotificacoes" class="view hidden">
+                <div class="notif-full-list" id="notifFullList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CONFIGURAÇÕES
+            ══════════════════════════════════════════════ -->
+            <div id="viewConfig" class="view hidden">
+
+                <!-- CONTA -->
+                <div class="settings-section">
+                    <div class="settings-section-title">CONTA</div>
+                    <div class="settings-group">
+                        <button class="settings-item" id="configEditarPerfil">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-user-3-line"></i></div>
+                                <span>Editar perfil</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
+                        </button>
+                        <button class="settings-item" id="configAlterarNivel">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-bar-chart-line"></i></div>
+                                <span>Atualizar nível / AK</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Ativar push -->
-                <div class="card-bloco">
-                    <div class="bloco-header"><i class="ri-notification-3-line"></i> Notificações Push</div>
-                    <div style="padding:1rem">
-                        <p style="font-size:.85rem;color:var(--text-2);margin-bottom:.8rem">Receba alertas de eventos, PVP, tarefas e promoções diretamente no seu celular.</p>
-                        <button id="btnAtivarPush" class="btn-admin-action red">
-                            <i class="ri-notification-3-line"></i> Ativar Notificações
+                <!-- APARÊNCIA -->
+                <div class="settings-section">
+                    <div class="settings-section-title">APARÊNCIA</div>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-moon-line"></i></div>
+                                <span>Tema</span>
+                            </div>
+                            <span class="settings-item-value">Escuro</span>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-global-line"></i></div>
+                                <span>Idioma</span>
+                            </div>
+                            <span class="settings-item-value">Português</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICAÇÕES -->
+                <div class="settings-section">
+                    <div class="settings-section-title">NOTIFICAÇÕES</div>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-notification-3-line"></i></div>
+                                <span>Push notifications</span>
+                            </div>
+                            <div class="settings-toggle-wrap" id="pushToggleWrap">
+                                <span class="push-status-text" id="pushStatusText">Verificando...</span>
+                                <button class="settings-toggle" id="pushToggle">
+                                    <span class="toggle-thumb"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SISTEMA -->
+                <div class="settings-section">
+                    <div class="settings-section-title">SISTEMA</div>
+                    <div class="settings-group">
+                        <button class="settings-item" id="configInstalarPWA">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-install-line"></i></div>
+                                <span>Instalar no celular</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
                         </button>
-                        <div id="pushStatus" class="push-status" style="display:none"></div>
+                        <button class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-information-line"></i></div>
+                                <span>Sobre o app</span>
+                            </div>
+                            <span class="settings-item-value">v1.0</span>
+                        </button>
                     </div>
                 </div>
-            </section>
 
-            <!-- ── ADMIN ── -->
-            <section class="section" id="sec-admin">
-                <div class="section-header-row">
-                    <h2 class="section-title"><i class="ri-shield-star-fill"></i> Painel Admin</h2>
-                    <div class="admin-badge-chip">GERENTE</div>
+                <!-- SAIR -->
+                <div class="settings-section">
+                    <div class="settings-group">
+                        <button class="settings-item settings-danger" id="configSairBtn">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-logout-box-r-line"></i></div>
+                                <span>Sair da conta</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: ADMIN PANEL
+            ══════════════════════════════════════════════ -->
+            <div id="viewAdmin" class="view hidden">
+
+                <!-- Admin Tabs -->
+                <div class="tab-bar admin-tabs">
+                    <button class="tab-item active" data-admin-tab="membros">Membros</button>
+                    <button class="tab-item" data-admin-tab="criar">Criar Membro</button>
+                    <button class="tab-item" data-admin-tab="pontuar">Pontuar</button>
+                    <button class="tab-item" data-admin-tab="conquistas">Conquistas</button>
                 </div>
 
-                <div class="admin-tabs">
-                    <button class="atab active" data-atab="membros-adm">👥 Membros</button>
-                    <button class="atab" data-atab="pontuar">📊 Pontuação</button>
-                    <button class="atab" data-atab="promover">⭐ Promoções</button>
-                    <button class="atab" data-atab="tarefas-adm">📋 Tarefas</button>
-                    <button class="atab" data-atab="push-adm">📣 Push</button>
-                    <button class="atab" data-atab="config">⚙️ Config</button>
+                <!-- Tab: Lista de Membros -->
+                <div id="adminTabMembros" class="admin-tab-content">
+                    <div class="admin-members-list" id="adminMembersList">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
                 </div>
 
-                <!-- Cadastrar Membro -->
-                <div class="atab-content active" id="atab-membros-adm">
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-user-add-line"></i> Adicionar Novo Membro</h3>
-                        <div class="admin-form">
-                            <div class="af-group">
-                                <label>Nick no One State RP</label>
-                                <input type="text" id="adm-new-nick" class="af-input" placeholder="Ex: Maria Santos" maxlength="40">
-                            </div>
-                            <div class="af-group">
-                                <label>Cargo Inicial</label>
-                                <select id="adm-new-cargo" class="af-select">
-                                    <option value="Recruta">🔴 Recruta</option>
-                                    <option value="Membro">🟠 Membro</option>
-                                    <option value="Veterano">🟡 Veterano</option>
-                                </select>
-                            </div>
-                            <button id="btnCadMem" class="btn-admin-action red">
-                                <i class="ri-user-add-line"></i> Criar Membro e Gerar PIN
+                <!-- Tab: Criar Membro -->
+                <div id="adminTabCriar" class="admin-tab-content hidden">
+                    <div class="card">
+                        <div class="card-title">ADICIONAR INTEGRANTE</div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-user-add-line"></i>
+                            <input type="text" id="adminNovoNick" class="input-field" placeholder="Nick do novo membro" autocomplete="off">
+                        </div>
+                        <div class="select-field-wrap mb-1">
+                            <i class="ri-shield-line"></i>
+                            <select id="adminNovoCargo" class="select-field">
+                                <option value="Recruta">Recruta</option>
+                                <option value="Membro">Membro</option>
+                                <option value="Veterano">Veterano</option>
+                                <option value="Oficial">Oficial</option>
+                                <option value="Tenente">Tenente</option>
+                                <option value="Gerente">Gerente</option>
+                                <option value="Lider">Líder</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-full" id="adminCriarBtn">
+                            <i class="ri-add-line"></i> CRIAR INTEGRANTE
+                        </button>
+                    </div>
+
+                    <!-- PIN gerado box -->
+                    <div id="pinGeradoBox" class="pin-generated-box hidden">
+                        <div class="pin-gen-title">✅ Integrante criado!</div>
+                        <div class="pin-gen-info">Nick: <strong id="pinGeradoNick">—</strong></div>
+                        <div class="pin-gen-label">PIN GERADO</div>
+                        <div class="pin-gen-value" id="pinGeradoValor">0000</div>
+                        <div class="pin-gen-warn">⚠️ Envie este PIN ao integrante agora. Não é possível recuperá-lo depois.</div>
+                        <button class="btn btn-ghost w-full" id="pinGeradoCopiarBtn">
+                            <i class="ri-file-copy-line"></i> Copiar PIN
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab: Pontuar -->
+                <div id="adminTabPontuar" class="admin-tab-content hidden">
+                    <div class="card">
+                        <div class="card-title">PONTUAR MEMBRO</div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-search-line"></i>
+                            <input type="text" id="pontuarNickSearch" class="input-field" placeholder="Buscar nick...">
+                        </div>
+                        <div id="pontuarMemberSelect" class="member-select-list"></div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-star-line"></i>
+                            <input type="number" id="pontuarValor" class="input-field" placeholder="Quantidade de pontos">
+                        </div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-chat-1-line"></i>
+                            <input type="text" id="pontuarMotivo" class="input-field" placeholder="Motivo (ex: Roubo ao banco)">
+                        </div>
+                        <div class="btn-group mb-1">
+                            <button class="btn btn-ghost btn-sm pontuar-acao-btn active" data-acao="add">
+                                <i class="ri-add-line"></i> Adicionar
+                            </button>
+                            <button class="btn btn-ghost btn-sm pontuar-acao-btn" data-acao="remove">
+                                <i class="ri-subtract-line"></i> Remover
                             </button>
                         </div>
-                        <!-- PIN gerado -->
-                        <div id="pinGerado" class="pin-gerado-box" style="display:none">
-                            <div class="pin-gerado-titulo">✅ Membro criado!</div>
-                            <div class="pin-gerado-info">Envie este PIN para <strong id="pinNickGerado"></strong>:</div>
-                            <div class="pin-gerado-valor" id="pinValorGerado">0000</div>
-                            <div class="pin-gerado-aviso">⚠️ Copie agora! Este PIN não será exibido novamente.</div>
-                            <button id="btnCopiarPIN" class="btn-admin-action gold">
-                                <i class="ri-clipboard-line"></i> Copiar PIN
-                            </button>
-                        </div>
-                    </div>
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-list-check"></i> Membros Cadastrados</h3>
-                        <div id="admMemList" class="adm-mem-list">
-                            <div class="hist-empty">Carregando...</div>
-                        </div>
+                        <button class="btn btn-primary w-full" id="pontuarBtn">
+                            CONFIRMAR PONTUAÇÃO
+                        </button>
                     </div>
                 </div>
 
-                <!-- Pontuar -->
-                <div class="atab-content" id="atab-pontuar">
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-add-circle-line"></i> Adicionar / Remover Pontos</h3>
-                        <div class="admin-form">
-                            <div class="af-group">
-                                <label>Membro</label>
-                                <select id="adm-mem-sel" class="af-select"><option value="">Selecione...</option></select>
-                            </div>
-                            <div class="af-group">
-                                <label>Pontos</label>
-                                <input type="number" id="adm-pts-inp" class="af-input" placeholder="Ex: 1500" min="0" max="999999">
-                            </div>
-                            <div class="af-group">
-                                <label>Motivo</label>
-                                <input type="text" id="adm-pts-motivo" class="af-input" placeholder="Ex: Missão completada" maxlength="100">
-                            </div>
-                            <div class="af-row">
-                                <button id="btnAddPts" class="btn-admin-action red" style="flex:1"><i class="ri-add-line"></i> Adicionar</button>
-                                <button id="btnRemPts" class="btn-admin-action dark" style="flex:1"><i class="ri-subtract-line"></i> Remover</button>
-                            </div>
+                <!-- Tab: Conquistas (admin editar vencedores) -->
+                <div id="adminTabConquistas" class="admin-tab-content hidden">
+                    <div class="card">
+                        <div class="card-title">DEFINIR VENCEDORES</div>
+                        <div class="conquistas-admin-list" id="conquistasAdminList">
+                            <!-- Generated by JS -->
                         </div>
-                    </div>
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-history-line"></i> Histórico</h3>
-                        <div id="ptsHistorico" class="pts-historico"><div class="hist-empty">Sem registros.</div></div>
+                        <button class="btn btn-primary w-full" id="adminSalvarConquistasBtn">
+                            <i class="ri-save-line"></i> SALVAR CONQUISTAS
+                        </button>
                     </div>
                 </div>
-
-                <!-- Promover -->
-                <div class="atab-content" id="atab-promover">
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-arrow-up-circle-line"></i> Promoção / Rebaixamento</h3>
-                        <div class="admin-form">
-                            <div class="af-group">
-                                <label>Membro</label>
-                                <select id="adm-prom-sel" class="af-select"><option value="">Selecione...</option></select>
-                            </div>
-                            <div class="af-group">
-                                <label>Novo Cargo</label>
-                                <select id="adm-cargo-sel" class="af-select">
-                                    <option value="Recruta">🔴 Recruta</option>
-                                    <option value="Membro">🟠 Membro</option>
-                                    <option value="Veterano">🟡 Veterano</option>
-                                    <option value="Oficial">🔵 Oficial</option>
-                                    <option value="Tenente">🟣 Tenente</option>
-                                    <option value="Gerente">⭐ Gerente</option>
-                                    <option value="Lider">👑 Líder</option>
-                                </select>
-                            </div>
-                            <div class="af-group">
-                                <label>Motivo</label>
-                                <input type="text" id="adm-prom-motivo" class="af-input" placeholder="Ex: Desempenho excelente" maxlength="100">
-                            </div>
-                            <button id="btnPromover" class="btn-admin-action gold"><i class="ri-arrow-up-circle-fill"></i> Confirmar</button>
-                        </div>
-                    </div>
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-history-line"></i> Histórico</h3>
-                        <div id="promHistorico" class="pts-historico"><div class="hist-empty">Sem registros.</div></div>
-                    </div>
-                </div>
-
-                <!-- Tarefas Admin -->
-                <div class="atab-content" id="atab-tarefas-adm">
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-add-box-line"></i> Criar Tarefa</h3>
-                        <div class="admin-form">
-                            <div class="af-group">
-                                <label>Nome da Tarefa</label>
-                                <input type="text" id="adm-task-nome" class="af-input" placeholder="Ex: Operação Noturna" maxlength="60">
-                            </div>
-                            <div class="af-group">
-                                <label>Descrição</label>
-                                <textarea id="adm-task-desc" class="af-textarea" placeholder="Descreva a missão..." maxlength="300" rows="3"></textarea>
-                            </div>
-                            <div class="af-group">
-                                <label>Recompensa (pts)</label>
-                                <input type="number" id="adm-task-pts" class="af-input" placeholder="500" min="0">
-                            </div>
-                            <button id="btnCriarTask" class="btn-admin-action red"><i class="ri-add-line"></i> Criar e Notificar Todos</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Push Admin -->
-                <div class="atab-content" id="atab-push-adm">
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-notification-3-line"></i> Enviar Push para Todos</h3>
-                        <div class="admin-form">
-                            <div class="af-group">
-                                <label>Título</label>
-                                <input type="text" id="push-titulo" class="af-input" placeholder="Ex: ATENÇÃO GoddoY RK!" maxlength="80">
-                            </div>
-                            <div class="af-group">
-                                <label>Mensagem</label>
-                                <textarea id="push-msg" class="af-textarea" placeholder="Ex: Reunião obrigatória às 20h no QG!" maxlength="200" rows="3"></textarea>
-                            </div>
-                            <div class="af-group">
-                                <label>Tipo</label>
-                                <select id="push-tipo" class="af-select">
-                                    <option value="geral">📣 Geral</option>
-                                    <option value="evento">🔥 Evento</option>
-                                    <option value="pvp">🎯 PVP</option>
-                                    <option value="tarefa">⚔️ Tarefa</option>
-                                </select>
-                            </div>
-                            <button id="btnEnviarPush" class="btn-admin-action red"><i class="ri-send-plane-fill"></i> Enviar para Todos</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Config -->
-                <div class="atab-content" id="atab-config">
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-settings-line"></i> Configurações da Temporada</h3>
-                        <div class="admin-form">
-                            <div class="af-group"><label>Temporada Atual</label>
-                                <input type="number" id="adm-season" class="af-input" placeholder="75" min="1"></div>
-                            <div class="af-row">
-                                <div class="af-group" style="flex:1"><label>Data Início</label>
-                                    <input type="date" id="adm-season-start" class="af-input"></div>
-                                <div class="af-group" style="flex:1"><label>Data Fim</label>
-                                    <input type="date" id="adm-season-end" class="af-input"></div>
-                            </div>
-                            <button id="btnSaveConfig" class="btn-admin-action gold"><i class="ri-save-line"></i> Salvar</button>
-                        </div>
-                    </div>
-                    <div class="admin-card">
-                        <h3 class="admin-card-title"><i class="ri-award-line"></i> Conquistas da Temporada</h3>
-                        <div class="admin-form">
-                            <div class="af-group"><label>🔫 Atirador de Elite</label><input type="text" id="cq1-inp" class="af-input" placeholder="Nick do membro"></div>
-                            <div class="af-group"><label>💰 Mais Rico</label><input type="text" id="cq2-inp" class="af-input" placeholder="Nick do membro"></div>
-                            <div class="af-group"><label>🏆 MVP</label><input type="text" id="cq3-inp" class="af-input" placeholder="Nick do membro"></div>
-                            <div class="af-group"><label>🎯 Mais Missões</label><input type="text" id="cq4-inp" class="af-input" placeholder="Nick do membro"></div>
-                            <div class="af-group"><label>⭐ Mais Leal</label><input type="text" id="cq5-inp" class="af-input" placeholder="Nick do membro"></div>
-                            <div class="af-group"><label>🛡️ Mais Promotions</label><input type="text" id="cq6-inp" class="af-input" placeholder="Nick do membro"></div>
-                            <button id="btnSaveConq" class="btn-admin-action gold"><i class="ri-save-line"></i> Salvar Conquistas</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-    </div>
-</div>
-
-<!-- FAB: Verificador de Regras -->
-<button id="btnRegras" class="fab-regras">
-    <i class="ri-shield-check-fill"></i>
-    <span class="fab-label">Regras RP</span>
-</button>
-
-<!-- MODAL: Verificador de Regras -->
-<div id="modalRegras" class="regras-modal-overlay" aria-hidden="true">
-    <div class="regras-modal">
-        <div class="regras-modal-header">
-            <div class="regras-modal-notch"></div>
-            <div class="regras-modal-title-row">
-                <i class="ri-shield-check-fill"></i>
-                <span>Verificador de Regras RP</span>
-                <button class="regras-close" id="btnFecharRegras"><i class="ri-close-line"></i></button>
             </div>
-        </div>
-        <div class="regras-modal-body">
-            <div class="rm-group">
-                <label class="rm-label">Descreva o que aconteceu</label>
-                <textarea id="regrasInput" class="rm-textarea"
-                    placeholder="Ex: O jogador Fulano atirou em mim sem interação de RP..." maxlength="2000" rows="4"></textarea>
-                <span class="rm-count"><span id="regrasCount">0</span>/2000</span>
-            </div>
-            <div class="rm-btns">
-                <button id="btnVerificarRegras" class="btn-verificar-regras"><i class="ri-search-eye-line"></i> Verificar com IA</button>
-                <button id="btnVozRegras" class="btn-icon-regras" title="Voz"><i class="ri-mic-line"></i></button>
-                <button id="btnLimparRegras" class="btn-icon-regras" title="Limpar"><i class="ri-delete-bin-line"></i></button>
-            </div>
-            <div id="regrasResultado" class="rm-resultado">
-                <div class="rm-placeholder"><i class="ri-shield-line"></i><p>Descreva o ocorrido e clique em <strong>Verificar com IA</strong></p></div>
-            </div>
-            <div class="rm-regras-rapidas">
-                <div class="rm-rrq-title">Regras rápidas (clique para exemplo)</div>
-                <div id="regrasChips" class="rm-chips"></div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
+        </main><!-- /content-area -->
 
-<!-- Scripts -->
-<script src="js/regras-rp.js"></script>
-<script src="js/ia-engine.js"></script>
+        <!-- ── BOTTOM NAVIGATION (mobile) ─────────────────── -->
+        <nav id="bottomNav" class="bottom-nav" role="navigation" aria-label="Navegação principal">
+            <button class="bottom-nav-item active" data-view="home" aria-label="Início">
+                <i class="ri-home-5-fill"></i>
+                <span>Início</span>
+            </button>
+            <button class="bottom-nav-item" data-view="chat" aria-label="Chat">
+                <i class="ri-message-3-line"></i>
+                <span>Chat</span>
+                <span class="bottom-nav-badge hidden" id="chatBadge">0</span>
+            </button>
+            <button class="bottom-nav-item" data-view="ranking" aria-label="Ranking">
+                <i class="ri-trophy-line"></i>
+                <span>Ranking</span>
+            </button>
+            <button class="bottom-nav-item" data-view="missoes" aria-label="Missões">
+                <i class="ri-sword-line"></i>
+                <span>Missões</span>
+            </button>
+            <button class="bottom-nav-item" data-view="perfil" aria-label="Perfil">
+                <i class="ri-user-3-line"></i>
+                <span>Perfil</span>
+            </button>
+        </nav>
+
+    </div><!-- /main-wrap -->
+</div><!-- /app-shell -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     GLOBAL TOAST CONTAINER
+═══════════════════════════════════════════════════════════ -->
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════ -->
 <script src="js/auth.js"></script>
 <script src="js/pwa.js"></script>
+<script src="js/api.js"></script>
+<script src="js/state.js"></script>
+<script src="js/components.js"></script>
 <script src="js/platform.js"></script>
 
 </body>
