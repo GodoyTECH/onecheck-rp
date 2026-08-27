@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); let content = fs.readFileSync('js/regras-rp.js', 'utf8'); content = content.replace(/categoria:\s*\\+'(.*?)\\+'/g, \categoria: '\'\); fs.writeFileSync('js/regras-rp.js', content);

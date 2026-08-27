@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && echo 'Build GoddoY RK'"
+  command = "echo 'No frontend build step required'"
   publish = "."
   functions = "netlify/functions"
 

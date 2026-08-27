@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS membros (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     nick            VARCHAR(50) NOT NULL UNIQUE,
     senha           TEXT        NOT NULL,
-    cargo           VARCHAR(20) NOT NULL DEFAULT 'Recruta'
-                    CHECK (cargo IN ('Recruta','Membro','Veterano','Oficial','Tenente','Gerente','Lider')),
+    cargo           VARCHAR(20) NOT NULL DEFAULT 'Pendente'
+                    CHECK (cargo IN ('Pendente','Recruta','Membro','Veterano','Oficial','Tenente','Gerente','Lider')),
     nivel           INTEGER     NOT NULL DEFAULT 1  CHECK (nivel BETWEEN 1 AND 100),
     nivel_ak        INTEGER     NOT NULL DEFAULT 1  CHECK (nivel_ak BETWEEN 1 AND 50),
     pontos          INTEGER     NOT NULL DEFAULT 0  CHECK (pontos >= 0),
@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS mensagens_gerais (
                 CHECK (tipo IN ('texto','audio','sistema','imagem')),
     conteudo    TEXT        NOT NULL,
     media_url   TEXT,
+    mentions    JSONB       DEFAULT '[]'::jsonb,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -156,6 +157,7 @@ CREATE TABLE IF NOT EXISTS mensagens_dm (
                     CHECK (tipo IN ('texto','audio','imagem')),
     conteudo        TEXT        NOT NULL,
     media_url       TEXT,
+    mentions        JSONB       DEFAULT '[]'::jsonb,
     lida            BOOLEAN     NOT NULL DEFAULT false,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

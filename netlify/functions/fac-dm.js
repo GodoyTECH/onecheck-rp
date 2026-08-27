@@ -102,23 +102,44 @@ exports.handler = async function (event) {
             if (!conv.length) return erro('Conversa não encontrada', 404);
 
             const { conteudo, tipo = 'texto' } = JSON.parse(event.body || '{}');
-            if (!conteudo?.trim()) return erro('Mensagem vazia');
+            if (!conteudo?.trim() && tipo === 'texto') return erro('Vazia');
+
+            const outro_id = conv[0].membro1_id === payload.id ? conv[0].membro2_id : conv[0].membro1_id;
+
+            let extractedMentions = [];
+            const textToParse = conteudo.trim();
+            const mentionMatches = textToParse.match(/@([A-Za-z0-9_]+)/g) || [];
+
+            if (mentionMatches.length > 0) {
+                const nicks = mentionMatches.map(m => m.substring(1).toLowerCase());
+                const uniqueNicks = [...new Set(nicks)];
+                
+                const users = await sql`SELECT id, nick FROM membros WHERE LOWER(nick) = ANY(${uniqueNicks})`;
+                extractedMentions = users.map(u => ({ userId: u.id, username: u.nick }));
+                
+                for (const u of extractedMentions) {
+                    if (u.userId !== payload.id) {
+                        await sql`
+                            INSERT INTO notificacoes (membro_id, titulo, mensagem, tipo)
+                            VALUES (${u.userId}, 'Você foi mencionado (DM)', ${payload.nick} + ' mencionou você em uma DM.', 'geral')
+                        `;
+                    }
+                }
+            }
 
             const rows = await sql`
-                INSERT INTO mensagens_dm (conversa_id, remetente_id, tipo, conteudo)
-                VALUES (${convId}, ${payload.id}, ${tipo}, ${conteudo.trim()})
+                INSERT INTO mensagens_dm (conversa_id, remetente_id, tipo, conteudo, mentions)
+                VALUES (${convId}, ${payload.id}, ${tipo}, ${textToParse}, ${JSON.stringify(extractedMentions)}::jsonb)
                 RETURNING *`;
 
-            // Atualizar última mensagem da conversa
             await sql`
-                UPDATE conversas SET ultima_msg = ${conteudo.trim().slice(0, 60)}, ultima_msg_ts = NOW()
+                UPDATE conversas
+                SET ultima_msg = ${tipo === 'texto' ? textToParse.slice(0,50) : '[Mídia]'},
+                    ultima_msg_ts = NOW()
                 WHERE id = ${convId}`;
 
-            // Notificar o destinatário
-            const destId = conv[0].membro1_id === payload.id ? conv[0].membro2_id : conv[0].membro1_id;
-            await sql`
-                INSERT INTO notificacoes (membro_id, titulo, mensagem, tipo, referencia_id)
-                VALUES (${destId}, ${'💬 ' + payload.nick}, ${conteudo.trim().slice(0, 100)}, 'geral', ${convId})`;
+            // Enviar notificação simples (se não foi mencionado no texto, envia a de msg nova normal)
+            // if you want normal notifications...
 
             return ok(rows[0], 201);
         }

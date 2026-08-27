@@ -68,20 +68,33 @@ const AUTH = (() => {
         return data.membro;
     }
 
-    // ── Criar membro (admin) ─────────────────────────────────
-    async function criarMembro(nick, cargo) {
+    // ── Registrar ────────────────────────────────────────────
+    async function registrar(nick, senha) {
+        const res = await fetch(`${API}/registrar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nick: nick.trim(), senha: String(senha) })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao criar conta');
+        saveToken(data.token, data.membro, true);
+        return data.membro;
+    }
+
+    // ── Aprovar membro (admin) ───────────────────────────────
+    async function aprovarMembro(membro_id, cargo) {
         const token = getToken();
-        const res = await fetch(`${API}/criar-membro`, {
+        const res = await fetch(`${API}/aprovar-membro`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ nick, cargo })
+            body: JSON.stringify({ membro_id, cargo })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro ao criar membro');
-        return data; // { membro, pin, aviso }
+        if (!res.ok) throw new Error(data.error || 'Erro ao aprovar membro');
+        return data; 
     }
 
     // ── Header auth para fetch ───────────────────────────────
@@ -102,7 +115,10 @@ const AUTH = (() => {
         store.setItem(KEY_ME, JSON.stringify(me));
     }
 
-    return { login, logout, criarMembro, getToken, getMe, isLoggedIn, headers, atualizarMe };
+    return {
+        saveToken, getToken, getMe, isLoggedIn, logout, headers, atualizarMe,
+        login, registrar, aprovarMembro, resetarSenha
+    };
 })();
 
 window.AUTH = AUTH;

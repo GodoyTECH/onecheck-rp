@@ -19,6 +19,7 @@ const REGRAS_RP = [
 
     {
         codigo: 'RP-01',
+        categoria: 'Roleplay (RP)',
         nome: 'DM — Deathmatch',
         descricao: 'Causar dano físico ou matar outro jogador sem uma motivação válida de Roleplay. Todo ataque deve ter contexto narrativo justificado dentro do RP.',
         exemplos: [
@@ -40,6 +41,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-02',
+        categoria: 'Roleplay (RP)',
         nome: 'DMAuto — Deathmatch com Veículo',
         descricao: 'Usar veículo como arma para causar dano ou matar outro jogador, ou destruir veículos alheios, sem motivação válida de RP.',
         exemplos: [
@@ -60,6 +62,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-03',
+        categoria: 'Roleplay (RP)',
         nome: 'Power Gaming — Ações Impossíveis',
         descricao: 'Realizar ações que ultrapassam as capacidades físicas ou lógicas do personagem, ou forçar situações irreais contra outros jogadores sem consentimento.',
         exemplos: [
@@ -80,6 +83,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-04',
+        categoria: 'Roleplay (RP)',
         nome: 'NRP — Non RolePlay',
         descricao: 'Agir de forma completamente contrária à lógica do jogo real, quebrando a narrativa do RP com comportamentos que não fariam sentido na realidade.',
         exemplos: [
@@ -100,6 +104,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-05',
+        categoria: 'Roleplay (RP)',
         nome: 'Metagaming — Uso de Info OOC',
         descricao: 'Utilizar informações obtidas fora do jogo (Discord, lives, streams, chat fora do RP) para obter vantagem dentro do roleplay.',
         exemplos: [
@@ -121,6 +126,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-06',
+        categoria: 'Roleplay (RP)',
         nome: 'Abandono de RP / Combat Log',
         descricao: 'Desconectar do servidor, fugir para safezone ou realizar qualquer ação para evitar as consequências de uma situação de RP em andamento.',
         exemplos: [
@@ -141,6 +147,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-07',
+        categoria: 'Roleplay (RP)',
         nome: 'Fear RP — Falta de Medo',
         descricao: 'Não demonstrar medo em situações de risco real. Todo personagem deve temer pela vida quando em desvantagem clara (arma apontada, rendição, etc.).',
         exemplos: [
@@ -161,6 +168,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-08',
+        categoria: 'Roleplay (RP)',
         nome: 'Fail RP — Roleplay Incoerente',
         descricao: 'Agir de forma completamente incoerente com o personagem ou situação, sem seguir a narrativa lógica do roleplay.',
         exemplos: [
@@ -181,6 +189,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-09',
+        categoria: 'Roleplay (RP)',
         nome: 'NLR — New Life Rule',
         descricao: 'Após a morte do personagem, o jogador deve "renascer" sem memória dos eventos que levaram à morte. É proibido agir com base em situações anteriores à morte.',
         exemplos: [
@@ -201,6 +210,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-10',
+        categoria: 'Roleplay (RP)',
         nome: 'Safe Zone — Zona Segura',
         descricao: 'Cometer ações hostis dentro de zonas protegidas (hospitais, delegacia, spawn) ou usar a safezone para se proteger propositalmente de situações de RP.',
         exemplos: [
@@ -221,6 +231,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-11',
+        categoria: 'Roleplay (RP)',
         nome: 'Godmode — Ignorar Danos',
         descricao: 'Ignorar ferimentos, danos ou situações que deveriam incapacitar o personagem. Agir como se fosse invulnerável ou imortal.',
         exemplos: [
@@ -241,6 +252,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-12',
+        categoria: 'Roleplay (RP)',
         nome: 'Bunny Hop / Abuso de Movimento',
         descricao: 'Usar spam de saltos, roladas ou movimentos mecânicos artificiais para fugir de situações de RP ou obter vantagem injusta.',
         exemplos: [
@@ -260,6 +272,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-13',
+        categoria: 'Roleplay (RP)',
         nome: 'Bug Abuse / Exploit',
         descricao: 'Explorar bugs, glitches ou falhas do sistema do jogo intencionalmente para obter vantagem injusta sobre outros jogadores.',
         exemplos: [
@@ -280,6 +293,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-14',
+        categoria: 'Roleplay (RP)',
         nome: 'Anti-RP — Quebra de Imersão',
         descricao: 'Ações que quebram propositalmente a imersão do roleplay: fazer piadas em situações sérias, agir como se estivesse num videogame, ou não interpretar o personagem.',
         exemplos: [
@@ -300,6 +314,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'RP-15',
+        categoria: 'Roleplay (RP)',
         nome: 'RP em Benefício Próprio — Abuso de Comandos',
         descricao: 'Uso abusivo ou desonesto de comandos de RP como /me, /do, /try para se favorecer injustamente durante uma interação, sem dar possibilidade real de resposta.',
         exemplos: [
@@ -325,6 +340,7 @@ const REGRAS_RP = [
 
     {
         codigo: 'COND-01',
+        categoria: 'Conduta Geral',
         nome: 'Toxicidade / Discriminação / Desrespeito',
         descricao: 'Ofensas pessoais, assédio, racismo, homofobia, xenofobia, linguagem de ódio ou comportamento agressivo contra outros jogadores fora ou dentro do contexto de RP.',
         exemplos: [
@@ -345,6 +361,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'COND-02',
+        categoria: 'Conduta Geral',
         nome: 'Spam / Flood de Mensagens ou Ações',
         descricao: 'Envio repetitivo e abusivo de mensagens no chat, spam de comandos, emotes ou qualquer ação que perturbe a experiência de outros jogadores.',
         exemplos: [
@@ -364,6 +381,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'COND-03',
+        categoria: 'Conduta Geral',
         nome: 'OOC no IC — Comunicação Fora do Personagem',
         descricao: 'Usar o chat de jogo para conversas fora do personagem (OOC) sem usar o comando /n obrigatório. Toda comunicação não-RP deve ser feita com o prefixo /n.',
         exemplos: [
@@ -384,6 +402,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'COND-04',
+        categoria: 'Conduta Geral',
         nome: 'Assédio / Perseguição a Jogadores',
         descricao: 'Perseguir, assediar ou prejudicar sistematicamente um jogador específico por motivos pessoais, fora do contexto do RP.',
         exemplos: [
@@ -409,6 +428,7 @@ const REGRAS_RP = [
 
     {
         codigo: 'CONTA-01',
+        categoria: 'Conta',
         nome: 'RMT — Real Money Trade',
         descricao: 'Vender, comprar ou trocar itens, dinheiro ou bens do jogo por dinheiro real. Qualquer transação financeira real relacionada ao jogo é estritamente proibida.',
         exemplos: [
@@ -429,6 +449,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'CONTA-02',
+        categoria: 'Conta',
         nome: 'Venda / Compartilhamento de Conta',
         descricao: 'Vender, comprar, emprestar, compartilhar ou transferir contas do jogo para outros usuários.',
         exemplos: [
@@ -448,6 +469,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'CONTA-03',
+        categoria: 'Conta',
         nome: 'Multi-Conta — Contas Múltiplas',
         descricao: 'Criar ou usar mais de 3 contas no mesmo dispositivo. Também é proibido usar contas alternativas para driblar punições (ban evade).',
         exemplos: [
@@ -467,6 +489,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'CONTA-04',
+        categoria: 'Conta',
         nome: 'Hack / Cheat / Modificação Ilegal',
         descricao: 'Usar qualquer tipo de software de trapaça, modificação do cliente do jogo, bot, macro ou ferramenta externa para obter vantagens ilícitas.',
         exemplos: [
@@ -492,6 +515,7 @@ const REGRAS_RP = [
 
     {
         codigo: 'COM-01',
+        categoria: 'Comunicação',
         nome: 'Abuso de Comandos de RP (/me, /do, /try)',
         descricao: 'Usar comandos de emote e RP de forma desonesta ou prejudicial: descrever ações impossíveis, forçar resultados sem consenso, ou usar para obter vantagem.',
         exemplos: [
@@ -511,6 +535,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'COM-02',
+        categoria: 'Comunicação',
         nome: 'Informação OOC Revelada Indevidamente',
         descricao: 'Revelar informações obtidas fora do RP (localização, identidade, planos) para outros jogadores de forma que afete o jogo, violando o metagaming.',
         exemplos: [
@@ -530,6 +555,7 @@ const REGRAS_RP = [
     },
     {
         codigo: 'COM-03',
+        categoria: 'Comunicação',
         nome: 'Incitação / Provocação Sistemática',
         descricao: 'Provocar outros jogadores intencionalmente de forma sistemática para gerar reações negativas, criar conflitos desnecessários ou prejudicar o ambiente do servidor.',
         exemplos: [
@@ -554,6 +580,7 @@ const REGRAS_RP = [
 
     {
         codigo: 'ALERT-7',
+        categoria: 'Decisão Especial',
         nome: '⭐ Alert 7 — Decisão Gerencial',
         descricao: 'Situação que requer julgamento direto de um gerente ou administrador do servidor. Aplica-se quando o caso é complexo, ambíguo, envolve múltiplas regras em conflito, não possui precedente claro, ou exige uma decisão que vai além das regras escritas. Todo caso sem enquadramento claro cai aqui.',
         exemplos: [

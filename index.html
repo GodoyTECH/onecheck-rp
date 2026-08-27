@@ -76,33 +76,16 @@
             <div class="login-tagline">Gangue de Rua · One State RP</div>
         </div>
 
-        <!-- Step 1: Nick -->
+        <!-- Step 1: Login -->
         <div id="loginStep1" class="login-card">
             <div class="login-card-title">BEM-VINDO</div>
-            <div class="login-card-sub">Digite seu nick para continuar</div>
-            <div class="input-field-wrap">
+            <div class="login-card-sub">Digite seu nick para entrar</div>
+            <div class="input-field-wrap mb-1">
                 <i class="ri-user-3-line"></i>
                 <input type="text" id="loginNickInput" class="input-field" placeholder="Seu nick da facção"
                     autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="50">
             </div>
-            <button id="loginContinueBtn" class="btn btn-primary w-full">
-                CONTINUAR <i class="ri-arrow-right-line"></i>
-            </button>
-            <div id="loginStep1Error" class="form-error hidden"></div>
-        </div>
-
-        <!-- Step 2: Senha -->
-        <div id="loginStep2" class="login-card hidden">
-            <button id="pinBackBtn" class="pin-back-btn" aria-label="Voltar">
-                <i class="ri-arrow-left-line"></i>
-            </button>
-            <div id="pinAvatar" class="pin-avatar">
-                <span id="pinAvatarInitials"></span>
-            </div>
-            <div class="pin-greeting">Olá, <strong id="pinNickDisplay"></strong></div>
-            <div class="pin-sub">Digite sua senha para entrar</div>
-
-            <div class="input-field-wrap mt-2">
+            <div class="input-field-wrap">
                 <i class="ri-lock-password-line"></i>
                 <input type="password" id="loginSenhaInput" class="input-field" placeholder="Sua senha">
             </div>
@@ -116,6 +99,35 @@
 
             <button id="loginEntrarBtn" class="btn btn-primary w-full mt-2">
                 ENTRAR <i class="ri-login-circle-line"></i>
+            </button>
+            <div class="login-divider">OU</div>
+            <button id="loginShowRegisterBtn" class="btn btn-ghost w-full">
+                CRIAR NOVA CONTA
+            </button>
+
+            <div id="loginStep1Error" class="form-error hidden"></div>
+        </div>
+
+        <!-- Step 2: Registrar -->
+        <div id="loginStep2" class="login-card hidden">
+            <button id="pinBackBtn" class="pin-back-btn" aria-label="Voltar">
+                <i class="ri-arrow-left-line"></i>
+            </button>
+            <div class="login-card-title">REGISTRO</div>
+            <div class="login-card-sub">Crie sua conta para acessar</div>
+
+            <div class="input-field-wrap mb-1">
+                <i class="ri-user-3-line"></i>
+                <input type="text" id="regNickInput" class="input-field" placeholder="Seu nick (ex: Joao_Silva)"
+                    autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="50">
+            </div>
+            <div class="input-field-wrap mt-2">
+                <i class="ri-lock-password-line"></i>
+                <input type="password" id="regSenhaInput" class="input-field" placeholder="Sua senha (mínimo 4)">
+            </div>
+            
+            <button id="regEntrarBtn" class="btn btn-primary w-full mt-2">
+                CADASTRAR-SE
             </button>
 
             <div id="loginStep2Error" class="form-error hidden"></div>
@@ -249,6 +261,17 @@
             <!-- ══════════════════════════════════════════════
                  VIEW: HOME
             ══════════════════════════════════════════════ -->
+            <!-- ==========================================
+         MENÇÕES AUTOCOMPLETE
+    =========================================== -->
+    <div id="mentionsAutocomplete" class="mentions-menu hidden">
+        <div class="mentions-header">Mencionar Usuário</div>
+        <div id="mentionsList" class="mentions-list"></div>
+    </div>
+
+    <!-- ==========================================
+         MODALS
+    =========================================== -->
             <div id="viewHome" class="view active">
                 <!-- User Hero -->
                 <div class="home-hero">
@@ -917,7 +940,7 @@
                 <!-- Admin Tabs -->
                 <div class="tab-bar admin-tabs">
                     <button class="tab-item active" data-admin-tab="membros">Membros</button>
-                    <button class="tab-item" data-admin-tab="criar">Criar Membro</button>
+                    <button class="tab-item" data-admin-tab="aprovacoes">Aprovações</button>
                     <button class="tab-item" data-admin-tab="pontuar">Pontuar</button>
                     <button class="tab-item" data-admin-tab="conquistas">Conquistas</button>
                 </div>
@@ -931,41 +954,13 @@
                     </div>
                 </div>
 
-                <!-- Tab: Criar Membro -->
-                <div id="adminTabCriar" class="admin-tab-content hidden">
+                <!-- Tab: Aprovações -->
+                <div id="adminTabAprovacoes" class="admin-tab-content hidden">
                     <div class="card">
-                        <div class="card-title">ADICIONAR INTEGRANTE</div>
-                        <div class="input-field-wrap mb-1">
-                            <i class="ri-user-add-line"></i>
-                            <input type="text" id="adminNovoNick" class="input-field" placeholder="Nick do novo membro" autocomplete="off">
+                        <div class="card-title">MEMBROS PENDENTES</div>
+                        <div class="admin-pendentes-list" id="adminPendentesList">
+                            <!-- JS vai renderizar aqui -->
                         </div>
-                        <div class="select-field-wrap mb-1">
-                            <i class="ri-shield-line"></i>
-                            <select id="adminNovoCargo" class="select-field">
-                                <option value="Recruta">Recruta</option>
-                                <option value="Membro">Membro</option>
-                                <option value="Veterano">Veterano</option>
-                                <option value="Oficial">Oficial</option>
-                                <option value="Tenente">Tenente</option>
-                                <option value="Gerente">Gerente</option>
-                                <option value="Lider">Líder</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary w-full" id="adminCriarBtn">
-                            <i class="ri-add-line"></i> CRIAR INTEGRANTE
-                        </button>
-                    </div>
-
-                    <!-- PIN gerado box -->
-                    <div id="senhaGeradaBox" class="pin-generated-box hidden">
-                        <div class="pin-gen-title">✅ Integrante criado!</div>
-                        <div class="pin-gen-info">Nick: <strong id="senhaGeradaNick">—</strong></div>
-                        <div class="pin-gen-label">SENHA GERADA</div>
-                        <div class="pin-gen-value" id="senhaGeradaValor">0000</div>
-                        <div class="pin-gen-warn">⚠️ Envie esta senha ao integrante agora. O admin poderá visualizar ou resetá-la futuramente na lista de membros.</div>
-                        <button class="btn btn-ghost w-full" id="senhaGeradaCopiarBtn">
-                            <i class="ri-file-copy-line"></i> Copiar Senha
-                        </button>
                     </div>
                 </div>
 
@@ -1057,6 +1052,7 @@
 <script src="js/api.js"></script>
 <script src="js/state.js"></script>
 <script src="js/components.js"></script>
+<script src="js/mentions.js"></script>
 <script src="js/platform.js"></script>
 
 </body>

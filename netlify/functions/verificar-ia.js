@@ -27,7 +27,18 @@ exports.handler = async function(event) {
     }
 
     // ── Lista completa de regras para o prompt ─────────────────────────
-    const regrasTexto = `
+    let regrasTexto = '';
+    
+    // Se o frontend enviou os candidatos
+    if (body.candidatos && Array.isArray(body.candidatos) && body.candidatos.length > 0) {
+        regrasTexto = '=== REGRAS DISPONÍVEIS ===\n';
+        body.candidatos.forEach(c => {
+            regrasTexto += `${c.codigo} - ${c.nome}: ${c.descricao}\n`;
+        });
+        regrasTexto += `ALERT-7 - Decisão Gerencial: Caso complexo, ambíguo ou sem precedente. Requer gerente/admin.\n`;
+    } else {
+        // Fallback: usar a lista embutida se os candidatos não vierem
+        regrasTexto = `
 === REGRAS DE ROLEPLAY (RP) ===
 RP-01  - DM (Deathmatch): Causar dano/matar sem motivo de RP válido. Penalidade: 20min prisão.
 RP-02  - DMAuto (VDM): Usar veículo como arma sem motivo de RP. Penalidade: 20min prisão.
@@ -64,29 +75,30 @@ COM-03 - Incitação Sistemática: Provocar jogadores para gerar reações negat
 
 === DECISÃO ESPECIAL ===
 ALERT-7 - Decisão Gerencial: Caso complexo, ambíguo, sem precedente ou com regras conflitantes. Requer gerente/admin.`;
+    }
 
     const systemPrompt = `Você é um árbitro especialista nas regras do servidor de roleplay One State RP (Brasil).
-Analise o relato do jogador e identifique TODAS as regras que podem ter sido violadas.
+Analise o relato do jogador e identifique a regra mais provável que foi violada.
 
 REGRAS DISPONÍVEIS:
 ${regrasTexto}
 
 INSTRUÇÕES IMPORTANTES:
-1. Identifique TODAS as possíveis violações, mesmo que sejam de categorias diferentes (RP, Conduta, Conta, Comunicação)
-2. Use os códigos exatos: RP-01, RP-02, ..., COND-01, CONTA-01, COM-01, ALERT-7
+1. Identifique as violações baseando-se apenas nas regras listadas. NÃO invente regras.
+2. Retorne os códigos exatos.
 3. Se o caso for ambíguo, complexo ou envolver múltiplas perspectivas válidas, inclua ALERT-7
-4. Se absolutamente nenhuma regra se aplicar claramente, retorne regras:[] e alert7:true
+4. Se absolutamente nenhuma regra se aplicar claramente, retorne regras_encontradas:[] e alert7:true
 5. A penalidade sugerida deve ser a MAIS GRAVE das regras violadas
 6. Seja objetivo e direto na análise
 7. Responda APENAS com o JSON abaixo, sem texto extra
 
 Retorne EXCLUSIVAMENTE este JSON válido:
 {
-  "regras": ["RP-01", "COND-01"],
+  "regras_encontradas": [{"codigo": "RP-01"}],
   "alert7": false,
   "analise": "Análise clara em português (máximo 3 linhas)",
   "penalidade": "Penalidade sugerida mais grave",
-  "confianca": 85
+  "confianca_geral": 85
 }`;
 
     try {
@@ -129,11 +141,11 @@ Retorne EXCLUSIVAMENTE este JSON válido:
         }
 
         // Validar e sanitizar
-        if (!parsed.regras || !Array.isArray(parsed.regras)) parsed.regras = [];
+        if (!parsed.regras_encontradas || !Array.isArray(parsed.regras_encontradas)) parsed.regras_encontradas = [];
         if (typeof parsed.alert7 !== 'boolean') parsed.alert7 = false;
         if (!parsed.analise) parsed.analise = '';
         if (!parsed.penalidade) parsed.penalidade = '';
-        if (typeof parsed.confianca !== 'number') parsed.confianca = 0;
+        if (typeof parsed.confianca_geral !== 'number') parsed.confianca_geral = 0;
 
         return {
             statusCode: 200,

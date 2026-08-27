@@ -98,11 +98,49 @@ exports.handler = async function (event) {
                     nivel:     membro.nivel,
                     nivel_ak:  membro.nivel_ak,
                     pontos:    membro.pontos,
-                    avatar_url:membro.avatar_url,
+                    avatar_url: membro.avatar_url,
                     bio:       membro.bio,
-                    is_admin:  membro.is_admin
+                    is_admin:  membro.is_admin,
+                    is_ativo:  membro.is_ativo
                 }
             });
+        }
+
+        // ─────────────────────────────────────────────────────
+        //  POST /registrar — Auto-cadastro do membro
+        // ─────────────────────────────────────────────────────
+        if (event.httpMethod === 'POST' && sub === 'registrar') {
+            const { nick, senha } = JSON.parse(event.body || '{}');
+            if (!nick?.trim() || !senha) return erro('Nick e senha são obrigatórios');
+            if (nick.trim().length > 50) return erro('Nick muito longo');
+            if (String(senha).length < 4) return erro('A senha deve ter no mínimo 4 caracteres');
+
+            // Verifica se já existe
+            const existing = await sql`SELECT id FROM membros WHERE nick ILIKE ${nick.trim()} LIMIT 1`;
+            if (existing.length > 0) return erro('Este nick já está cadastrado', 409);
+
+            // Insere como Pendente (ativo = true para permitir o login, restrição via cargo)
+            const rows = await sql`
+                INSERT INTO membros (nick, senha, cargo, is_admin, is_ativo)
+                VALUES (${nick.trim()}, ${String(senha)}, 'Pendente', false, true)
+                RETURNING id, nick, cargo, nivel, nivel_ak, pontos, is_admin, is_ativo
+            `;
+            const membro = rows[0];
+
+            // Já autentica o usuário
+            const token = gerarToken(
+                { id: membro.id, nick: membro.nick, cargo: membro.cargo, isAdmin: membro.is_admin },
+                30
+            );
+
+            // Registrar sessão
+            const deviceInfo = `${(event.headers['user-agent'] || '').slice(0, 80)}`;
+            await sql`
+                INSERT INTO sessoes (membro_id, token_hash, device_info, lembrar)
+                VALUES (${membro.id}, md5(${token}), ${deviceInfo}, true)
+                ON CONFLICT DO NOTHING`;
+
+            return ok({ token, membro });
         }
 
         // ─────────────────────────────────────────────────────
@@ -117,36 +155,28 @@ exports.handler = async function (event) {
         }
 
         // ─────────────────────────────────────────────────────
-        //  POST /criar-membro  (admin)
-        //  Cria membro com senha gerada → retorna senha para o admin
+        //  POST /aprovar-membro  (admin)
+        //  Aprova um membro que estava Pendente
         // ─────────────────────────────────────────────────────
-        if (event.httpMethod === 'POST' && sub === 'criar-membro') {
+        if (event.httpMethod === 'POST' && sub === 'aprovar-membro') {
             const payload = verificarToken(extrairToken(event));
-            if (!payload?.isAdmin) return erro('Apenas admins podem criar membros', 403);
+            if (!payload?.isAdmin) return erro('Apenas admins podem aprovar membros', 403);
 
-            const { nick, cargo = 'Recruta' } = JSON.parse(event.body || '{}');
-            if (!nick?.trim() || nick.trim().length < 2) return erro('Nick inválido (mínimo 2 caracteres)');
+            const { membro_id, cargo = 'Recruta' } = JSON.parse(event.body || '{}');
+            if (!membro_id) return erro('membro_id obrigatório');
 
-            const senha = gerarSenha();
+            const rows = await sql`
+                UPDATE membros
+                SET cargo = ${cargo}, is_admin = ${['Gerente','Lider'].includes(cargo)}
+                WHERE id = ${membro_id}
+                RETURNING id, nick, cargo, is_admin`;
+                
+            if (rows.length === 0) return erro('Membro não encontrado', 404);
 
-            try {
-                const rows = await sql`
-                    INSERT INTO membros (nick, senha, cargo, is_admin)
-                    VALUES (${nick.trim()}, ${senha}, ${cargo}, ${['Gerente','Lider'].includes(cargo)})
-                    RETURNING id, nick, cargo`;
-
-                return ok({
-                    membro: rows[0],
-                    pin: senha,   // mantém campo "pin" para compatibilidade com o frontend
-                    senha,
-                    aviso: 'Envie esta senha ao novo integrante. Ele poderá alterá-la após o primeiro login.'
-                }, 201);
-            } catch (e) {
-                if (e.message?.includes('unique') || e.message?.includes('duplicate')) {
-                    return erro('Nick já cadastrado', 409);
-                }
-                throw e;
-            }
+            return ok({
+                membro: rows[0],
+                mensagem: 'Membro aprovado com sucesso'
+            });
         }
 
         // ─────────────────────────────────────────────────────
