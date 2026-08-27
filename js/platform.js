@@ -1166,7 +1166,7 @@ function inicializarEventListeners() {
     if (nickInput) {
         nickInput.addEventListener('keydown', e => { if (e.key === 'Enter') loginStep1Submit(); });
     }
-    document.getElementById('regEntrarBtn')?.addEventListener('click', loginStep2Submit);
+    document.getElementById('regEntrarBtn')?.addEventListener('click', registerSubmit);
 
     // ── Login Step 2 (Senha) ──────────────────────────────
     
@@ -1504,56 +1504,62 @@ function inicializarEventListeners() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LOGIN FLOW
+   LOGIN & REGISTRO FLOW
 ═══════════════════════════════════════════════════════════ */
-function loginStep1Submit() {
+document.getElementById('loginShowRegisterBtn')?.addEventListener('click', () => {
+    hideEl('loginStep1');
+    showEl('loginStep2');
+});
+
+document.getElementById('pinBackBtn')?.addEventListener('click', () => {
+    hideEl('loginStep2');
+    showEl('loginStep1');
+});
+
+async function loginStep1Submit() {
     const nick = document.getElementById('loginNickInput')?.value?.trim();
-    if (!nick || nick.length < 2) {
-        mostrarErroLogin('step1', 'Informe um nick válido (mínimo 2 caracteres)');
+    const senha = document.getElementById('loginSenhaInput')?.value?.trim();
+    const lembrarCheck = document.getElementById('loginLembrarCheck')?.checked || false;
+
+    if (!nick || !senha) {
+        mostrarErroLogin('step1', 'Preencha nick e senha');
         return;
     }
     ocultarErroLogin('step1');
-
-    // Guardar nick e ir para step 2
+    showEl('loginLoading');
     hideEl('loginStep1');
-    showEl('loginStep2');
-    const senhaInput = document.getElementById('loginSenhaInput');
-    if (senhaInput) {
-        senhaInput.value = '';
-        senhaInput.focus();
-    }
-    pinBuffer = '';
-    lembrar   = false;
-    
-    const lembrarCheck = document.getElementById('loginLembrarCheck');
-    if (lembrarCheck) lembrarCheck.checked = false;
 
-    setTextById('pinNickDisplay', nick);
-    setTextById('pinAvatarInitials', GRK.getInitials(nick));
+    try {
+        const membro = await AUTH.login(nick, senha, lembrarCheck);
+        STATE.setUser(membro);
+        await iniciarApp();
+    } catch (e) {
+        hideEl('loginLoading');
+        showEl('loginStep1');
+        mostrarErroLogin('step1', e.message || 'Erro ao logar');
+    }
 }
 
-async function loginStep2Submit() {
-    const nick = document.getElementById('loginNickInput')?.value?.trim();
+async function registerSubmit() {
+    const nick = document.getElementById('regNickInput')?.value?.trim();
+    const senha = document.getElementById('regSenhaInput')?.value?.trim();
+
+    if (!nick || !senha || nick.length < 2 || senha.length < 4) {
+        mostrarErroLogin('step2', 'Nick válido e senha mínima de 4 caracteres');
+        return;
+    }
+    ocultarErroLogin('step2');
     showEl('loginLoading');
     hideEl('loginStep2');
 
     try {
-        const result = await API.login(nick, pinBuffer, lembrar);
-
-        AUTH.login(result, lembrar); // salvar token no auth module
-
-        STATE.setUser(result.membro);
+        const membro = await AUTH.registrar(nick, senha);
+        STATE.setUser(membro);
         await iniciarApp();
     } catch (e) {
         hideEl('loginLoading');
         showEl('loginStep2');
-        pinBuffer = '';
-        const senhaInput = document.getElementById('loginSenhaInput');
-        if(senhaInput) {
-            senhaInput.value = '';
-            senhaInput.focus();
-        }
-        mostrarErroLogin('step2', e.message || 'Senha incorreta. Tente novamente.');
+        mostrarErroLogin('step2', e.message || 'Erro ao registrar');
     }
 }
 
