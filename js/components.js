@@ -64,19 +64,30 @@ window.GRK = {
     chatMessage(msg, isMe = false) {
         const meClass = isMe ? 'chat-msg-me' : '';
         const time = this.timeAgo(msg.created_at);
+        const cargo = msg.autor_cargo || '';
         
         let contentHtml = '';
         if (msg.tipo === 'audio') {
             contentHtml = `<audio controls src="${msg.conteudo}" class="chat-audio"></audio>`;
         } else {
-            contentHtml = `<div class="chat-text">${msg.conteudo}</div>`;
+            // Parse @mentions for highlight
+            const parsed = (msg.conteudo || '').replace(/@([\w_]+)/g, '<span class="chat-mention">@$1</span>');
+            contentHtml = `<div class="chat-text">${parsed}</div>`;
         }
+
+        const authorBlock = !isMe ? `
+            <div class="chat-msg-author">
+                <span class="chat-msg-nick">${msg.autor_nick}</span>
+                ${cargo ? `<span class="chat-msg-cargo">${cargo}</span>` : ''}
+                <span class="chat-msg-time">${time}</span>
+            </div>` 
+            : `<div class="chat-msg-time chat-msg-time-me">${time}</div>`;
 
         return `
             <div class="chat-msg ${meClass}">
                 ${!isMe ? this.avatar(msg.autor_nick, 'sm', msg.autor_avatar) : ''}
                 <div class="chat-msg-body">
-                    ${!isMe ? `<div class="chat-msg-author">${msg.autor_nick} <span class="chat-msg-time">${time}</span></div>` : `<div class="chat-msg-time">${time}</div>`}
+                    ${authorBlock}
                     <div class="chat-msg-content">${contentHtml}</div>
                 </div>
             </div>
