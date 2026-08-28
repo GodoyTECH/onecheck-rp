@@ -144,7 +144,7 @@ exports.handler = async function (event) {
         // -----------------------------------------------------
         // PATCH /:id/editar-perfil (Self edit)
         // -----------------------------------------------------
-        const matchEdit = sub.match(/^([0-9a-f-]+)/editar-perfil$/);
+        const matchEdit = sub.match(/^([0-9a-f-]+)\/editar-perfil$/);
         if (event.httpMethod === 'PATCH' && matchEdit) {
             const userId = matchEdit[1];
             if (userId !== payload.id) return erro('Não autorizado', 403);
