@@ -172,7 +172,7 @@ const PWA = (() => {
         }
     }
 
-    return { init, solicitarPermissaoPush, subscribePush, registrarSW };
+    return { init, solicitarPermissaoPush, subscribePush, registrarSW, configurarInstall: initInstallButton };
 })();
 
 window.PWA = PWA;

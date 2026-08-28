@@ -2,9 +2,13 @@
   "name": "godoy-rk",
   "version": "1.0.0",
   "description": "GoddoY RK — Plataforma oficial da facção",
-  "engines": { "node": ">=18.0.0" },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
-    "@netlify/blobs": "^8.1.0"
+    "@netlify/blobs": "^8.1.0",
+    "@netlify/functions": "^6.0.0",
+    "web-push": "^3.6.7"
   }
 }

@@ -117,7 +117,7 @@ const AUTH = (() => {
 
     return {
         saveToken, getToken, getMe, isLoggedIn, logout, headers, atualizarMe,
-        login, registrar, aprovarMembro, resetarSenha
+        login, registrar, aprovarMembro
     };
 })();
 

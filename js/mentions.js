@@ -116,10 +116,6 @@ const MENTIONS = (() => {
 
         // Posicionamento acima do input
         const inputRect = currentInput.getBoundingClientRect();
-        // Um cálculo simples: posiciona logo acima do campo
-        
-        // Position globally using fixed coordinates
-        const inputRect = currentInput.getBoundingClientRect();
         
         // Convert to absolute fixed positions
         menuEl.style.position = 'fixed';
