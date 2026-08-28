@@ -291,7 +291,7 @@
                 <input type="password" id="editPerfilSenha" class="input-field" placeholder="Nova Senha (Deixe em branco p/ manter)">
             </div>
             <div class="modal-actions">
-                <button class="btn btn-ghost" onclick="document.getElementById('modalEditPerfil').classList.remove('visible')">Cancelar</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('modalEditPerfil').classList.add('hidden')">Cancelar</button>
                 <button class="btn btn-primary" id="btnSalvarEditPerfil">Salvar</button>
             </div>
         </div>
@@ -314,7 +314,7 @@
                 <input type="number" id="addTarefaMetaMensal" class="input-field" placeholder="Meta Mensal (Opcional)">
             </div>
             <div class="modal-actions">
-                <button class="btn btn-ghost" onclick="document.getElementById('modalAddTarefa').classList.remove('visible')">Cancelar</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('modalAddTarefa').classList.add('hidden')">Cancelar</button>
                 <button class="btn btn-primary" id="btnSalvarTarefa">Salvar</button>
             </div>
         </div>
@@ -333,7 +333,7 @@
             <input type="file" id="addEventoImg" accept="image/*" class="input-field mb-1" style="padding-top: 10px;">
             
             <div class="modal-actions mt-1">
-                <button class="btn btn-ghost" onclick="document.getElementById('modalAddEvento').classList.remove('visible')">Cancelar</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('modalAddEvento').classList.add('hidden')">Cancelar</button>
                 <button class="btn btn-primary" id="btnAnalisarEvento"><i class="ri-magic-line"></i> Extrair Horários</button>
             </div>
         </div>
@@ -349,7 +349,7 @@
             </div>
             <div id="previewHorarios" style="background: var(--bg-card); padding: 10px; border-radius: var(--r-md); margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-2); white-space: pre-wrap;"></div>
             <div class="modal-actions">
-                <button class="btn btn-ghost" onclick="document.getElementById('modalConfirmarEvento').classList.remove('visible')">Voltar</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('modalConfirmarEvento').classList.add('hidden')">Voltar</button>
                 <button class="btn btn-primary" id="btnSalvarEventoConfirmado">Salvar Evento</button>
             </div>
         </div>
@@ -620,10 +620,10 @@
                         <div class="section-title">GERENCIAR</div>
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddTarefa').classList.add('visible')">
+                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddTarefa').classList.remove('hidden')">
                             + TAREFA
                         </button>
-                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddEvento').classList.add('visible')">
+                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddEvento').classList.remove('hidden')">
                             + EVENTO (IA)
                         </button>
                     </div>
@@ -764,7 +764,7 @@
 
                 
                 <div class="profile-actions" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                    <button class="btn btn-outline" onclick="document.getElementById('modalEditPerfil').classList.add('visible')">
+                    <button class="btn btn-outline" onclick="document.getElementById('modalEditPerfil').classList.remove('hidden')">
                         <i class="ri-edit-line"></i> Editar Dados (Nome/Senha)
                     </button>
                 </div>

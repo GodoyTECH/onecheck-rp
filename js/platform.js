@@ -1215,7 +1215,7 @@ function promoverModal(membroId, nick, cargoAtual) {
         </div>
     `;
     const fecharModal = GRK.modal('PROMOVER MEMBRO', content, `
-        <button class="btn btn-ghost" onclick="document.querySelector('.modal-overlay.visible')?.classList.remove('visible')">Cancelar</button>
+        <button class="btn btn-ghost" onclick="document.querySelector('.modal-overlay.visible')?.classList.add('hidden')">Cancelar</button>
         <button class="btn btn-primary" id="confirmarPromoverBtn">CONFIRMAR</button>
     `);
 
@@ -1593,7 +1593,7 @@ function inicializarEventListeners() {
         
         try {
             await API.criarEvento({ titulo, tipo: 'tarefa', meta_diaria: mD, meta_mensal: mM });
-            document.getElementById('modalAddTarefa').classList.remove('visible');
+            document.getElementById('modalAddTarefa').classList.add('hidden');
             document.getElementById('addTarefaTitulo').value = '';
             GRK.toast('Tarefa criada!');
             carregarMissoes();
@@ -1634,8 +1634,8 @@ function inicializarEventListeners() {
             const resultado = await API.parseEventosIA(txt, b64, mime);
             pendingIAParsed = resultado;
             
-            document.getElementById('modalAddEvento').classList.remove('visible');
-            document.getElementById('modalConfirmarEvento').classList.add('visible');
+            document.getElementById('modalAddEvento').classList.add('hidden');
+            document.getElementById('modalConfirmarEvento').classList.remove('hidden');
             document.getElementById('confirmEventoTitulo').value = resultado.titulo || 'Novo Evento';
             
             const prev = document.getElementById('previewHorarios');
@@ -1661,7 +1661,7 @@ function inicializarEventListeners() {
                 tipo: 'evento',
                 horarios: pendingIAParsed.horarios || []
             });
-            document.getElementById('modalConfirmarEvento').classList.remove('visible');
+            document.getElementById('modalConfirmarEvento').classList.add('hidden');
             GRK.toast('Evento agendado!', 'success');
             pendingIAParsed = null;
             carregarMissoes();
@@ -1840,3 +1840,38 @@ function autoResizeTextarea(e) {
     ta.style.height = Math.min(ta.scrollHeight, max) + 'px';
     ta.style.overflowY = ta.scrollHeight > max ? 'auto' : 'hidden';
 }
+
+
+// ── Funções de Roster / Admin Roster ───────────────
+window.verPerfil = function(id) {
+    if (id === STATE.user.id) {
+        navigateTo('perfil');
+    } else {
+        navigateTo('membroPerfil', { membroId: id });
+    }
+};
+
+window.abrirModalPromover = function(id, nick, cargoAtual) {
+    // Add simple prompt or modal implementation for promoting
+    const novoCargo = prompt(`Promover ${nick}\nCargo atual: ${cargoAtual}\n\nDigite o novo cargo (ex: Lider, Gerente, Tenente, Oficial, Veterano, Membro):`);
+    if (!novoCargo) return;
+    
+    if (confirm(`Confirmar promoção de ${nick} para ${novoCargo}?`)) {
+        API.promover(id, novoCargo, 'Promoção manual').then(() => {
+            GRK.toast('Membro promovido com sucesso!', 'success');
+            carregarRosterPublico();
+        }).catch(e => GRK.toast(e.message, 'error'));
+    }
+};
+
+window.desativarMembro = function(id) {
+    if (confirm('Tem certeza que deseja desativar (expulsar) este membro?')) {
+        // Implement PATCH /fac-membros/:id/desativar
+        API._fetch(`/.netlify/functions/fac-membros/${id}/desativar`, { method: 'PATCH' }, true)
+            .then(() => {
+                GRK.toast('Membro expulso.', 'success');
+                carregarRosterPublico();
+            })
+            .catch(e => GRK.toast(e.message, 'error'));
+    }
+};

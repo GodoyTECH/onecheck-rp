@@ -144,17 +144,32 @@ exports.handler = async function (event) {
         // -----------------------------------------------------
         // PATCH /:id/editar-perfil (Self edit)
         // -----------------------------------------------------
-        const matchEdit = sub.match(/^([0-9a-f-]+)\/editar-perfil$/);
+const matchEdit = sub.match(/^([0-9a-f-]+)\/editar-perfil$/);
         if (event.httpMethod === 'PATCH' && matchEdit) {
             const userId = matchEdit[1];
             if (userId !== payload.id) return erro('Não autorizado', 403);
             
             const updates = JSON.parse(event.body || '{}');
+            
+            if (updates.avatar_base64) {
+                const { getStore } = require('@netlify/blobs');
+                const store = getStore('media');
+                const avatarId = `avatar_${userId}_${Date.now()}.jpg`;
+                
+                const base64Data = updates.avatar_base64.replace(/^data:image\/\w+;base64,/, '');
+                const buffer = Buffer.from(base64Data, 'base64');
+                await store.set(avatarId, buffer, { metadata: { type: 'image/jpeg' } });
+                
+                const siteUrl = process.env.URL || `https://${process.env.NETLIFY_SITE_ID}.netlify.app`;
+                const finalUrl = `${siteUrl}/.netlify/functions/fac-media/${avatarId}`;
+                
+                await sql`UPDATE membros SET avatar_url = ${finalUrl}, updated_at = NOW() WHERE id = ${userId}`;
+            }
+
             if (updates.nick) {
                 await sql`UPDATE membros SET nick = ${updates.nick}, updated_at = NOW() WHERE id = ${userId}`;
             }
             if (updates.senha) {
-                // simple btoa for now as established in fac-auth
                 const hash = Buffer.from(updates.senha).toString('base64');
                 await sql`UPDATE membros SET senha_hash = ${hash}, updated_at = NOW() WHERE id = ${userId}`;
             }
