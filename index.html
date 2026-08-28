@@ -196,7 +196,11 @@
                     <i class="ri-sword-line sidebar-nav-icon"></i>
                     <span class="sidebar-nav-label">Missões</span>
                 </button>
-                <button class="sidebar-nav-item" data-view="perfil">
+                <button class="sidebar-nav-item" data-view="membros">
+    <i class="ri-group-line sidebar-nav-icon"></i>
+    <span class="sidebar-nav-label">Membros</span>
+</button>
+<button class="sidebar-nav-item" data-view="perfil">
                     <i class="ri-user-3-line sidebar-nav-icon"></i>
                     <span class="sidebar-nav-label">Perfil</span>
                 </button>
@@ -272,6 +276,26 @@
     <!-- ==========================================
          MODALS
     =========================================== -->
+
+    
+    <!-- MODAL EDITAR PERFIL -->
+    <div id="modalEditPerfil" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2 class="modal-title">Editar Perfil</h2>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-user-smile-line"></i>
+                <input type="text" id="editPerfilNick" class="input-field" placeholder="Novo Nickname">
+            </div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-lock-password-line"></i>
+                <input type="password" id="editPerfilSenha" class="input-field" placeholder="Nova Senha (Deixe em branco p/ manter)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalEditPerfil').classList.remove('visible')">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarEditPerfil">Salvar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL ADD TAREFA -->
     <div id="modalAddTarefa" class="modal-overlay">
@@ -606,8 +630,7 @@
                 </div>
             </div>
 
-            <!-- 
-<div id="viewConquistas" class="view hidden">
+            <div id="viewConquistas" class="view hidden">
                 <div class="achievements-grid" id="achievementsGrid">
                     <!-- Conquistas padrão da facção -->
                     <div class="achievement-card" data-ach="novato">
@@ -687,6 +710,24 @@
             <!-- ══════════════════════════════════════════════
                  VIEW: PERFIL PRÓPRIO
             ══════════════════════════════════════════════ -->
+            
+            <!-- ══════════════════════════════════════════════
+                 VIEW: MEMBROS (ROSTER PUBLICO)
+            ══════════════════════════════════════════════ -->
+            <div id="viewMembros" class="view hidden">
+                <div class="section-header">
+                    <div class="section-title">LISTA DE MEMBROS (<span id="totalMembrosRoster">0</span>)</div>
+                </div>
+                <div class="input-field-wrap mb-1">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="rosterSearchInput" class="input-field" placeholder="Buscar membro por nick ou cargo...">
+                </div>
+                <div class="roster-grid" id="rosterGrid">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
             <div id="viewPerfil" class="view hidden">
                 <!-- Profile Hero -->
                 <div class="profile-hero">
@@ -719,6 +760,13 @@
                     <div class="xp-numbers">
                         <span id="perfilXpCurrent">0</span> / <span id="perfilXpMax">5.000</span> XP
                     </div>
+                </div>
+
+                
+                <div class="profile-actions" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button class="btn btn-outline" onclick="document.getElementById('modalEditPerfil').classList.add('visible')">
+                        <i class="ri-edit-line"></i> Editar Dados (Nome/Senha)
+                    </button>
                 </div>
 
                 <!-- Stats Grid -->
@@ -1084,7 +1132,11 @@
                 <i class="ri-sword-line"></i>
                 <span>Missões</span>
             </button>
-            <button class="bottom-nav-item" data-view="perfil" aria-label="Perfil">
+            <button class="bottom-nav-item" data-view="membros" aria-label="Membros">
+    <i class="ri-group-line"></i>
+    <span>Membros</span>
+</button>
+<button class="bottom-nav-item" data-view="perfil" aria-label="Perfil">
                 <i class="ri-user-3-line"></i>
                 <span>Perfil</span>
             </button>

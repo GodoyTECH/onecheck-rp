@@ -140,6 +140,27 @@ exports.handler = async function (event) {
         }
 
         // ── PATCH /:id/desativar  (admin) ─────────────────────
+        
+        // -----------------------------------------------------
+        // PATCH /:id/editar-perfil (Self edit)
+        // -----------------------------------------------------
+        const matchEdit = sub.match(/^([0-9a-f-]+)/editar-perfil$/);
+        if (event.httpMethod === 'PATCH' && matchEdit) {
+            const userId = matchEdit[1];
+            if (userId !== payload.id) return erro('Não autorizado', 403);
+            
+            const updates = JSON.parse(event.body || '{}');
+            if (updates.nick) {
+                await sql`UPDATE membros SET nick = ${updates.nick}, updated_at = NOW() WHERE id = ${userId}`;
+            }
+            if (updates.senha) {
+                // simple btoa for now as established in fac-auth
+                const hash = Buffer.from(updates.senha).toString('base64');
+                await sql`UPDATE membros SET senha_hash = ${hash}, updated_at = NOW() WHERE id = ${userId}`;
+            }
+            return ok({ ok: true });
+        }
+
         const matchId = sub.match(/^([0-9a-f-]+)\/desativar$/);
         if (event.httpMethod === 'PATCH' && matchId) {
             if (!payload.isAdmin) return erro('Apenas admins', 403);
