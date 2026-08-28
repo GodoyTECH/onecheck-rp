@@ -272,6 +272,65 @@
     <!-- ==========================================
          MODALS
     =========================================== -->
+
+    <!-- MODAL ADD TAREFA -->
+    <div id="modalAddTarefa" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="modal-title">Nova Tarefa (Farm)</h2>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-sword-line"></i>
+                <input type="text" id="addTarefaTitulo" class="input-field" placeholder="Ex: Farm de Maconha">
+            </div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-funds-line"></i>
+                <input type="number" id="addTarefaMetaDiaria" class="input-field" placeholder="Meta Diária (Opcional)">
+            </div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-line-chart-line"></i>
+                <input type="number" id="addTarefaMetaMensal" class="input-field" placeholder="Meta Mensal (Opcional)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalAddTarefa').classList.remove('visible')">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarTarefa">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADD EVENTO -->
+    <div id="modalAddEvento" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="modal-title">Novo Evento (Análise IA)</h2>
+            <p style="font-size: 0.85rem; color: var(--text-2); margin-bottom: 1rem; text-align: center;">Cole uma foto ou texto com os horários para a IA extrair tudo automaticamente.</p>
+            
+            <textarea id="addEventoTexto" class="textarea-field mb-1" placeholder="Cole o texto aqui..." rows="4"></textarea>
+            
+            <div class="login-divider">OU IMAGEM</div>
+            
+            <input type="file" id="addEventoImg" accept="image/*" class="input-field mb-1" style="padding-top: 10px;">
+            
+            <div class="modal-actions mt-1">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalAddEvento').classList.remove('visible')">Cancelar</button>
+                <button class="btn btn-primary" id="btnAnalisarEvento"><i class="ri-magic-line"></i> Extrair Horários</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR EVENTO -->
+    <div id="modalConfirmarEvento" class="modal-overlay">
+        <div class="modal-card" style="max-height: 90vh; overflow-y: auto;">
+            <h2 class="modal-title">Confirmar Horários</h2>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-sword-line"></i>
+                <input type="text" id="confirmEventoTitulo" class="input-field" placeholder="Nome do Grupo de Eventos">
+            </div>
+            <div id="previewHorarios" style="background: var(--bg-card); padding: 10px; border-radius: var(--r-md); margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-2); white-space: pre-wrap;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalConfirmarEvento').classList.remove('visible')">Voltar</button>
+                <button class="btn btn-primary" id="btnSalvarEventoConfirmado">Salvar Evento</button>
+            </div>
+        </div>
+    </div>
+
             <div id="viewHome" class="view active">
                 <!-- User Hero -->
                 <div class="home-hero">
@@ -514,46 +573,41 @@
             <!-- ══════════════════════════════════════════════
                  VIEW: MISSÕES
             ══════════════════════════════════════════════ -->
+            
             <div id="viewMissoes" class="view hidden">
                 <div class="tab-bar missions-tabs">
-                    <button class="tab-item active" data-missions-tab="disponiveis">DISPONÍVEIS</button>
-                    <button class="tab-item" data-missions-tab="concluidas">CONCLUÍDAS</button>
+                    <button class="tab-item active" data-missions-tab="tarefas">TAREFAS (FARM)</button>
+                    <button class="tab-item" data-missions-tab="eventos">EVENTOS</button>
                 </div>
 
-                <div id="missionsDisponiveis" class="missions-list">
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
+                <!-- TAREFAS TAB -->
+                <div id="tabTarefas" class="missions-list">
                     <div class="skeleton-card"></div>
                 </div>
 
-                <div id="missionsConcluidas" class="missions-list hidden"></div>
+                <!-- EVENTOS TAB -->
+                <div id="tabEventos" class="missions-list hidden">
+                    <div class="skeleton-card"></div>
+                </div>
 
-                <!-- Admin: criar missão -->
-                <div class="admin-only hidden" id="missionCreateSection">
-                    <div class="section-header mt-2">
-                        <div class="section-title">CRIAR MISSÃO</div>
+                <!-- ADMIN ONLY: ADD BUTTONS -->
+                <div class="admin-only hidden" id="adminEventosPanel" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <div class="section-title">GERENCIAR</div>
                     </div>
-                    <div class="card">
-                        <div class="input-field-wrap mb-1">
-                            <i class="ri-sword-line"></i>
-                            <input type="text" id="missionTitulo" class="input-field" placeholder="Título da missão">
-                        </div>
-                        <textarea id="missionDesc" class="textarea-field mb-1" placeholder="Descrição..." rows="3"></textarea>
-                        <div class="input-field-wrap mb-1">
-                            <i class="ri-star-line"></i>
-                            <input type="number" id="missionPontos" class="input-field" placeholder="Pontos de recompensa" min="0" max="99999">
-                        </div>
-                        <button class="btn btn-primary w-full" id="missionCreateBtn">
-                            <i class="ri-add-line"></i> CRIAR MISSÃO
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddTarefa').classList.add('visible')">
+                            + TAREFA
+                        </button>
+                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddEvento').classList.add('visible')">
+                            + EVENTO (IA)
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- ══════════════════════════════════════════════
-                 VIEW: CONQUISTAS
-            ══════════════════════════════════════════════ -->
-            <div id="viewConquistas" class="view hidden">
+            <!-- 
+<div id="viewConquistas" class="view hidden">
                 <div class="achievements-grid" id="achievementsGrid">
                     <!-- Conquistas padrão da facção -->
                     <div class="achievement-card" data-ach="novato">

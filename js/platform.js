@@ -611,95 +611,76 @@ async function enviarDMMsg() {
 /* ═══════════════════════════════════════════════════════════
    MISSÕES
 ═══════════════════════════════════════════════════════════ */
+let todosEventosTarefas = [];
+let pendingIAParsed = null;
+
 async function carregarMissoes() {
-    const dispEl = document.getElementById('missionsDisponiveis');
-    const concEl = document.getElementById('missionsConcluidas');
-    if (dispEl) dispEl.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+    const tabT = document.getElementById('tabTarefas');
+    const tabE = document.getElementById('tabEventos');
+    if (tabT) tabT.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
+    if (tabE) tabE.innerHTML = '<div class="skeleton-card"></div>'.repeat(3);
 
     try {
-        const tarefas = await API.getTarefas();
+        todosEventosTarefas = await API.getEventos() || [];
+        
+        const tarefas = todosEventosTarefas.filter(e => e.tipo === 'tarefa');
+        const eventos = todosEventosTarefas.filter(e => e.tipo === 'evento');
 
-        const disponiveis  = tarefas?.filter(t => !t.eu_conclui) || [];
-        const concluidas   = tarefas?.filter(t => t.eu_conclui)  || [];
-
-        if (dispEl) {
-            if (!disponiveis.length) {
-                dispEl.innerHTML = GRK.emptyState('ri-check-double-line', 'Tudo concluído!', 'Você concluiu todas as missões disponíveis');
+        if (tabT) {
+            if (tarefas.length === 0) {
+                tabT.innerHTML = '<div class="empty-state"><i class="ri-sword-line"></i><p>Nenhuma tarefa cadastrada</p></div>';
             } else {
-                dispEl.innerHTML = disponiveis.map(t => renderMissionCard(t, false)).join('');
-                dispEl.querySelectorAll('[data-concluir]').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        try {
-                            await API.concluirTarefa(btn.dataset.concluir);
-                            GRK.toast('Missão concluída! 🎯', 'success');
-                            carregarMissoes();
-                        } catch (e) {
-                            GRK.toast(e.message || 'Erro ao concluir missão', 'error');
-                        }
-                    });
-                });
+                tabT.innerHTML = tarefas.map(t => `
+                    <div class="card">
+                        <div class="card-title">${escapeHtml(t.titulo)}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-2); margin-top: 5px;">
+                            Meta Diária: ${t.meta_diaria > 0 ? t.meta_diaria : 'N/A'}<br>
+                            Meta Mensal: ${t.meta_mensal > 0 ? t.meta_mensal : 'N/A'}
+                        </div>
+                        ${STATE.user.is_admin ? `<button class="btn btn-ghost" style="margin-top:10px;" onclick="excluirEvTar('${t.id}')">Excluir</button>` : ''}
+                    </div>
+                `).join('');
             }
         }
 
-        if (concEl) {
-            if (!concluidas.length) {
-                concEl.innerHTML = GRK.emptyState('ri-sword-line', 'Nenhuma concluída', 'Complete missões para acumular pontos!');
+        if (tabE) {
+            if (eventos.length === 0) {
+                tabE.innerHTML = '<div class="empty-state"><i class="ri-calendar-event-line"></i><p>Nenhum evento agendado</p></div>';
             } else {
-                concEl.innerHTML = concluidas.map(t => renderMissionCard(t, true)).join('');
+                tabE.innerHTML = eventos.map(e => `
+                    <div class="card">
+                        <div class="card-title">${escapeHtml(e.titulo)} <span style="font-size:0.75rem; background: var(--red); padding: 2px 6px; border-radius: 4px;">${e.horarios.length} horários</span></div>
+                        <div style="margin-top: 10px; display: grid; gap: 8px;">
+                            ${e.horarios.map(h => `
+                                <div style="display: flex; gap: 10px; align-items: center; background: var(--bg-card2); padding: 6px 10px; border-radius: 6px;">
+                                    <span style="color: var(--gold); font-weight: bold; font-family: var(--ff-title); letter-spacing: 1px;">${h.horario}</span>
+                                    <span style="font-size: 0.85rem;">${escapeHtml(h.descricao)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${STATE.user.is_admin ? `<button class="btn btn-ghost" style="margin-top:10px;" onclick="excluirEvTar('${e.id}')">Excluir Grupo</button>` : ''}
+                    </div>
+                `).join('');
             }
-        }
-
-        // Admin: mostrar seção de criar
-        if (STATE.user?.is_admin) {
-            document.getElementById('missionCreateSection')?.classList.remove('hidden');
         }
 
     } catch (e) {
-        if (dispEl) dispEl.innerHTML = GRK.emptyState('ri-wifi-off-line', 'Erro ao carregar', 'Não foi possível carregar as missões');
+        if (tabT) tabT.innerHTML = '<div class="form-error">Erro ao carregar</div>';
+        if (tabE) tabE.innerHTML = '';
+        console.error(e);
     }
 }
 
-function renderMissionCard(t, done) {
-    const pct = t.total_concluiu > 0
-        ? Math.min(100, Math.round((t.total_concluiu / (STATE.ranking?.length || 1)) * 100))
-        : 0;
-    return `
-        <div class="mission-card ${done ? 'mission-card-done' : ''}">
-            <div class="mission-icon-wrap">
-                <div class="mission-icon"><i class="ri-sword-line"></i></div>
-            </div>
-            <div class="mission-body">
-                <div class="mission-title">${escapeHtml(t.titulo)}</div>
-                <div class="mission-desc">${escapeHtml(t.descricao || '')}</div>
-                <div class="mission-progress-row">
-                    <div class="mission-progress-bar">
-                        <div class="mission-progress-fill" style="width:${pct}%"></div>
-                    </div>
-                    <span class="mission-progress-text">${t.total_concluiu || 0} concluíram</span>
-                </div>
-                <div class="mission-footer">
-                    <span class="mission-reward"><i class="ri-star-fill"></i> ${GRK.formatPts(t.pontos)} PTS</span>
-                    ${!done ? `<button class="btn btn-primary btn-sm" data-concluir="${t.id}">Concluir</button>` : '<span class="mission-done-label">✅ Concluída</span>'}
-                </div>
-            </div>
-        </div>
-    `;
+window.excluirEvTar = async (id) => {
+    if(!confirm('Certeza que deseja excluir?')) return;
+    try {
+        await API.excluirEvento(id);
+        GRK.toast('Excluído com sucesso');
+        carregarMissoes();
+    } catch(e) {
+        GRK.toast(e.message, 'error');
+    }
 }
-
-/* ═══════════════════════════════════════════════════════════
-   CONQUISTAS
-═══════════════════════════════════════════════════════════ */
-const CONQUISTAS_DEF = {
-    novato:    { icon: '🔰', nome: 'Novato',     desc: 'Alcançou o nível 5 na facção',          req: 'Nível 5'  },
-    veterano:  { icon: '⚔️', nome: 'Veterano',   desc: 'Membro fiel, alcançou o nível 20',       req: 'Nível 20' },
-    respeitado:{ icon: '👊', nome: 'Respeitado',  desc: 'Demonstrou respeito e lealdade',         req: 'Nível 40' },
-    matador:   { icon: '🎯', nome: 'Matador',    desc: 'Realizou 100 eliminações em PVP',        req: '100 eliminações' },
-    chefao:    { icon: '👑', nome: 'Chefão',     desc: 'Ascendeu ao cargo de liderança',         req: 'Promoção' },
-    lendario:  { icon: '⭐', nome: 'Lendário',   desc: 'Atingiu o nível máximo na facção',       req: 'Nível 100' },
-    dominacao: { icon: '🔥', nome: 'Dominação',  desc: 'Conquistou 13 postos no servidor',       req: '13 postos' },
-    implacavel:{ icon: '💀', nome: 'Implacável', desc: 'Realizou 500 ações de controle de área', req: '500 ações' },
-    invencivel:{ icon: '🛡️', nome: 'Invencível',desc: 'Venceu o Round da Fama',                 req: 'Round da Fama' },
-};
 
 async function carregarConquistas() {
     try {
@@ -1494,6 +1475,104 @@ function inicializarEventListeners() {
 
     // Avatar click na topbar
     document.getElementById('topbarAvatar')?.addEventListener('click', () => navigateTo('perfil'));
+
+
+    // MISSIONS TABS
+    document.querySelectorAll('.missions-tabs .tab-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const t = e.target.dataset.missionsTab;
+            document.querySelectorAll('.missions-tabs .tab-item').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById('tabTarefas')?.classList.toggle('hidden', t !== 'tarefas');
+            document.getElementById('tabEventos')?.classList.toggle('hidden', t !== 'eventos');
+        });
+    });
+
+    // ADD TAREFA
+    document.getElementById('btnSalvarTarefa')?.addEventListener('click', async () => {
+        const titulo = document.getElementById('addTarefaTitulo').value.trim();
+        const mD = parseInt(document.getElementById('addTarefaMetaDiaria').value || 0);
+        const mM = parseInt(document.getElementById('addTarefaMetaMensal').value || 0);
+        if(!titulo) return GRK.toast('Título obrigatório', 'error');
+        
+        try {
+            await API.criarEvento({ titulo, tipo: 'tarefa', meta_diaria: mD, meta_mensal: mM });
+            document.getElementById('modalAddTarefa').classList.remove('visible');
+            document.getElementById('addTarefaTitulo').value = '';
+            GRK.toast('Tarefa criada!');
+            carregarMissoes();
+        } catch(e) {
+            GRK.toast(e.message, 'error');
+        }
+    });
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    // ANALISAR EVENTO (IA)
+    document.getElementById('btnAnalisarEvento')?.addEventListener('click', async () => {
+        const txt = document.getElementById('addEventoTexto').value.trim();
+        const fileInput = document.getElementById('addEventoImg');
+        const file = fileInput.files?.[0];
+        
+        if(!txt && !file) return GRK.toast('Insira texto ou imagem', 'error');
+        
+        const btn = document.getElementById('btnAnalisarEvento');
+        btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Analisando IA...';
+        btn.disabled = true;
+
+        try {
+            let b64 = null;
+            let mime = null;
+            if(file) {
+                b64 = await fileToBase64(file);
+                mime = file.type;
+            }
+            
+            const resultado = await API.parseEventosIA(txt, b64, mime);
+            pendingIAParsed = resultado;
+            
+            document.getElementById('modalAddEvento').classList.remove('visible');
+            document.getElementById('modalConfirmarEvento').classList.add('visible');
+            document.getElementById('confirmEventoTitulo').value = resultado.titulo || 'Novo Evento';
+            
+            const prev = document.getElementById('previewHorarios');
+            prev.innerHTML = (resultado.horarios || []).map(h => `<b>${h.hora}</b> - ${escapeHtml(h.descricao)}`).join('<br>');
+
+        } catch(e) {
+            GRK.toast(e.message, 'error');
+        } finally {
+            btn.innerHTML = '<i class="ri-magic-line"></i> Extrair Horários';
+            btn.disabled = false;
+        }
+    });
+
+    // CONFIRMAR EVENTO
+    document.getElementById('btnSalvarEventoConfirmado')?.addEventListener('click', async () => {
+        if(!pendingIAParsed) return;
+        const titulo = document.getElementById('confirmEventoTitulo').value.trim();
+        if(!titulo) return GRK.toast('Título obrigatório', 'error');
+        
+        try {
+            await API.criarEvento({
+                titulo: titulo,
+                tipo: 'evento',
+                horarios: pendingIAParsed.horarios || []
+            });
+            document.getElementById('modalConfirmarEvento').classList.remove('visible');
+            GRK.toast('Evento agendado!', 'success');
+            pendingIAParsed = null;
+            carregarMissoes();
+        } catch(e) {
+            GRK.toast(e.message, 'error');
+        }
+    });
 
     // Modais: fechar clicando fora
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
