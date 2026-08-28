@@ -3,7 +3,7 @@
  * Suporte a: cache offline, push notifications, background sync
  */
 
-const CACHE_NAME    = 'godoy-rk-v1';
+const CACHE_NAME    = 'godoy-rk-v3';
 const CACHE_STATIC  = [
     '/',
     '/index.html',
@@ -11,23 +11,24 @@ const CACHE_STATIC  = [
     '/js/platform.js',
     '/js/auth.js',
     '/js/pwa.js',
-    '/js/regras-rp.js',
-    '/js/ia-engine.js',
+    '/js/api.js',
+    '/js/components.js',
+    '/js/mentions.js',
+    '/js/state.js',
     '/manifest.json',
-    'https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&display=swap',
-    'https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css'
+    '/images/logo.jpg'
 ];
 
 // ── Instalação: cache dos arquivos estáticos ─────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Instalando GoddoY RK v1...');
+    console.log('[SW] Instalando GoddoY RK v3...');
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(CACHE_STATIC.map(url => {
-                return new Request(url, { mode: 'no-cors' });
-            })).catch(err => {
+            // Cache only same-origin files - external fonts cached dynamically
+            return cache.addAll(CACHE_STATIC).catch(err => {
                 console.warn('[SW] Alguns arquivos não cacheados:', err);
             });
+
         }).then(() => self.skipWaiting())
     );
 });

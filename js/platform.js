@@ -375,7 +375,7 @@ document.getElementById('btnSalvarEditPerfil')?.addEventListener('click', async 
 // Handle nav view "membros"
 // I will patch the bottom nav listener directly via regex in the platform.js code.
 
-function carregarRanking() {
+async function carregarRanking() {
     // Mostrar skeletons
     const list = document.getElementById('rankingList');
     if (list) list.innerHTML = '<div class="skeleton-card"></div>'.repeat(5);
