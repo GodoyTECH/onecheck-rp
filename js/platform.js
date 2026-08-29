@@ -18,6 +18,7 @@ const VIEWS = {
     missoes:       { id: 'viewMissoes',      title: 'Missões',       back: false },
     conquistas:    { id: 'viewConquistas',   title: 'Conquistas',    back: true  },
     perfil:        { id: 'viewPerfil',       title: 'Perfil',        back: false },
+    membros:       { id: 'viewMembros',      title: 'Membros',       back: false },
     membroPerfil:  { id: 'viewMembroPerfil', title: 'Perfil',        back: true  },
     notificacoes:  { id: 'viewNotificacoes', title: 'Notificações',  back: true  },
     config:        { id: 'viewConfig',       title: 'Configurações', back: true  },
