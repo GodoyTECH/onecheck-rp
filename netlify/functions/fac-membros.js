@@ -173,6 +173,15 @@ const matchEdit = sub.match(/^([0-9a-f-]+)\/editar-perfil$/);
                 const hash = Buffer.from(updates.senha).toString('base64');
                 await sql`UPDATE membros SET senha_hash = ${hash}, updated_at = NOW() WHERE id = ${userId}`;
             }
+            if (updates.nivel !== undefined) {
+                await sql`UPDATE membros SET nivel = ${updates.nivel}, updated_at = NOW() WHERE id = ${userId}`;
+            }
+            if (updates.nivel_ak !== undefined) {
+                await sql`UPDATE membros SET nivel_ak = ${updates.nivel_ak}, updated_at = NOW() WHERE id = ${userId}`;
+            }
+            if (updates.bio !== undefined) {
+                await sql`UPDATE membros SET bio = ${updates.bio}, updated_at = NOW() WHERE id = ${userId}`;
+            }
             return ok({ ok: true });
         }
 

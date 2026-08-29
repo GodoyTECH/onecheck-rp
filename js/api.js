@@ -85,7 +85,7 @@ window.API = {
         return this._fetch('/.netlify/functions/fac-membros/ranking', {}, true);
     },
     updateMe(data) {
-        return this._fetch('/.netlify/functions/fac-membros/me', {
+        return this._fetch(`/.netlify/functions/fac-membros/${window.STATE?.user?.id || ''}/editar-perfil`, {
             method: 'PATCH',
             body: JSON.stringify(data)
         }, true);

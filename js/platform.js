@@ -229,6 +229,7 @@ function navigateTo(viewName, extra = {}) {
         case 'missoes':     carregarMissoes();      break;
         case 'conquistas':  carregarConquistas();   break;
         case 'perfil':      carregarPerfil();       break;
+        case 'membros':     carregarRosterPublico(); break;
         case 'membroPerfil':carregarMembroPerfil(extra.membroId); break;
         case 'notificacoes':carregarNotificacoes(); break;
         case 'config':      carregarConfig();       break;
@@ -1038,6 +1039,7 @@ function carregarConfig() {
    ADMIN
 ═══════════════════════════════════════════════════════════ */
 async function carregarAdmin() {
+    await carregarAprovacoes();
     await carregarAdminMembros();
     preencherConquistasAdmin({});
 }
@@ -1148,7 +1150,7 @@ async function carregarAdminMembros() {
         // Resetar Senha
         list.querySelectorAll('.btn-resetar-senha').forEach(btn => {
             btn.addEventListener('click', async () => {
-                GRK.confirm(`Resetar Senha de ${btn.dataset.nick}?`, async () => {
+                if(confirm(`Resetar Senha de ${btn.dataset.nick}?`)) {
                     try {
                         const r = await API.resetarSenha(btn.dataset.id);
                         GRK.toast(`Nova senha de ${btn.dataset.nick}: ${r.senha}`, 'success');
@@ -1451,6 +1453,9 @@ function inicializarEventListeners() {
 
     // Config: push toggle
     document.getElementById('pushToggle')?.addEventListener('click', async () => {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            return GRK.toast('Já está ativo! Para desativar, mude nas permissões do navegador.', 'info');
+        }
         if (window.PWA) {
             try {
                 await PWA.solicitarPermissaoPush();
@@ -1751,7 +1756,7 @@ function ocultarErroLogin(step) {
    LOGOUT
 ═══════════════════════════════════════════════════════════ */
 async function fazerLogout() {
-    GRK.confirm('Deseja sair da sua conta?', async () => {
+    if (confirm('Deseja sair da sua conta?')) {
         clearInterval(chatPollTimer);
         clearInterval(dmPollTimer);
         clearInterval(notifPollTimer);
