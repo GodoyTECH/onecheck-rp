@@ -1954,13 +1954,7 @@ p {
   justify-content: center;
   z-index: 100;
   padding: 24px;
-  opacity: 0;
-  pointer-events: none;
   transition: var(--t);
-}
-.modal-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
 }
 .modal-card {
   background: var(--bg-card);

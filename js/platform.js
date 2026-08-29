@@ -1881,3 +1881,8 @@ window.desativarMembro = function(id) {
             .catch(e => GRK.toast(e.message, 'error'));
     }
 };
+
+// Chat Audio Button placeholder
+document.getElementById('chatAudioBtn')?.addEventListener('click', () => {
+    GRK.toast('Mensagens de áudio em breve!', 'info');
+});
