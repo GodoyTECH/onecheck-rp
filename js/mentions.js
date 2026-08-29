@@ -42,7 +42,7 @@ const MENTIONS = (() => {
             // Em vez de bater na API sempre, vamos tentar usar o window.STATE ou recarregar
             const membros = await window.API.getMembros(); 
             // Filtra pendentes e a si mesmo (opcional, mas permitiremos mencionar a todos menos pendentes)
-            allMembers = membros.filter(m => m.cargo !== 'Pendente' && m.id !== window.STATE.getUser()?.id);
+            allMembers = membros.filter(m => m.cargo !== 'Pendente' && m.id !== window.STATE.user?.id);
         } catch (e) {
             console.warn('Mentions: Erro ao carregar membros', e);
         }

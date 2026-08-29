@@ -2468,3 +2468,24 @@ p {
   border-radius: 3px;
   padding: 0 2px;
 }
+
+/* ==========================================================================
+   FIX: MAIN WRAP (Sidebar Overlap)
+   ========================================================================== */
+.main-wrap {
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+}
+@media (min-width: 768px) {
+  .main-wrap {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+}
+@media (min-width: 1024px) {
+  .main-wrap {
+    margin-left: var(--sidebar-w);
+    width: calc(100% - var(--sidebar-w));
+  }
+}
