@@ -1158,7 +1158,7 @@ async function carregarAdminMembros() {
                     } catch (e) {
                         GRK.toast('Erro ao resetar PIN', 'error');
                     }
-                });
+                }
             });
         });
 
@@ -1771,7 +1771,7 @@ async function fazerLogout() {
         showEl('loginStep1');
         hideEl('loginStep2');
         hideEl('loginLoading');
-    });
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════
