@@ -1486,7 +1486,7 @@ function inicializarEventListeners() {
             document.querySelectorAll('[data-admin-tab]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const tab = btn.dataset.adminTab;
-            ['membros', 'criar', 'pontuar', 'conquistas'].forEach(t => {
+            ['membros', 'aprovacoes', 'pontuar', 'conquistas'].forEach(t => {
                 const el = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
                 el?.classList.toggle('hidden', t !== tab);
             });
