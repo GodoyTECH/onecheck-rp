@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>GoddoY RK — One State RP</title>
+    <meta name="description" content="Plataforma oficial da gangue GoddoY RK. Viva sua história. Escolha seu caminho. One State RP.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#FF0000">
+
+    <!-- PWA / Apple -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GoddoY RK">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128.png">
+    <link rel="apple-touch-startup-image" href="/icons/icon-512.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/icons/icon-96.png">
+    <link rel="shortcut icon" href="/icons/icon-192.png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="GoddoY RK — One State RP">
+    <meta property="og:description" content="Plataforma oficial da gangue GoddoY RK. Viva sua história. Escolha seu caminho.">
+    <meta property="og:image" content="/images/logo.jpg">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GoddoY RK — One State RP">
+    <meta name="twitter:image" content="/images/logo.jpg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/platform.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP LOADING SPLASH
+═══════════════════════════════════════════════════════════ -->
+<div id="appLoading" class="app-loading">
+    <div class="app-loading-inner">
+        <img src="/images/logo.jpg" alt="GoddoY RK" class="app-loading-logo">
+        <div class="app-loading-name">GoddoY RK</div>
+        <div class="app-loading-spinner"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="login-screen hidden">
+    <div class="login-bg"></div>
+    <div class="login-bg-overlay"></div>
+
+    <div class="login-content">
+        <!-- Logo / Identity -->
+        <div class="login-identity">
+            <img src="/images/logo.jpg" alt="GoddoY RK" class="login-logo-img">
+            <div class="login-gang-name">GoddoY RK</div>
+            <div class="login-tagline">Gangue de Rua · One State RP</div>
+        </div>
+
+        <!-- Step 1: Login -->
+        <div id="loginStep1" class="login-card">
+            <div class="login-card-title">BEM-VINDO</div>
+            <div class="login-card-sub">Digite seu nick para entrar</div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-user-3-line"></i>
+                <input type="text" id="loginNickInput" class="input-field" placeholder="Seu nick da facção"
+                    autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="50">
+            </div>
+            <div class="input-field-wrap">
+                <i class="ri-lock-password-line"></i>
+                <input type="password" id="loginSenhaInput" class="input-field" placeholder="Sua senha">
+            </div>
+            
+            <div class="pin-lembrar-row" style="margin-top: 1rem; justify-content: flex-start; cursor: pointer;" id="loginLembrarRow">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; width: 100%;">
+                    <input type="checkbox" id="loginLembrarCheck" style="width: 1.25rem; height: 1.25rem; accent-color: var(--red);">
+                    <span class="pin-lembrar-label">Lembrar dispositivo</span>
+                </label>
+            </div>
+
+            <button id="loginEntrarBtn" class="btn btn-primary w-full mt-2">
+                ENTRAR <i class="ri-login-circle-line"></i>
+            </button>
+            <div class="login-divider">OU</div>
+            <button id="loginShowRegisterBtn" class="btn btn-ghost w-full">
+                CRIAR NOVA CONTA
+            </button>
+
+            <div id="loginStep1Error" class="form-error hidden"></div>
+        </div>
+
+        <!-- Step 2: Registrar -->
+        <div id="loginStep2" class="login-card hidden">
+            <button id="pinBackBtn" class="pin-back-btn" aria-label="Voltar">
+                <i class="ri-arrow-left-line"></i>
+            </button>
+            <div class="login-card-title">REGISTRO</div>
+            <div class="login-card-sub">Crie sua conta para acessar</div>
+
+            <div class="input-field-wrap mb-1">
+                <i class="ri-user-3-line"></i>
+                <input type="text" id="regNickInput" class="input-field" placeholder="Seu nick (ex: Joao_Silva)"
+                    autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="50">
+            </div>
+            <div class="input-field-wrap mt-2">
+                <i class="ri-lock-password-line"></i>
+                <input type="password" id="regSenhaInput" class="input-field" placeholder="Sua senha (mínimo 4)">
+            </div>
+            
+            <button id="regEntrarBtn" class="btn btn-primary w-full mt-2">
+                CADASTRAR-SE
+            </button>
+
+            <div id="loginStep2Error" class="form-error hidden"></div>
+        </div>
+
+        <!-- Loading overlay for login -->
+        <div id="loginLoading" class="login-loading hidden">
+            <div class="login-spinner"></div>
+            <div class="login-loading-text">Entrando...</div>
+        </div>
+
+        <!-- Install PWA button -->
+        <button id="btnInstalarPWA" class="btn-instalar-pwa hidden">
+            <i class="ri-install-line"></i> Instalar no celular
+        </button>
+    </div>
+</div>
+
+<!-- iOS install instructions modal -->
+<div id="iosInstallModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <button class="modal-close" id="iosInstallClose"><i class="ri-close-line"></i></button>
+        <div class="ios-install-icon">📱</div>
+        <h3>Instalar GoddoY RK</h3>
+        <p>Para instalar no iPhone/iPad:</p>
+        <ol>
+            <li>Toque em <strong>Compartilhar</strong> <span>⬆️</span> na barra do Safari</li>
+            <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+            <li>Toque em <strong>Adicionar</strong></li>
+        </ol>
+        <p class="text-muted text-sm">Funciona como um aplicativo instalado no seu dispositivo.</p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL (visível após login)
+═══════════════════════════════════════════════════════════ -->
+<div id="appShell" class="app-shell hidden">
+
+    <!-- ── SIDEBAR (desktop) ──────────────────────────────── -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-logo">
+                <img src="/images/logo.jpg" alt="GoddoY RK" class="sidebar-logo-img">
+                <div class="sidebar-logo-text">
+                    <div class="sidebar-gang-name">GoddoY RK</div>
+                    <div class="sidebar-gang-sub">Gangue de Rua</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="sidebar-nav-item active" data-view="home">
+                    <i class="ri-home-5-fill sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Início</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="chat">
+                    <i class="ri-message-3-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Chat</span>
+                    <span class="sidebar-nav-badge hidden" id="sidebarChatBadge">0</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="ranking">
+                    <i class="ri-trophy-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Ranking</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="missoes">
+                    <i class="ri-sword-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Missões</span>
+                </button>
+                <button class="sidebar-nav-item" data-view="membros">
+    <i class="ri-group-line sidebar-nav-icon"></i>
+    <span class="sidebar-nav-label">Membros</span>
+</button>
+<button class="sidebar-nav-item" data-view="perfil">
+                    <i class="ri-user-3-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Perfil</span>
+                </button>
+                <button class="sidebar-nav-item admin-only hidden" data-view="admin">
+                    <i class="ri-shield-star-line sidebar-nav-icon"></i>
+                    <span class="sidebar-nav-label">Admin</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar avatar-sm" id="sidebarAvatar"></div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-nick" id="sidebarNick">—</div>
+                    <div class="sidebar-user-cargo" id="sidebarCargo">—</div>
+                </div>
+            </div>
+            <button class="btn-icon" id="sidebarLogout" title="Sair" aria-label="Sair">
+                <i class="ri-logout-box-r-line"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── MAIN AREA ──────────────────────────────────────── -->
+    <div class="main-wrap">
+
+        <!-- Topbar (mobile + desktop) -->
+        <header class="topbar" id="topbar">
+            <button class="topbar-back hidden" id="topbarBack" aria-label="Voltar">
+                <i class="ri-arrow-left-line"></i>
+            </button>
+            <div class="topbar-title" id="topbarTitle">Início</div>
+            <div class="topbar-actions">
+                <!-- Notificações -->
+                <button class="topbar-btn notif-btn" id="notifBtn" aria-label="Notificações">
+                    <i class="ri-notification-3-line"></i>
+                    <span class="notif-dot hidden" id="notifDot"></span>
+                </button>
+                <!-- Avatar rápido -->
+                <div class="avatar avatar-sm topbar-avatar" id="topbarAvatar" data-view="perfil"></div>
+            </div>
+        </header>
+
+        <!-- Notification panel (dropdown) -->
+        <div id="notifPanel" class="notif-panel hidden">
+            <div class="notif-panel-header">
+                <span>Notificações</span>
+                <button class="btn-link" id="notifLerTodas">Ler todas</button>
+            </div>
+            <div class="notif-lista" id="notifLista">
+                <div class="empty-state">
+                    <i class="ri-notification-off-line"></i>
+                    <p>Nenhuma notificação</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content area (all views rendered here) -->
+        <main class="content-area" id="contentArea">
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: HOME
+            ══════════════════════════════════════════════ -->
+            <!-- ==========================================
+         MENÇÕES AUTOCOMPLETE
+    =========================================== -->
+    <div id="mentionsAutocomplete" class="mentions-menu hidden">
+        <div class="mentions-header">Mencionar Usuário</div>
+        <div id="mentionsList" class="mentions-list"></div>
+    </div>
+
+    <!-- ==========================================
+         MODALS
+    =========================================== -->
+
+    
+    <!-- MODAL EDITAR PERFIL -->
+    <div id="modalEditPerfil" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2 class="modal-title">Editar Perfil</h2>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-user-smile-line"></i>
+                <input type="text" id="editPerfilNick" class="input-field" placeholder="Novo Nickname">
+            </div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-lock-password-line"></i>
+                <input type="password" id="editPerfilSenha" class="input-field" placeholder="Nova Senha (Deixe em branco p/ manter)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalEditPerfil').classList.add('hidden')">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarEditPerfil">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADD TAREFA -->
+    <div id="modalAddTarefa" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2 class="modal-title">Nova Tarefa (Farm)</h2>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-sword-line"></i>
+                <input type="text" id="addTarefaTitulo" class="input-field" placeholder="Ex: Farm de Maconha">
+            </div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-funds-line"></i>
+                <input type="number" id="addTarefaMetaDiaria" class="input-field" placeholder="Meta Diária (Opcional)">
+            </div>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-line-chart-line"></i>
+                <input type="number" id="addTarefaMetaMensal" class="input-field" placeholder="Meta Mensal (Opcional)">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalAddTarefa').classList.add('hidden')">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarTarefa">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADD EVENTO -->
+    <div id="modalAddEvento" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h2 class="modal-title">Novo Evento (Análise IA)</h2>
+            <p style="font-size: 0.85rem; color: var(--text-2); margin-bottom: 1rem; text-align: center;">Cole uma foto ou texto com os horários para a IA extrair tudo automaticamente.</p>
+            
+            <textarea id="addEventoTexto" class="textarea-field mb-1" placeholder="Cole o texto aqui..." rows="4"></textarea>
+            
+            <div class="login-divider">OU IMAGEM</div>
+            
+            <input type="file" id="addEventoImg" accept="image/*" class="input-field mb-1" style="padding-top: 10px;">
+            
+            <div class="modal-actions mt-1">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalAddEvento').classList.add('hidden')">Cancelar</button>
+                <button class="btn btn-primary" id="btnAnalisarEvento"><i class="ri-magic-line"></i> Extrair Horários</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR EVENTO -->
+    <div id="modalConfirmarEvento" class="modal-overlay hidden">
+        <div class="modal-card" style="max-height: 90vh; overflow-y: auto;">
+            <h2 class="modal-title">Confirmar Horários</h2>
+            <div class="input-field-wrap mb-1">
+                <i class="ri-sword-line"></i>
+                <input type="text" id="confirmEventoTitulo" class="input-field" placeholder="Nome do Grupo de Eventos">
+            </div>
+            <div id="previewHorarios" style="background: var(--bg-card); padding: 10px; border-radius: var(--r-md); margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-2); white-space: pre-wrap;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="document.getElementById('modalConfirmarEvento').classList.add('hidden')">Voltar</button>
+                <button class="btn btn-primary" id="btnSalvarEventoConfirmado">Salvar Evento</button>
+            </div>
+        </div>
+    </div>
+
+            <div id="viewHome" class="view active">
+                <!-- User Hero -->
+                <div class="home-hero">
+                    <div class="home-hero-left">
+                        <div class="home-greeting">BEM-VINDO</div>
+                        <div class="home-nick" id="homeNick">—</div>
+                        <div class="home-cargo-wrap">
+                            <span class="badge badge-cargo" id="homeCargo">—</span>
+                        </div>
+                    </div>
+                    <div class="home-hero-right">
+                        <div class="avatar avatar-lg" id="homeAvatar"></div>
+                    </div>
+                </div>
+
+                <!-- XP Progress Card -->
+                <div class="card card-xp">
+                    <div class="card-xp-header">
+                        <span class="xp-label">SEU PROGRESSO</span>
+                        <span class="level-badge" id="homeLevel">NÍVEL —</span>
+                    </div>
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar">
+                            <div class="xp-bar-fill" id="homeXpFill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="xp-numbers">
+                        <span id="homeXpCurrent">0</span> / <span id="homeXpMax">5.000</span> XP
+                    </div>
+                </div>
+
+                <!-- Faction Card -->
+                <div class="card faction-card">
+                    <div class="faction-logo-mini">
+                        <img src="/images/logo.jpg" alt="GoddoY RK">
+                    </div>
+                    <div class="faction-info">
+                        <div class="faction-name">GoddoY RK</div>
+                        <div class="faction-sub">Gangue de Rua · One State RP</div>
+                    </div>
+                    <div class="faction-season">
+                        <div class="faction-season-label">TEMPORADA</div>
+                        <div class="faction-season-num" id="homeTemporada">—</div>
+                    </div>
+                </div>
+
+                <!-- Round da Fama Preview -->
+                <div class="card round-preview-card">
+                    <div class="round-preview-header">
+                        <div class="round-preview-title">ROUND DA FAMA</div>
+                        <button class="btn-link" data-view="ranking">VER RANKING <i class="ri-arrow-right-line"></i></button>
+                    </div>
+                    <div class="round-my-pos">
+                        <div class="round-pos-label">SUA COLOCAÇÃO</div>
+                        <div class="round-pos-val" id="homeRankPos">#—</div>
+                        <div class="round-pos-pts" id="homeRankPts">— PTS</div>
+                    </div>
+                </div>
+
+                <!-- Atividade Recente -->
+                <div class="section-header">
+                    <div class="section-title">ATIVIDADE RECENTE</div>
+                </div>
+                <div class="activity-feed" id="activityFeed">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: RANKING (Round da Fama + Completo)
+            ══════════════════════════════════════════════ -->
+            <div id="viewRanking" class="view hidden">
+                <!-- Round da Fama header -->
+                <div class="round-header">
+                    <div class="round-header-title">ROUND DA FAMA</div>
+                    <div class="round-timer" id="rankingTimer">
+                        <i class="ri-time-line"></i>
+                        <span id="rankingTimerText">—</span>
+                    </div>
+                    <div class="ranking-season" id="rankingTemporada">TEMPORADA —</div>
+                </div>
+
+                <!-- Podium Top 3 -->
+                <div class="podium-wrap">
+                    <div class="podium">
+                        <!-- 2nd place -->
+                        <div class="podium-slot podium-2" id="podium2">
+                            <div class="podium-medal">🥈</div>
+                            <div class="podium-avatar-wrap">
+                                <div class="avatar avatar-md podium-avatar" id="podiumAvatar2"></div>
+                            </div>
+                            <div class="podium-nick" id="podiumNick2">—</div>
+                            <div class="podium-pts" id="podiumPts2">— PTS</div>
+                            <div class="podium-platform podium-platform-2">2</div>
+                        </div>
+                        <!-- 1st place -->
+                        <div class="podium-slot podium-1" id="podium1">
+                            <div class="podium-crown">👑</div>
+                            <div class="podium-avatar-wrap">
+                                <div class="avatar avatar-lg podium-avatar avatar-gold" id="podiumAvatar1"></div>
+                            </div>
+                            <div class="podium-nick" id="podiumNick1">—</div>
+                            <div class="podium-pts" id="podiumPts1">— PTS</div>
+                            <div class="podium-platform podium-platform-1">1</div>
+                        </div>
+                        <!-- 3rd place -->
+                        <div class="podium-slot podium-3" id="podium3">
+                            <div class="podium-medal">🥉</div>
+                            <div class="podium-avatar-wrap">
+                                <div class="avatar avatar-md podium-avatar" id="podiumAvatar3"></div>
+                            </div>
+                            <div class="podium-nick" id="podiumNick3">—</div>
+                            <div class="podium-pts" id="podiumPts3">— PTS</div>
+                            <div class="podium-platform podium-platform-3">3</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ranking Tabs -->
+                <div class="tab-bar ranking-tabs">
+                    <button class="tab-item active" data-ranking-tab="round">Round</button>
+                    <button class="tab-item" data-ranking-tab="semana">Semana</button>
+                    <button class="tab-item" data-ranking-tab="mes">Mês</button>
+                    <button class="tab-item" data-ranking-tab="geral">Geral</button>
+                </div>
+
+                <!-- Ranking list #4+ -->
+                <div class="ranking-list" id="rankingList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CHAT GERAL
+            ══════════════════════════════════════════════ -->
+            <div id="viewChat" class="view view-chat hidden">
+                <!-- Chat messages area -->
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-loading">
+                        <div class="chat-spinner"></div>
+                    </div>
+                </div>
+
+                <!-- Chat typing indicator -->
+                <div class="chat-typing-row" id="chatTyping"></div>
+
+                <!-- Chat input -->
+                <div class="chat-input-row">
+                    <button class="chat-btn-icon" id="chatAudioBtn" aria-label="Gravar áudio">
+                        <i class="ri-mic-line"></i>
+                    </button>
+                    <textarea id="chatInput" class="chat-input" placeholder="Digite uma mensagem..." rows="1"
+                        maxlength="500" aria-label="Mensagem"></textarea>
+                    <button class="chat-btn-send" id="chatSendBtn" aria-label="Enviar">
+                        <i class="ri-send-plane-fill"></i>
+                    </button>
+                </div>
+
+                <!-- Participants drawer toggle (desktop) -->
+                <button class="participants-toggle" id="participantsToggle" title="Ver participantes">
+                    <i class="ri-group-line"></i>
+                </button>
+
+                <!-- Participants drawer -->
+                <div class="participants-drawer" id="participantsDrawer">
+                    <div class="participants-drawer-header">
+                        <span>MEMBROS</span>
+                        <button class="btn-icon" id="participantsClose"><i class="ri-close-line"></i></button>
+                    </div>
+                    <div class="participants-search">
+                        <i class="ri-search-line"></i>
+                        <input type="text" id="participantsSearch" placeholder="Buscar membro..." class="search-input">
+                    </div>
+                    <div class="participants-list" id="participantsList">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: DMs (Lista de conversas)
+            ══════════════════════════════════════════════ -->
+            <div id="viewDM" class="view hidden">
+                <div class="dm-list-header">
+                    <span>MENSAGENS</span>
+                    <button class="btn btn-primary btn-sm" id="novaDMBtn">
+                        <i class="ri-add-line"></i> Nova
+                    </button>
+                </div>
+
+                <div class="dm-list" id="dmList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- Nova DM: member search modal -->
+                <div id="novaDMModal" class="modal-overlay hidden">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <span class="modal-title">Nova Conversa</span>
+                            <button class="modal-close" id="novaDMClose"><i class="ri-close-line"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-field-wrap">
+                                <i class="ri-search-line"></i>
+                                <input type="text" id="dmSearchInput" class="input-field" placeholder="Buscar membro...">
+                            </div>
+                            <div class="dm-search-results" id="dmSearchResults"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CONVERSA PRIVADA
+            ══════════════════════════════════════════════ -->
+            <div id="viewDMConversa" class="view view-chat hidden">
+                <!-- Messages -->
+                <div class="chat-messages" id="dmMessages"></div>
+
+                <!-- Input -->
+                <div class="chat-input-row">
+                    <textarea id="dmInput" class="chat-input" placeholder="Digite uma mensagem..." rows="1"
+                        maxlength="500" aria-label="Mensagem privada"></textarea>
+                    <button class="chat-btn-send" id="dmSendBtn" aria-label="Enviar">
+                        <i class="ri-send-plane-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: MISSÕES
+            ══════════════════════════════════════════════ -->
+            
+            <div id="viewMissoes" class="view hidden">
+                <div class="tab-bar missions-tabs">
+                    <button class="tab-item active" data-missions-tab="tarefas">TAREFAS (FARM)</button>
+                    <button class="tab-item" data-missions-tab="eventos">EVENTOS</button>
+                </div>
+
+                <!-- TAREFAS TAB -->
+                <div id="tabTarefas" class="missions-list">
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- EVENTOS TAB -->
+                <div id="tabEventos" class="missions-list hidden">
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- ADMIN ONLY: ADD BUTTONS -->
+                <div class="admin-only hidden" id="adminEventosPanel" style="margin-top: 2rem;">
+                    <div class="section-header">
+                        <div class="section-title">GERENCIAR</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddTarefa').classList.remove('hidden')">
+                            + TAREFA
+                        </button>
+                        <button class="btn btn-primary flex-1" onclick="document.getElementById('modalAddEvento').classList.remove('hidden')">
+                            + EVENTO (IA)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewConquistas" class="view hidden">
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Conquistas padrão da facção -->
+                    <div class="achievement-card" data-ach="novato">
+                        <div class="achievement-icon">🔰</div>
+                        <div class="achievement-name">Novato</div>
+                        <div class="achievement-req">Nível 5</div>
+                        <div class="achievement-lock hidden"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="veterano">
+                        <div class="achievement-icon">⚔️</div>
+                        <div class="achievement-name">Veterano</div>
+                        <div class="achievement-req">Nível 20</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="respeitado">
+                        <div class="achievement-icon">👊</div>
+                        <div class="achievement-name">Respeitado</div>
+                        <div class="achievement-req">Nível 40</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="matador">
+                        <div class="achievement-icon">🎯</div>
+                        <div class="achievement-name">Matador</div>
+                        <div class="achievement-req">100 eliminações</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="chefao">
+                        <div class="achievement-icon">👑</div>
+                        <div class="achievement-name">Chefão</div>
+                        <div class="achievement-req">Promoção</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="lendario">
+                        <div class="achievement-icon">⭐</div>
+                        <div class="achievement-name">Lendário</div>
+                        <div class="achievement-req">Nível 100</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="dominacao">
+                        <div class="achievement-icon">🔥</div>
+                        <div class="achievement-name">Dominação</div>
+                        <div class="achievement-req">13 postos</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="implacavel">
+                        <div class="achievement-icon">💀</div>
+                        <div class="achievement-name">Implacável</div>
+                        <div class="achievement-req">500 ações</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                    <div class="achievement-card locked" data-ach="invencivel">
+                        <div class="achievement-icon">🛡️</div>
+                        <div class="achievement-name">Invencível</div>
+                        <div class="achievement-req">Round da Fama</div>
+                        <div class="achievement-lock"><i class="ri-lock-line"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement detail modal -->
+            <div id="achievementModal" class="modal-overlay hidden">
+                <div class="modal-card modal-achievement">
+                    <button class="modal-close" id="achievementModalClose"><i class="ri-close-line"></i></button>
+                    <div class="achievement-modal-icon" id="achModalIcon">🔰</div>
+                    <div class="achievement-modal-name" id="achModalName">—</div>
+                    <div class="achievement-modal-desc" id="achModalDesc">—</div>
+                    <div class="achievement-modal-winner hidden" id="achModalWinner">
+                        <i class="ri-user-star-line"></i>
+                        <span id="achModalWinnerNick">—</span>
+                    </div>
+                    <div class="achievement-modal-locked hidden" id="achModalLocked">
+                        <i class="ri-lock-line"></i> Conquista bloqueada
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: PERFIL PRÓPRIO
+            ══════════════════════════════════════════════ -->
+            
+            <!-- ══════════════════════════════════════════════
+                 VIEW: MEMBROS (ROSTER PUBLICO)
+            ══════════════════════════════════════════════ -->
+            <div id="viewMembros" class="view hidden">
+                <div class="section-header">
+                    <div class="section-title">LISTA DE MEMBROS (<span id="totalMembrosRoster">0</span>)</div>
+                </div>
+                <div class="input-field-wrap mb-1">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="rosterSearchInput" class="input-field" placeholder="Buscar membro por nick ou cargo...">
+                </div>
+                <div class="roster-grid" id="rosterGrid">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <div id="viewPerfil" class="view hidden">
+                <!-- Profile Hero -->
+                <div class="profile-hero">
+                    <div class="profile-avatar-wrap">
+                        <div class="avatar avatar-xl" id="perfilAvatar"></div>
+                        <button class="profile-avatar-edit" id="perfilAvatarEdit" aria-label="Editar avatar">
+                            <i class="ri-camera-line"></i>
+                        </button>
+                        <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-nick" id="perfilNick">—</div>
+                        <div class="profile-cargo-wrap">
+                            <span class="badge badge-cargo" id="perfilCargo">—</span>
+                        </div>
+                        <div class="profile-level-row">
+                            <span class="level-badge" id="perfilLevel">NÍVEL —</span>
+                            <span class="profile-xp-text" id="perfilXP">— XP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- XP Bar -->
+                <div class="profile-xp-card">
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar">
+                            <div class="xp-bar-fill" id="perfilXpFill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="xp-numbers">
+                        <span id="perfilXpCurrent">0</span> / <span id="perfilXpMax">5.000</span> XP
+                    </div>
+                </div>
+
+                
+                <div class="profile-actions" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button class="btn btn-outline" onclick="document.getElementById('modalEditPerfil').classList.remove('hidden')">
+                        <i class="ri-edit-line"></i> Editar Dados (Nome/Senha)
+                    </button>
+                    <button class="btn btn-primary admin-only hidden" data-view="admin" style="margin-top:0.5rem; background-color: var(--red);">
+                        <i class="ri-shield-star-line"></i> Painel da Gerência
+                    </button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilRanking">#—</div>
+                        <div class="stat-label">Ranking</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilPontos">—</div>
+                        <div class="stat-label">Pontos</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilMissoes">—</div>
+                        <div class="stat-label">Missões</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="perfilNivelAK">—</div>
+                        <div class="stat-label">Nível AK</div>
+                    </div>
+                </div>
+
+                <!-- Level Reminder Banner (shown when level changed) -->
+                <div id="levelReminder" class="level-reminder hidden">
+                    <div class="level-reminder-inner">
+                        <i class="ri-arrow-up-circle-fill"></i>
+                        <div class="level-reminder-text">
+                            <div class="level-reminder-title" id="levelReminderTitle">Você subiu de nível!</div>
+                            <div class="level-reminder-sub">Atualize seu nível no perfil</div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="levelReminderBtn">Atualizar</button>
+                        <button class="btn-icon" id="levelReminderClose"><i class="ri-close-line"></i></button>
+                    </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div class="profile-menu">
+                    <button class="profile-menu-item" data-view="conquistas">
+                        <i class="ri-award-line"></i>
+                        <span>Conquistas</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item" id="perfilEditarBtn">
+                        <i class="ri-edit-line"></i>
+                        <span>Editar Perfil</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item" data-view="config">
+                        <i class="ri-settings-3-line"></i>
+                        <span>Configurações</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item admin-only hidden" data-view="admin">
+                        <i class="ri-shield-star-line"></i>
+                        <span>Painel Admin</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                    <button class="profile-menu-item profile-menu-danger" id="perfilLogoutBtn">
+                        <i class="ri-logout-box-r-line"></i>
+                        <span>Sair da conta</span>
+                        <i class="ri-arrow-right-s-line profile-menu-chevron"></i>
+                    </button>
+                </div>
+
+                <!-- Edit Profile Modal -->
+                <div id="editPerfilModal" class="modal-overlay hidden">
+                    <div class="modal-card">
+                        <div class="modal-header">
+                            <span class="modal-title">Editar Perfil</span>
+                            <button class="modal-close" id="editPerfilClose"><i class="ri-close-line"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="form-label">Nível (1–100)</label>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-bar-chart-line"></i>
+                                <input type="number" id="editNivel" class="input-field" min="1" max="100" placeholder="Nível atual">
+                            </div>
+                            <label class="form-label">Nível AK-47 (1–50)</label>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-gun-line"></i>
+                                <input type="number" id="editNivelAK" class="input-field" min="1" max="50" placeholder="Nível da AK">
+                            </div>
+                            <label class="form-label">Bio (máx 200 chars)</label>
+                            <textarea id="editBio" class="textarea-field mb-1" placeholder="Fale sobre você..." rows="3" maxlength="200"></textarea>
+
+                            <hr style="border-color: rgba(255,255,255,0.1); margin: 1.5rem 0;">
+                            
+                            <label class="form-label text-red">Alterar Senha (opcional)</label>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-lock-unlock-line"></i>
+                                <input type="password" id="editSenhaAtual" class="input-field" placeholder="Senha atual">
+                            </div>
+                            <div class="input-field-wrap mb-1">
+                                <i class="ri-lock-password-line"></i>
+                                <input type="password" id="editSenhaNova" class="input-field" placeholder="Nova senha (min. 4 chars)">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-ghost" id="editPerfilCancelBtn">Cancelar</button>
+                            <button class="btn btn-primary" id="editPerfilSaveBtn">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: PERFIL DE OUTRO MEMBRO
+            ══════════════════════════════════════════════ -->
+            <div id="viewMembroPerfil" class="view hidden">
+                <div class="profile-hero">
+                    <div class="profile-avatar-wrap">
+                        <div class="avatar avatar-xl" id="membroAvatar"></div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-nick" id="membroNick">—</div>
+                        <div class="profile-cargo-wrap">
+                            <span class="badge badge-cargo" id="membroCargo">—</span>
+                        </div>
+                        <div class="profile-level-row">
+                            <span class="level-badge" id="membroLevel">NÍVEL —</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroRanking">#—</div>
+                        <div class="stat-label">Ranking</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroPontos">—</div>
+                        <div class="stat-label">Pontos</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroNivelAK">—</div>
+                        <div class="stat-label">Nível AK</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="stat-val" id="membroMissoes">—</div>
+                        <div class="stat-label">Missões</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn btn-primary w-full" id="membroDMBtn">
+                        <i class="ri-message-3-line"></i> Enviar Mensagem
+                    </button>
+                </div>
+
+                <div class="profile-bio-wrap hidden" id="membroBioWrap">
+                    <div class="profile-bio" id="membroBio"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: NOTIFICAÇÕES
+            ══════════════════════════════════════════════ -->
+            <div id="viewNotificacoes" class="view hidden">
+                <div class="notif-full-list" id="notifFullList">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: CONFIGURAÇÕES
+            ══════════════════════════════════════════════ -->
+            <div id="viewConfig" class="view hidden">
+
+                <!-- CONTA -->
+                <div class="settings-section">
+                    <div class="settings-section-title">CONTA</div>
+                    <div class="settings-group">
+                        <button class="settings-item" id="configEditarPerfil">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-user-3-line"></i></div>
+                                <span>Editar perfil</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
+                        </button>
+                        <button class="settings-item" id="configAlterarNivel">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-bar-chart-line"></i></div>
+                                <span>Atualizar nível / AK</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- APARÊNCIA -->
+                <div class="settings-section">
+                    <div class="settings-section-title">APARÊNCIA</div>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-moon-line"></i></div>
+                                <span>Tema</span>
+                            </div>
+                            <span class="settings-item-value">Escuro</span>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-global-line"></i></div>
+                                <span>Idioma</span>
+                            </div>
+                            <span class="settings-item-value">Português</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICAÇÕES -->
+                <div class="settings-section">
+                    <div class="settings-section-title">NOTIFICAÇÕES</div>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-notification-3-line"></i></div>
+                                <span>Push notifications</span>
+                            </div>
+                            <div class="settings-toggle-wrap" id="pushToggleWrap">
+                                <span class="push-status-text" id="pushStatusText">Verificando...</span>
+                                <button class="settings-toggle" id="pushToggle">
+                                    <span class="toggle-thumb"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SISTEMA -->
+                <div class="settings-section">
+                    <div class="settings-section-title">SISTEMA</div>
+                    <div class="settings-group">
+                        <button class="settings-item" id="configInstalarPWA">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-install-line"></i></div>
+                                <span>Instalar no celular</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
+                        </button>
+                        <button class="settings-item">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-information-line"></i></div>
+                                <span>Sobre o app</span>
+                            </div>
+                            <span class="settings-item-value">v1.0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SAIR -->
+                <div class="settings-section">
+                    <div class="settings-group">
+                        <button class="settings-item settings-danger" id="configSairBtn">
+                            <div class="settings-item-left">
+                                <div class="settings-item-icon"><i class="ri-logout-box-r-line"></i></div>
+                                <span>Sair da conta</span>
+                            </div>
+                            <i class="ri-arrow-right-s-line settings-chevron"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 VIEW: ADMIN PANEL
+            ══════════════════════════════════════════════ -->
+            <div id="viewAdmin" class="view hidden">
+
+                <!-- Admin Tabs -->
+                <div class="tab-bar admin-tabs">
+                    <button class="tab-item active" data-admin-tab="membros">Membros</button>
+                    <button class="tab-item" data-admin-tab="aprovacoes">Aprovações</button>
+                    <button class="tab-item" data-admin-tab="pontuar">Pontuar</button>
+                    <button class="tab-item" data-admin-tab="conquistas">Conquistas</button>
+                </div>
+
+                <!-- Tab: Lista de Membros -->
+                <div id="adminTabMembros" class="admin-tab-content">
+                    <div class="admin-members-list" id="adminMembersList">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Aprovações -->
+                <div id="adminTabAprovacoes" class="admin-tab-content hidden">
+                    <div class="card">
+                        <div class="card-title">MEMBROS PENDENTES</div>
+                        <div class="admin-pendentes-list" id="adminPendentesList">
+                            <!-- JS vai renderizar aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Pontuar -->
+                <div id="adminTabPontuar" class="admin-tab-content hidden">
+                    <div class="card">
+                        <div class="card-title">PONTUAR MEMBRO</div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-search-line"></i>
+                            <input type="text" id="pontuarNickSearch" class="input-field" placeholder="Buscar nick...">
+                        </div>
+                        <div id="pontuarMemberSelect" class="member-select-list"></div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-star-line"></i>
+                            <input type="number" id="pontuarValor" class="input-field" placeholder="Quantidade de pontos">
+                        </div>
+                        <div class="input-field-wrap mb-1">
+                            <i class="ri-chat-1-line"></i>
+                            <input type="text" id="pontuarMotivo" class="input-field" placeholder="Motivo (ex: Roubo ao banco)">
+                        </div>
+                        <div class="btn-group mb-1">
+                            <button class="btn btn-ghost btn-sm pontuar-acao-btn active" data-acao="add">
+                                <i class="ri-add-line"></i> Adicionar
+                            </button>
+                            <button class="btn btn-ghost btn-sm pontuar-acao-btn" data-acao="remove">
+                                <i class="ri-subtract-line"></i> Remover
+                            </button>
+                        </div>
+                        <button class="btn btn-primary w-full" id="pontuarBtn">
+                            CONFIRMAR PONTUAÇÃO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab: Conquistas (admin editar vencedores) -->
+                <div id="adminTabConquistas" class="admin-tab-content hidden">
+                    <div class="card">
+                        <div class="card-title">DEFINIR VENCEDORES</div>
+                        <div class="conquistas-admin-list" id="conquistasAdminList">
+                            <!-- Generated by JS -->
+                        </div>
+                        <button class="btn btn-primary w-full" id="adminSalvarConquistasBtn">
+                            <i class="ri-save-line"></i> SALVAR CONQUISTAS
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main><!-- /content-area -->
+
+        <!-- ── BOTTOM NAVIGATION (mobile) ─────────────────── -->
+        <nav id="bottomNav" class="bottom-nav" role="navigation" aria-label="Navegação principal">
+            <button class="bottom-nav-item active" data-view="home" aria-label="Início">
+                <i class="ri-home-5-fill"></i>
+                <span>Início</span>
+            </button>
+            <button class="bottom-nav-item" data-view="chat" aria-label="Chat">
+                <i class="ri-message-3-line"></i>
+                <span>Chat</span>
+                <span class="bottom-nav-badge hidden" id="chatBadge">0</span>
+            </button>
+            <button class="bottom-nav-item" data-view="ranking" aria-label="Ranking">
+                <i class="ri-trophy-line"></i>
+                <span>Ranking</span>
+            </button>
+            <button class="bottom-nav-item" data-view="missoes" aria-label="Missões">
+                <i class="ri-sword-line"></i>
+                <span>Missões</span>
+            </button>
+            <button class="bottom-nav-item" data-view="membros" aria-label="Membros">
+    <i class="ri-group-line"></i>
+    <span>Membros</span>
+</button>
+<button class="bottom-nav-item" data-view="perfil" aria-label="Perfil">
+                <i class="ri-user-3-line"></i>
+                <span>Perfil</span>
+            </button>
+        </nav>
+
+    </div><!-- /main-wrap -->
+</div><!-- /app-shell -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     GLOBAL TOAST CONTAINER
+═══════════════════════════════════════════════════════════ -->
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════ -->
+<script src="js/auth.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/api.js"></script>
+<script src="js/state.js"></script>
+<script src="js/components.js"></script>
+<script src="js/mentions.js"></script>
+<script src="js/platform.js"></script>
+
+</body>
+</html>
