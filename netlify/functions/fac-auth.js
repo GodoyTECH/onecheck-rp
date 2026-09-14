@@ -127,6 +127,12 @@ exports.handler = async function (event) {
             `;
             const membro = rows[0];
 
+            // Avisar a equipe administrativa sobre a nova solicitação.
+            await sql`
+                INSERT INTO notificacoes (membro_id, titulo, mensagem, tipo)
+                SELECT id, 'Nova solicitação de membro', ${membro.nick + ' aguarda aprovação.'}, 'geral'
+                FROM membros WHERE is_admin = true AND is_ativo = true`;
+
             // Já autentica o usuário
             const token = gerarToken(
                 { id: membro.id, nick: membro.nick, cargo: membro.cargo, isAdmin: membro.is_admin },
@@ -172,6 +178,10 @@ exports.handler = async function (event) {
                 RETURNING id, nick, cargo, is_admin`;
                 
             if (rows.length === 0) return erro('Membro não encontrado', 404);
+
+            await sql`
+                INSERT INTO notificacoes (membro_id, titulo, mensagem, tipo)
+                VALUES (${rows[0].id}, 'Cadastro aprovado!', ${'Você entrou como ' + rows[0].cargo + '.'}, 'geral')`;
 
             return ok({
                 membro: rows[0],

@@ -67,18 +67,22 @@ window.GRK = {
         const cargo = msg.cargo || '';
         
         let contentHtml = '';
+        const safe = value => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         if (msg.tipo === 'audio') {
-            contentHtml = `<audio controls src="${msg.conteudo}" class="chat-audio"></audio>`;
+            contentHtml = `<audio controls src="${safe(msg.media_url)}" class="chat-audio" preload="metadata"></audio>`;
+        } else if (msg.tipo === 'imagem') {
+            contentHtml = `<a href="${safe(msg.media_url)}" target="_blank" rel="noopener"><img src="${safe(msg.media_url)}" class="chat-image" alt="Imagem enviada por ${safe(msg.nick)}" loading="lazy"></a>`;
         } else {
             // Parse @mentions for highlight
-            const parsed = (msg.conteudo || '').replace(/@([\w_]+)/g, '<span class="chat-mention">@$1</span>');
+            const parsed = safe(msg.conteudo).replace(/@([\w_]+)/g, '<span class="chat-mention">@$1</span>');
             contentHtml = `<div class="chat-text">${parsed}</div>`;
         }
 
         const authorBlock = !isMe ? `
             <div class="chat-msg-author">
-                <span class="chat-msg-nick">${msg.nick}</span>
-                ${cargo ? `<span class="chat-msg-cargo">${cargo}</span>` : ''}
+                <span class="chat-msg-nick">${safe(msg.nick)}</span>
+                ${cargo ? `<span class="chat-msg-cargo">${safe(cargo)}</span>` : ''}
                 <span class="chat-msg-time">${time}</span>
             </div>` 
             : `<div class="chat-msg-time chat-msg-time-me">${time}</div>`;

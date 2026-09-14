@@ -1076,14 +1076,19 @@ async function carregarAprovacoes() {
         `).join('');
 
         list.querySelectorAll('.btn-aprovar').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
                 const nick = btn.dataset.nick;
                 const id = btn.dataset.id;
-                document.getElementById('promoverId').value = id;
-                document.getElementById('promoverCargo').value = 'Recruta'; // Default
-                document.getElementById('promoverMotivo').value = 'Aprova\u00e7\u00e3o inicial';
-                setTextById('promoverNickDisplay', nick);
-                showEl('modalPromover');
+                if (!confirm(`Aprovar ${nick} como Recruta?`)) return;
+                btn.disabled = true;
+                try {
+                    await AUTH.aprovarMembro(id, 'Recruta');
+                    GRK.toast(`${nick} foi aprovado!`, 'success');
+                    await Promise.all([carregarAprovacoes(), carregarAdminMembros()]);
+                } catch (e) {
+                    btn.disabled = false;
+                    GRK.toast(e.message || 'Erro ao aprovar membro', 'error');
+                }
             });
         });
 
@@ -1881,7 +1886,52 @@ window.desativarMembro = function(id) {
     }
 };
 
-// Chat Audio Button placeholder
-document.getElementById('chatAudioBtn')?.addEventListener('click', () => {
-    GRK.toast('Mensagens de áudio em breve!', 'info');
+// Mídia do chat: imagens e mensagens de voz.
+document.getElementById('chatMediaBtn')?.addEventListener('click', () => document.getElementById('chatMediaInput')?.click());
+document.getElementById('chatMediaInput')?.addEventListener('change', async event => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) return GRK.toast('Formato de imagem não suportado', 'error');
+    if (file.size > 5 * 1024 * 1024) return GRK.toast('A imagem deve ter no máximo 5 MB', 'error');
+    try {
+        const data = await fileToDataUrl(file);
+        const msg = await API.sendChatImage(data, file.type);
+        renderizarChatMsgs([msg], false);
+    } catch (e) { GRK.toast(e.message || 'Erro ao enviar imagem', 'error'); }
 });
+
+document.getElementById('chatAudioBtn')?.addEventListener('click', async () => {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return GRK.toast('Gravação não suportada neste navegador', 'error');
+    if (audioRecorder?.state === 'recording') { audioRecorder.stop(); return; }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+        const started = Date.now();
+        audioRecorder = new MediaRecorder(stream);
+        audioRecorder.ondataavailable = e => { if (e.data.size) audioChunks.push(e.data); };
+        audioRecorder.onstop = async () => {
+            stream.getTracks().forEach(track => track.stop());
+            document.getElementById('chatAudioBtn')?.classList.remove('recording');
+            try {
+                const blob = new Blob(audioChunks, { type: audioRecorder.mimeType || 'audio/webm' });
+                if (blob.size > 8 * 1024 * 1024) throw new Error('O áudio excedeu 8 MB');
+                const msg = await API.sendChatAudio(await fileToDataUrl(blob), Math.ceil((Date.now() - started) / 1000));
+                renderizarChatMsgs([msg], false);
+            } catch (e) { GRK.toast(e.message || 'Erro ao enviar áudio', 'error'); }
+        };
+        audioRecorder.start();
+        document.getElementById('chatAudioBtn')?.classList.add('recording');
+        GRK.toast('Gravando… toque novamente para enviar (máx. 2 min)', 'info');
+        setTimeout(() => { if (audioRecorder?.state === 'recording') audioRecorder.stop(); }, 120000);
+    } catch (e) { GRK.toast('Não foi possível acessar o microfone', 'error'); }
+});
+
+function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Não foi possível ler o arquivo'));
+        reader.readAsDataURL(file);
+    });
+}
