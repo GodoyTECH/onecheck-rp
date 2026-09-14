@@ -9,11 +9,30 @@ const { getStore }       = require('@netlify/blobs');
 exports.handler = async function (event) {
     if (event.httpMethod === 'OPTIONS') return preflight();
 
+    const sub = (event.path.replace(/.*\/fac-chat\/?/, '') || '').split('?')[0];
+
+    // URLs de mídia usam chaves aleatórias e precisam abrir em elementos <audio>/<img>,
+    // que não permitem enviar o header Authorization.
+    if (event.httpMethod === 'GET' && sub.startsWith('media-file/')) {
+        try {
+            const key = sub.slice('media-file/'.length);
+            if (!/^[a-f0-9-]+_[0-9]+\.(webm|ogg|mp3|jpg|png|webp|gif)$/i.test(key)) return erro('Mídia inválida', 400);
+            const store = getStore('chat-media');
+            const blob = await store.get(key, { type: 'arrayBuffer' });
+            if (!blob) return erro('Mídia não encontrada', 404);
+            const types = { webm:'audio/webm', ogg:'audio/ogg', mp3:'audio/mpeg', jpg:'image/jpeg', png:'image/png', webp:'image/webp', gif:'image/gif' };
+            const ext = key.split('.').pop().toLowerCase();
+            return { statusCode: 200, headers: { 'Content-Type': types[ext], 'Cache-Control': 'private, max-age=86400', 'X-Content-Type-Options': 'nosniff' }, body: Buffer.from(blob).toString('base64'), isBase64Encoded: true };
+        } catch (e) {
+            console.error('[fac-chat/media]', e.message);
+            return erro('Erro ao carregar mídia', 500);
+        }
+    }
+
     const payload = verificarToken(extrairToken(event));
     if (!payload) return erro('Não autorizado', 401);
 
     const sql = getDb();
-    const sub = (event.path.replace(/.*\/fac-chat\/?/, '') || '').split('?')[0];
 
     try {
         // ── GET / — últimas 60 mensagens ─────────────────────
@@ -47,8 +66,7 @@ exports.handler = async function (event) {
             // Buscar nick/cargo atualizado
             const mem = await sql`SELECT nick, cargo FROM membros WHERE id = ${payload.id} LIMIT 1`;
             const { nick, cargo } = mem[0] || { nick: payload.nick, cargo: payload.cargo };
-
-            if (cargo === 'Pendente') return erro('Sua conta ainda não foi aprovada.', 403);
+            if (!mem.length || cargo === 'Pendente') return erro('Sua conta ainda não foi aprovada.', 403);
 
             let extractedMentions = [];
             const textToParse = conteudo.trim();
@@ -92,14 +110,16 @@ exports.handler = async function (event) {
 
             // Salvar no Netlify Blobs
             const buffer  = Buffer.from(audio_base64.split(',')[1] || audio_base64, 'base64');
-            const store   = getStore({ name: 'chat-audio', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
+            if (!buffer.length || buffer.length > 8 * 1024 * 1024) return erro('Áudio inválido ou maior que 8 MB');
+            const store   = getStore('chat-media');
             const blobKey = `${payload.id}_${Date.now()}.webm`;
             await store.set(blobKey, buffer, { metadata: { contentType: 'audio/webm', membroId: payload.id } });
 
-            const audioUrl = `/.netlify/functions/fac-chat/audio-file/${blobKey}`;
+            const audioUrl = `/.netlify/functions/fac-chat/media-file/${blobKey}`;
 
             const mem = await sql`SELECT nick, cargo FROM membros WHERE id = ${payload.id} LIMIT 1`;
             const { nick, cargo } = mem[0] || { nick: payload.nick, cargo: payload.cargo };
+            if (!mem.length || cargo === 'Pendente') return erro('Sua conta ainda não foi aprovada.', 403);
 
             const rows = await sql`
                 INSERT INTO mensagens_gerais (membro_id, nick, cargo, tipo, conteudo, media_url)
@@ -109,18 +129,24 @@ exports.handler = async function (event) {
             return ok(rows[0], 201);
         }
 
-        // ── GET /audio-file/:key — servir áudio ───────────────
-        if (event.httpMethod === 'GET' && sub.startsWith('audio-file/')) {
-            const key = sub.replace('audio-file/', '');
-            const store = getStore({ name: 'chat-audio', siteID: process.env.NETLIFY_SITE_ID, token: process.env.NETLIFY_TOKEN });
-            const blob  = await store.get(key, { type: 'arrayBuffer' });
-            if (!blob) return erro('Áudio não encontrado', 404);
-            return {
-                statusCode: 200,
-                headers: { 'Content-Type': 'audio/webm', 'Cache-Control': 'private, max-age=86400' },
-                body: Buffer.from(blob).toString('base64'),
-                isBase64Encoded: true
-            };
+        // ── POST /media — upload de imagem ────────────────────
+        if (event.httpMethod === 'POST' && sub === 'media') {
+            const { media_base64, mime_type } = JSON.parse(event.body || '{}');
+            const extensions = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' };
+            const ext = extensions[mime_type];
+            if (!media_base64 || !ext) return erro('Imagem inválida (use JPG, PNG, WebP ou GIF)');
+            const buffer = Buffer.from(media_base64.split(',')[1] || media_base64, 'base64');
+            if (!buffer.length || buffer.length > 5 * 1024 * 1024) return erro('Imagem inválida ou maior que 5 MB');
+            const mem = await sql`SELECT nick, cargo FROM membros WHERE id = ${payload.id} AND is_ativo = true LIMIT 1`;
+            if (!mem.length || mem[0].cargo === 'Pendente') return erro('Sua conta ainda não foi aprovada.', 403);
+            const key = `${payload.id}_${Date.now()}.${ext}`;
+            await getStore('chat-media').set(key, buffer, { metadata: { contentType: mime_type, membroId: payload.id } });
+            const mediaUrl = `/.netlify/functions/fac-chat/media-file/${key}`;
+            const rows = await sql`
+                INSERT INTO mensagens_gerais (membro_id, nick, cargo, tipo, conteudo, media_url)
+                VALUES (${payload.id}, ${mem[0].nick}, ${mem[0].cargo}, 'imagem', '[Imagem]', ${mediaUrl})
+                RETURNING *`;
+            return ok(rows[0], 201);
         }
 
         return erro('Endpoint não encontrado', 404);

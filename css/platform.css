@@ -2461,6 +2461,11 @@ p {
   text-align: right;
   margin-bottom: 2px;
 }
+/* Mídia no chat */
+.chat-image { display:block; max-width:min(420px, 100%); max-height:420px; border-radius:12px; object-fit:contain; }
+.chat-audio { width:min(360px, 100%); }
+.chat-btn-icon.recording { color:#fff; background:#ef4444; animation:chat-recording 1s ease-in-out infinite; }
+@keyframes chat-recording { 50% { opacity:.55; transform:scale(.94); } }
 .chat-mention {
   color: var(--red);
   font-weight: 600;

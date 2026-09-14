@@ -149,6 +149,12 @@ window.API = {
             body: JSON.stringify({ audio_base64, duracao, tipo: 'audio' })
         }, true);
     },
+    sendChatImage(image_base64, mime_type) {
+        return this._fetch('/.netlify/functions/fac-chat/media', {
+            method: 'POST',
+            body: JSON.stringify({ media_base64: image_base64, mime_type })
+        }, true);
+    },
 
     // DMs
     getDMs() {
